@@ -15,6 +15,12 @@ class BoxSpriteLoader:
 
     def __init__(self,event_dict,surface,x,y,w,h,color):
 
+        # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
+
         self.preSurface = surface # superficie sobre la que se dibuja boxSpriteLoader
 
         # box_sprite_loader
@@ -66,6 +72,12 @@ class BoxSpriteLoader:
 
         self.save_text_edit = "" # para guardar el texto origonal antes de ser editado
         self.box_text_is_edit = None
+
+
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
 
 
 
@@ -120,7 +132,7 @@ class BoxSpriteLoader:
             w = self.gridx
             h = 20
             #base_name, extension = os.path.splitext(image_name) # nombre base sin la extencion PNG,JPGE ect..
-            boxtext = BoxText(self.surface,x,y,w,h,text=image_name)
+            boxtext = BoxText(event_dict,self.surface,x,y,w,h,text=image_name)
 
             self.images.append([image_surface, image_rect, save_image_rect_y,image_name,boxtext])
             
@@ -227,7 +239,7 @@ class BoxSpriteLoader:
             event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
 
 
-            # AGREGAR IMAGENES - detecion 0
+            # AGREGAR IMAGENES - deteccion 0
             # ----------------------------------------------------------------------------
             if self.images[-1][1].collidepoint(x,y):
                 
@@ -305,30 +317,30 @@ class BoxSpriteLoader:
 
                 for image in self.images[:-1]:
 
-                    # SELECTOR DE BOX_TEXT
+                    # SELECTOR DE BOX_TEXT - deteccion 1
                     # ----------------------------------------------------------------------------
-                    
-                    try:
-                        del event_dict["EditPoint"][2] # 2 seria la posicion del box_text dentro de la lista "EditPoint"
-                    except:
-                        pass
 
-                    for i in self.images[:-1]: # si detecto colision agrego "box_text" a "EditPoint"
+                    #for i in image: # si detecto colision agrego "box_text" a "EditPoint"
 
-                        if i[4].rect.collidepoint(x,y):
+                        if image[4].rect.collidepoint(x,y):
 
                             self.save_image_select = None
                             self.image_select.clear()
 
-                            event_dict["EditPoint"].append(i[4])
-                            self.box_text_is_edit = i[4] # guardamos en box_text que se esta editando
-                            self.save_text_edit = i[3] # guardo nombre original de la imagen 
+                            try:
+                                del event_dict["EditPoint"][2] # 2 seria la posicion del box_text dentro de la lista "EditPoint"
+                            except:
+                                pass
+
+                            event_dict["EditPoint"].append(image[4])
+                            self.box_text_is_edit = image[4] # guardamos en box_text que se esta editando
+                            self.save_text_edit = image[3] # guardo nombre original de la imagen 
                             break
                     # ----------------------------------------------------------------------------
 
 
 
-                    # SELECTOR DE IMAGENES
+                    # SELECTOR DE IMAGENES - deteccion 2
                     # ----------------------------------------------------------------------------
                         #click_out = True # si clickeo afuera
                     # selector de imagen 
@@ -349,7 +361,6 @@ class BoxSpriteLoader:
                                     elif position1 > position2:
                                         for i in self.images[position2:position1+1]:
                                             self.image_select.append(i)
-                                    print(self.image_select)
                                     break
                                 else:
                                     # seleccion simple
@@ -388,7 +399,7 @@ class BoxSpriteLoader:
         # ----------------------------------------------------------------------------
         
         
-
+        # cambiar el nombre
         for i in self.images[:-1]:
             if i[4] in event_dict["EditPoint"]:
                 box_text = i[4]
@@ -480,7 +491,7 @@ class BoxSpriteLoader:
                 
         #-----------------------------------------------------------------------------
 
-        return event_dict
+        #return event_dict
 
 
     def draw(self,event_dict):

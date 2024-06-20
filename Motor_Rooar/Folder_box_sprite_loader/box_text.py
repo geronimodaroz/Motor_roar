@@ -5,11 +5,11 @@ import time
 
 class BoxText:
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
-    def __init__(self,surface,x,y,w,h,color_box = (20,20,20),color_text = (180,180,180), font = pg.font.Font(None, 16), text=""):    
-    # prufundidad del objeto +1
+    def __init__(self,event_dict,surface,x,y,w,h,color_box = (20,20,20),color_text = (180,180,180), font = pg.font.Font(None, 16), text=""):    
+        # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
-        #event_dict["depth_number"]+=1
-        #self.depth_number = event_dict["depth_number"]
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
         
         #superficie - # NO requiere otra surface
@@ -53,17 +53,12 @@ class BoxText:
         for i in range(self.cursor_position):
             t += self.text[i]
         self.cursor_surface = self.font.render(t, True, (0, 0, 0))
-        # modificar "text_x_displace"
-        """if self.text_x + self.cursor_surface.get_width() > r_x + r_w:
-                self.text_x_displace -= (r_x + r_w) - (self.text_x+ self.cursor_surface.get_width())
-        if self.text_x + self.cursor_surface.get_width() < r_x: 
-                self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) """
         #-------------------------------------------------------------------------------------
 
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
-        #event_dict["depth_number"]-=1
+        event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
 

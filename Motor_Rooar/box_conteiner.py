@@ -7,6 +7,12 @@ class BoxConteiner:
 
     def __init__(self,event_dict,screen, x, y, w, h, color):
 
+        # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
+
         self.screen = screen
         self.x = x
         self.y = y
@@ -39,6 +45,12 @@ class BoxConteiner:
         self.object_list.append(self.box_sprite_loader)
 
 
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
+
+
 
 
 
@@ -57,25 +69,23 @@ class BoxConteiner:
                 for obj in self.object_list:
                     Reposition().reposition_y(self,obj,repo_y=-30)
 
-        
-
 
         save_x_y = event_dict["MouseClickLeft"]
 
         if event_dict["MouseClickLeft"]:
+
             x = event_dict["MouseClickLeft"][0] - self.rect.x 
             y = event_dict["MouseClickLeft"][1] - self.rect.y
             event_dict["MouseClickLeft"] = (x,y)
-
+            
             for obj in self.object_list: # repaso la lista de objectos dentro de box_conteiner
                 if obj.rect.collidepoint(x,y):
                     # si el ultimo objeto esta en la lista de objetos lo elimino y agrego en su lugar al objeto clicado 
-                    if event_dict["EditPoint"]:
-                        if event_dict["EditPoint"][-1] in self.object_list:
-                            del event_dict["EditPoint"][-1]
+                    if event_dict["EditPoint"] and event_dict["EditPoint"][-1] in self.object_list:
+                        del event_dict["EditPoint"][-1]
 
                     # agrego el objeto a la lista
-                    if not(obj in event_dict["EditPoint"]):
+                    if obj not in event_dict["EditPoint"]:
                         event_dict["EditPoint"].append(obj)
                     break
                 else:
@@ -89,15 +99,15 @@ class BoxConteiner:
 
 
         if self.box_text_name in event_dict["EditPoint"]: #  box_text_name
-            event_dict = self.box_text_name.edit(event_dict)
+            self.box_text_name.edit(event_dict)
 
         elif self.box_sprite_loader in event_dict["EditPoint"]: # box_sprite_loader
-            event_dict = self.box_sprite_loader.edit(event_dict)
+            self.box_sprite_loader.edit(event_dict)
 
 
         event_dict["MouseClickLeft"] = save_x_y
 
-        return event_dict
+        #return event_dict
 
 
 
