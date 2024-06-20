@@ -31,7 +31,7 @@ class BoxConteiner:
         y = 18
         w = 200
         h = 20
-        self.box_text_name = BoxTextName(self.surface,0," Name: ",x,y,w,h,(35,35,35))
+        self.box_text_name = BoxTextName(event_dict,self.surface,0," Name: ",x,y,w,h,(35,35,35))
         self.object_list.append(self.box_text_name) # agregamos el objeto a la lsta
 
         # sprite loader
@@ -77,7 +77,7 @@ class BoxConteiner:
             x = event_dict["MouseClickLeft"][0] - self.rect.x 
             y = event_dict["MouseClickLeft"][1] - self.rect.y
             event_dict["MouseClickLeft"] = (x,y)
-            
+
             for obj in self.object_list: # repaso la lista de objectos dentro de box_conteiner
                 if obj.rect.collidepoint(x,y):
                     # si el ultimo objeto esta en la lista de objetos lo elimino y agrego en su lugar al objeto clicado 

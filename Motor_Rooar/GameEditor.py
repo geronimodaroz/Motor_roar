@@ -68,6 +68,7 @@ event_dict = {
 }
 #-----------------------------------------------------------------------------
 
+depth_number = event_dict["depth_number"]
 
 
 
@@ -78,7 +79,6 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 from box_conteiner import BoxConteiner
 box_conteiner = BoxConteiner(event_dict,screen,80,80,300,450,(0,0,0))
 object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
-
 
 
 
@@ -133,18 +133,23 @@ while True:
             event_dict["EditPoint"].clear() # mirar esto!
 
 
-    if box_conteiner in event_dict["EditPoint"]:
-        box_conteiner.edit(event_dict)
+    #if box_conteiner in event_dict["EditPoint"]:
+    #    box_conteiner.edit(event_dict)
+
+    try:
+        event_dict["EditPoint"][depth_number+1].edit(event_dict)
+    except:
+        pass
 
 
+    
     # Dibuja el fondo
     screen.fill((128,128,128)) # limpia escena 
     # FPS
     screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
 
+    #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
     # Box_conteiner
     box_conteiner.draw(event_dict)
-
-
     # Actualiza la pantalla
     pg.display.flip()

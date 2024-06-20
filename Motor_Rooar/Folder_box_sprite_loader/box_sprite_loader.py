@@ -287,7 +287,7 @@ class BoxSpriteLoader:
                         w = self.gridx
                         h = 20
                         #base_name, extension = os.path.splitext(image_name) # nombre base sin la extencion PNG,JPGE ect..
-                        boxtext = BoxText(self.surface,x,y,w,h,text=image_name)
+                        boxtext = BoxText(event_dict,self.surface,x,y,w,h,text=image_name)
 
                         self.images.append([image_surface, image_rect, save_image_rect_y,image_name,boxtext])
                         

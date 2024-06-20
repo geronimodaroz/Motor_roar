@@ -9,8 +9,14 @@ import time
 
 class BoxText:
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE 
-    def __init__(self,surface,x,y,width,height,color_box = (255,255,255),color_text = (220,220,220), font = pg.font.Font(None, 18), text=""):
+    def __init__(self,event_dict,surface,x,y,width,height,color_box = (255,255,255),color_text = (220,220,220), font = pg.font.Font(None, 18), text=""):
         
+        # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
+
         # NO requiere otra surface
 
         #superficie
@@ -43,6 +49,11 @@ class BoxText:
 
         # editamos el bloque de texto o no
         #self.box_text_edit=False
+
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
 
 
 
@@ -122,7 +133,6 @@ class BoxText:
         else: # si dejo de presionar una tecla se reinicia
             Key_up()
 
-        return event_dict
 
 
 

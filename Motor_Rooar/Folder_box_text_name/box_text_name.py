@@ -6,7 +6,13 @@ import sys
 
 class BoxTextName:
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE 
-    def __init__(self,surface,format,name,x,y,width,height,color_box = (255,255,255),color_text = (220,220,220), font = pg.font.Font(None, 18), text=""):
+    def __init__(self,event_dict,surface,format,name,x,y,width,height,color_box = (255,255,255),color_text = (220,220,220), font = pg.font.Font(None, 18), text=""):
+
+        # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
 
         # BOX_TEXT_NAME : SOLO GESTIONA EL NOMBRE DEL OBJETO BOX_TEXT Y LOS UBICA DENTRO DEL RECT CORRESPONDIENTE
         # BOX_TEXT : GESTIONA LA CAJA DE TEXTO
@@ -69,7 +75,7 @@ class BoxTextName:
         self.surface = surface.subsurface(self.rect)
 
         from Folder_box_text_name.box_text import BoxText
-        self.box_text = BoxText(self.surface,x,y,w,h,color_box)
+        self.box_text = BoxText(event_dict,self.surface,x,y,w,h,color_box)
 
 
         # guarda opsicion de name y box_text dentro del rect
@@ -87,6 +93,11 @@ class BoxTextName:
         self.top_y = 0
         self.down_y = self.rect.height
         # --------------------------------------------------------------------------
+
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
 
 
     def reposition(self):
@@ -112,11 +123,10 @@ class BoxTextName:
             event_dict["MouseClickLeft"] = (x,y)
 
 
-        event_dict = self.box_text.edit(event_dict)
+        self.box_text.edit(event_dict)
         
         event_dict["MouseClickLeft"] = save_x_y
 
-        return event_dict
 
 
 
