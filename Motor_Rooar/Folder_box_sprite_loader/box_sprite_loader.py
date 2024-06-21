@@ -30,8 +30,8 @@ class BoxSpriteLoader:
         self.color = color # color de fondo de boxSpriteLoader
         #---------------------------------------------------------------------------------
 
-        self.gridx = self.rect.width/4 # tamaño de los cuadros de imagenes en x
-        self.gridy = 90#120   # tamaño de los cuadros de imagenes en y
+        self.gridx = self.rect.width/3 # tamaño de los cuadros de imagenes en x
+        self.gridy = 120   # tamaño de los cuadros de imagenes en y
 
         self.countx = 0 # cuenta la posicion x desde 0
         self.county = 0 # cuenta la posicion y desde 0
@@ -369,9 +369,37 @@ class BoxSpriteLoader:
         event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
         # ----------------------------------------------------------------------------
         
-        
+        try:
+            event_dict["EditPoint"][self.depth_number+1].edit(event_dict)
+
+            if k_enter:
+
+                box_text = event_dict["EditPoint"][self.depth_number+1]
+
+                #self.images = [image_surface, image_rect, save_image_rect_y, image_name, boxtext]
+
+                for i in self.images:
+                    i[4] = box_text
+                    break
+
+                try:
+                    text = box_text.text
+                    os.chdir(self.folder_images_path) # nos mueve a la hubicacion de la ruta
+                    os.rename(i[3],text) # cambio el viejo nombre por el nuevo en la carpeta
+                    i[3] = text # cambio el viejo nombre por el nuevo en "self.images"
+                except:
+                    box_text.text = i[3]
+                    print("ya hay un archivo con ese nombre en la carpeta")
+
+                self.save_pickle() # Guardar la lista en un archivo pickle
+                del event_dict["EditPoint"][self.depth_number+1:]
+                
+        except Exception as e:
+            pass
+            #print(f"Error: {e}")
+
         # cambiar el nombre
-        for i in self.images[:-1]:
+        """for i in self.images[:-1]:
             if i[4] in event_dict["EditPoint"]:
                 box_text = i[4]
                 box_text.edit(event_dict)
@@ -387,7 +415,7 @@ class BoxSpriteLoader:
 
                     self.save_pickle() # Guardar la lista en un archivo pickle
                     pos = event_dict["EditPoint"].index(i[4]) # elimino el box_text de "EditPoint"
-                    del event_dict["EditPoint"][pos]
+                    del event_dict["EditPoint"][pos]"""
             
 
 
@@ -468,14 +496,24 @@ class BoxSpriteLoader:
         #---------------------------------------------------------------------------------
         pg.draw.rect(self.preSurface,self.color,self.rect) # dibujar rectangulo de fondo
         for i in self.images:
+
             # verifico si el objeto en lista_image es una imagen, si es asi la dibujo
             if isinstance(i[0],pg.surface.Surface):
 
                 self.surface.blit(i[0],i[1]) # imagen
+                i[4].draw(False) # texto
 
-                i[4].draw(False)
+                pg.draw.rect(self.surface,(80,80,80),i[1],1) #rect gris de las imagenes
+
+                # rectangolo verde image
+                edit = self in event_dict["EditPoint"]
+                if self.image_select and edit: # imagenes selaccionadas
+                    for i in self.image_select:
+                        pg.draw.rect(self.surface,(204,255,0),i[1],1)
+
+                # rectangulo verde texto
                 try:
-                    if i[4] == event_dict["EditPoint"][2]:
+                    if i[4] == event_dict["EditPoint"][self.depth_number+1]:
                         i[4].draw(True)
                 except:
                     pass
@@ -492,13 +530,7 @@ class BoxSpriteLoader:
                 y2 = i[1].y + self.gridy/2 + line/2
                 pg.draw.line(self.surface,c,(x1,y1),(x1,y2),5)
 
-            pg.draw.rect(self.surface,(80,80,80),i[1],1) #rect gris de las imagenes
-
-
-            edit = self in event_dict["EditPoint"]
-            if self.image_select and edit: # imagenes selaccionadas
-                for i in self.image_select:
-                    pg.draw.rect(self.surface,(204,255,0),i[1],1)
+                pg.draw.rect(self.surface,(80,80,80),i[1],1) #rect gris de las imagenes
         #---------------------------------------------------------------------------------
             
 

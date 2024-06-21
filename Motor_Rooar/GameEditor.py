@@ -105,15 +105,18 @@ while True:
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
+            
         # eventos de teclas
         if event.type == pg.KEYDOWN: # tecla hacia abajo
             event_dict["keyPressed"].append({"key":event.key,"unicode":event.unicode})
         elif event.type == pg.KEYUP: # tecla hacia abajo
             i = event_dict["keyPressed"].index({"key":event.key,"unicode":event.unicode})
             del event_dict["keyPressed"][i]
+
         # click izquierdo sobre la pantalla
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             event_dict["MouseClickLeft"] = event.pos
+
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["MouseScroll"] = 1 if event.y > 0 else -1
@@ -133,19 +136,9 @@ while True:
                 
                 event_dict["EditPoint"].append(obj)
                 break
-
-                """if event_dict["EditPoint"] and event_dict["EditPoint"][-1] in object_list:
-                    event_dict["EditPoint"].pop()
-                if obj not in event_dict["EditPoint"]:
-                    event_dict["EditPoint"].append(obj)"""
-                break
         else:
             del event_dict["EditPoint"][depth_number+1:]
-            #event_dict["EditPoint"].clear() # mirar esto!
 
-
-    #if box_conteiner in event_dict["EditPoint"]:
-    #    box_conteiner.edit(event_dict)
 
     #print(event_dict["EditPoint"])
 
