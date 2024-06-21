@@ -12,7 +12,7 @@ pg.init()
 
 
 # Configurar la pantalla
-width, height = 1200, 600
+width, height = 800, 600
 screen = pg.display.set_mode((width, height))
 pg.display.set_caption("Roar!!")
 
@@ -124,22 +124,36 @@ while True:
     if event_dict["MouseClickLeft"]:
         for obj in object_list:
             if obj.rect.collidepoint(event_dict["MouseClickLeft"]):
-                if event_dict["EditPoint"] and event_dict["EditPoint"][-1] in object_list:
+
+                try:
+                    del event_dict["EditPoint"][depth_number+1:]
+                except Exception as e:
+                    pass
+                    #print(f"Error: {e}")
+                
+                event_dict["EditPoint"].append(obj)
+                break
+
+                """if event_dict["EditPoint"] and event_dict["EditPoint"][-1] in object_list:
                     event_dict["EditPoint"].pop()
                 if obj not in event_dict["EditPoint"]:
-                    event_dict["EditPoint"].append(obj)
+                    event_dict["EditPoint"].append(obj)"""
                 break
         else:
-            event_dict["EditPoint"].clear() # mirar esto!
+            del event_dict["EditPoint"][depth_number+1:]
+            #event_dict["EditPoint"].clear() # mirar esto!
 
 
     #if box_conteiner in event_dict["EditPoint"]:
     #    box_conteiner.edit(event_dict)
 
+    #print(event_dict["EditPoint"])
+
     try:
         event_dict["EditPoint"][depth_number+1].edit(event_dict)
-    except:
+    except Exception as e:
         pass
+        #print(f"Error: {e}")
 
 
     

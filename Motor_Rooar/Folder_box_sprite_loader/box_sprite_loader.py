@@ -310,90 +310,61 @@ class BoxSpriteLoader:
 
                 self.save_pickle() # Guardar la lista en un archivo pickle
             #-------------------------------------------------------------------------
-
             else:
-
-                click_out = True # si clickeo afuera
-
                 for image in self.images[:-1]:
 
                     # SELECTOR DE BOX_TEXT - deteccion 1
                     # ----------------------------------------------------------------------------
+                    if image[4].rect.collidepoint(x,y):
 
-                    #for i in image: # si detecto colision agrego "box_text" a "EditPoint"
+                        self.save_image_select = None
+                        self.image_select.clear()
 
-                        if image[4].rect.collidepoint(x,y):
-
-                            self.save_image_select = None
-                            self.image_select.clear()
-
-                            try:
-                                del event_dict["EditPoint"][2] # 2 seria la posicion del box_text dentro de la lista "EditPoint"
-                            except:
-                                pass
-
-                            event_dict["EditPoint"].append(image[4])
-                            self.box_text_is_edit = image[4] # guardamos en box_text que se esta editando
-                            self.save_text_edit = image[3] # guardo nombre original de la imagen 
-                            break
+                        try:
+                            del event_dict["EditPoint"][self.depth_number+1:]
+                        except Exception as e:
+                            pass
+                            #print(f"Error: {e}")
+                        event_dict["EditPoint"].append(image[4])
+                        self.box_text_is_edit = image[4] # guardamos en box_text que se esta editando
+                        self.save_text_edit = image[3] # guardo nombre original de la imagen 
+                        break
                     # ----------------------------------------------------------------------------
 
 
 
                     # SELECTOR DE IMAGENES - deteccion 2
                     # ----------------------------------------------------------------------------
-                        #click_out = True # si clickeo afuera
-                    # selector de imagen 
-                    #for image in self.images[:-1]:
-                        elif image[1].collidepoint(x,y):
-                            click_out = False
-                            # seleccion multiple
-                            if k_shift: # Shift:
-                                if self.image_select and not(image in self.image_select):
-                                    if not(self.save_image_select):
-                                        self.save_image_select = self.image_select[0]
-                                    self.image_select.clear()
-                                    position1 = self.images.index(self.save_image_select)
-                                    position2 = self.images.index(image)
-                                    if position1 < position2:
-                                        for i in self.images[position1:position2+1]:
-                                            self.image_select.append(i)
-                                    elif position1 > position2:
-                                        for i in self.images[position2:position1+1]:
-                                            self.image_select.append(i)
-                                    break
-                                else:
-                                    # seleccion simple
-                                    self.save_image_select = None
-                                    self.image_select.clear()
-                                    self.image_select.append(image)
-                                    break
+                    elif image[1].collidepoint(x,y):
+                        # seleccion multiple
+                        if k_shift: # Shift:
+                            if self.image_select and not(image in self.image_select):
+                                if not(self.save_image_select):
+                                    self.save_image_select = self.image_select[0]
+                                self.image_select.clear()
+                                position1 = self.images.index(self.save_image_select)
+                                position2 = self.images.index(image)
+                                if position1 < position2:
+                                    for i in self.images[position1:position2+1]:
+                                        self.image_select.append(i)
+                                elif position1 > position2:
+                                    for i in self.images[position2:position1+1]:
+                                        self.image_select.append(i)
+                                break
                             else:
                                 # seleccion simple
                                 self.save_image_select = None
                                 self.image_select.clear()
                                 self.image_select.append(image)
                                 break
-                if click_out: self.image_select.clear()
+                        else:
+                            # seleccion simple
+                            self.save_image_select = None
+                            self.image_select.clear()
+                            self.image_select.append(image)
+                            break
+                else: self.image_select.clear()
                     # ----------------------------------------------------------------------------
-
-            """# SELECTOR DE BOX_TEXT
-            # ----------------------------------------------------------------------------
-
-            try:
-                del event_dict["EditPoint"][2] # 2 seria la posicion del box_text dentro de la lista "EditPoint"
-            except:
-                pass
-
-            for i in self.images[:-1]: # si detecto colision agrego "box_text" a "EditPoint"
-                if i[4].rect.collidepoint(x,y):
-                    
-                    event_dict["EditPoint"].append(i[4])
-                    self.box_text_is_edit = i[4] # guardamos en box_text que se esta editando
-                    self.save_text_edit = i[3] # guardo nombre original de la imagen 
-                    break
-
-            # ----------------------------------------------------------------------------"""
         # ----------------------------------------------------------------------------
         event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
         # ----------------------------------------------------------------------------
@@ -490,8 +461,6 @@ class BoxSpriteLoader:
 
                 
         #-----------------------------------------------------------------------------
-
-        #return event_dict
 
 
     def draw(self,event_dict):
