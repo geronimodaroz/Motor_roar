@@ -70,8 +70,8 @@ class BoxSpriteLoader:
         self.load_images(event_dict) # carga archivo pickle de imagenes
         # --------------------------------------------------------------------------
 
-        self.save_text_edit = "" # para guardar el texto origonal antes de ser editado
-        self.box_text_is_edit = None
+        #self.save_text_edit = "" # para guardar el texto origonal antes de ser editado
+        #self.box_text_is_edit = None
 
 
         # prufundidad del objeto -1
@@ -171,9 +171,10 @@ class BoxSpriteLoader:
 
             # reposicion box_text de cada imagen menos "+"
             if i != self.images[-1]: # si no es "+"
+                print(i[4].rect)
                 # reposicionamos surface y rect de box_text
                 i[4].surface = self.surface # reposiciono la superficie tambien
-                y = i[1].y + i[1].h - 20 
+                y = i[1].y + i[1].h - 20
                 i[4].rect.y = y
         # --------------------------------------------------------------------------
 
@@ -326,8 +327,8 @@ class BoxSpriteLoader:
                             pass
                             #print(f"Error: {e}")
                         event_dict["EditPoint"].append(image[4])
-                        self.box_text_is_edit = image[4] # guardamos en box_text que se esta editando
-                        self.save_text_edit = image[3] # guardo nombre original de la imagen 
+                        #self.box_text_is_edit = image[4] # guardamos en box_text que se esta editando
+                        #self.save_text_edit = image[3] # guardo nombre original de la imagen 
                         break
                     # ----------------------------------------------------------------------------
 
@@ -369,19 +370,19 @@ class BoxSpriteLoader:
         event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
         # ----------------------------------------------------------------------------
         
+
+        # EJECUTO BOX_TEXT- cambio de nombre imagen
+        # ----------------------------------------------------------------------------
         try:
-            event_dict["EditPoint"][self.depth_number+1].edit(event_dict)
+            event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
 
-            if k_enter:
-
+            """if k_enter:
                 box_text = event_dict["EditPoint"][self.depth_number+1]
-
-                #self.images = [image_surface, image_rect, save_image_rect_y, image_name, boxtext]
-
+                
                 for i in self.images:
+                    #self.images = [image_surface, image_rect, save_image_rect_y, image_name, boxtext]
                     i[4] = box_text
                     break
-
                 try:
                     text = box_text.text
                     os.chdir(self.folder_images_path) # nos mueve a la hubicacion de la ruta
@@ -392,30 +393,13 @@ class BoxSpriteLoader:
                     print("ya hay un archivo con ese nombre en la carpeta")
 
                 self.save_pickle() # Guardar la lista en un archivo pickle
-                del event_dict["EditPoint"][self.depth_number+1:]
-                
+                del event_dict["EditPoint"][self.depth_number+1:]"""
+
         except Exception as e:
             pass
             #print(f"Error: {e}")
+        # ----------------------------------------------------------------------------
 
-        # cambiar el nombre
-        """for i in self.images[:-1]:
-            if i[4] in event_dict["EditPoint"]:
-                box_text = i[4]
-                box_text.edit(event_dict)
-                if k_enter:
-                    try:
-                        text = box_text.text
-                        os.chdir(self.folder_images_path) # nos mueve a la hubicacion de la ruta
-                        os.rename(i[3],text) # cambio el viejo nombre por el nuevo en la carpeta
-                        i[3] = text # cambio el viejo nombre por el nuevo en "self.images"
-                    except:
-                        box_text.text = i[3]
-                        print("ya hay un archivo con ese nombre en la carpeta")
-
-                    self.save_pickle() # Guardar la lista en un archivo pickle
-                    pos = event_dict["EditPoint"].index(i[4]) # elimino el box_text de "EditPoint"
-                    del event_dict["EditPoint"][pos]"""
             
 
 
@@ -501,7 +485,7 @@ class BoxSpriteLoader:
             if isinstance(i[0],pg.surface.Surface):
 
                 self.surface.blit(i[0],i[1]) # imagen
-                i[4].draw(False) # texto
+                i[4].draw(False)
 
                 pg.draw.rect(self.surface,(80,80,80),i[1],1) #rect gris de las imagenes
 
@@ -511,12 +495,18 @@ class BoxSpriteLoader:
                     for i in self.image_select:
                         pg.draw.rect(self.surface,(204,255,0),i[1],1)
 
-                # rectangulo verde texto
+                #i[4].draw(False)
+                try:
+                    i[4].draw(i[4] == event_dict["EditPoint"][self.depth_number+1])
+                except:
+                    pass
+
+                """# rectangulo verde texto
                 try:
                     if i[4] == event_dict["EditPoint"][self.depth_number+1]:
                         i[4].draw(True)
                 except:
-                    pass
+                    pass"""
 
             elif isinstance(i[0],str): # dibujo "+"
                 line = 30

@@ -175,7 +175,7 @@ class BoxText:
 
         # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
         rect = pg.Rect(r_x - (self.text_x),0,r_w,r_h) 
-        self.surface.blit(self.text_superface, (r_x, self.text_y),rect)
+        self.surface.blit(self.text_superface, (r_x, r_y),rect)
 
         # rectangulo de edicion de texto  (click izquierdo)
         if edit:
