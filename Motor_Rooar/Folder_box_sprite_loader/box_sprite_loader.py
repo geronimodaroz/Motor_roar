@@ -10,6 +10,8 @@ from Folder_classes.font import Font # fuentes (string a surface)
 
 from Folder_box_sprite_loader.box_text import BoxText # importo box text
 
+from Folder_classes.reposition import Reposition # reposicion de superficies (padre,hijo)
+
 
 class BoxSpriteLoader:
 
@@ -170,9 +172,13 @@ class BoxSpriteLoader:
             i[1].y = i[2] + self.scroll_y + self.top_y
 
             # reposicion box_text de cada imagen menos "+"
+            #if i != self.images[-1]:
+            #    Reposition().reposition_y(self,i[4],repo_y=30)
+
+            # reposicion box_text de cada imagen menos "+"
             if i != self.images[-1]: # si no es "+"
-                print(i[4].rect)
                 # reposicionamos surface y rect de box_text
+                #i[4].surface = self.surface.subsurface(i[4].rect) # reposiciono la superficie tambien
                 i[4].surface = self.surface # reposiciono la superficie tambien
                 y = i[1].y + i[1].h - 20
                 i[4].rect.y = y
@@ -484,29 +490,20 @@ class BoxSpriteLoader:
             # verifico si el objeto en lista_image es una imagen, si es asi la dibujo
             if isinstance(i[0],pg.surface.Surface):
 
-                self.surface.blit(i[0],i[1]) # imagen
-                i[4].draw(False)
+                # imagen
+                self.surface.blit(i[0],i[1]) 
 
-                pg.draw.rect(self.surface,(80,80,80),i[1],1) #rect gris de las imagenes
+                #rect gris de las imagenes
+                pg.draw.rect(self.surface,(80,80,80),i[1],1) 
+
+                i[4].draw(event_dict)
 
                 # rectangolo verde image
                 edit = self in event_dict["EditPoint"]
-                if self.image_select and edit: # imagenes selaccionadas
-                    for i in self.image_select:
-                        pg.draw.rect(self.surface,(204,255,0),i[1],1)
 
-                #i[4].draw(False)
-                try:
-                    i[4].draw(i[4] == event_dict["EditPoint"][self.depth_number+1])
-                except:
-                    pass
+                if i in self.image_select:
+                    pg.draw.rect(self.surface,(204,255,0),i[1],1)
 
-                """# rectangulo verde texto
-                try:
-                    if i[4] == event_dict["EditPoint"][self.depth_number+1]:
-                        i[4].draw(True)
-                except:
-                    pass"""
 
             elif isinstance(i[0],str): # dibujo "+"
                 line = 30
