@@ -29,8 +29,10 @@ class BoxText:
         # Variables para el cursor intermitente
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-        self.cursor_position = len(self.text) # posiscion del cursor en el texto
-        self.cursor_surface = self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
+        self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
+        t = self.text[:self.cursor_position]
+        self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+        #self.cursor_surface = None#self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
         # desplazar el punto x
         self.text_x_displace = 0 # desplazar el punto x del texto cuando el cursor se mueve a izquierda o derecha
         # key_down
@@ -40,15 +42,7 @@ class BoxText:
         self.key_save = None
         # ----------------------------------------------------------------------------
 
-        """# VARIABLES DE REPOSICION
-        # --------------------------------------------------------------------------
-        self.save_rect_y = self.rect.y # guardamos posicion y de self.rect
-        self.save_rect_height = self.rect.height # guardamos height de self.rect
-        # posicion en y de box_text arriba y abajo
-        self.top_y = 0
-        self.down_y = self.rect.height
-        # --------------------------------------------------------------------------"""
-
+        
 
         
         # coordenadas del box_text
@@ -61,12 +55,7 @@ class BoxText:
         # coordenadas para el texto
         self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
         self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
-        #self.text_x = (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
-        #self.text_y = (r_h - self.text_superface.get_height()) // 2
-        t = ""
-        for i in range(self.cursor_position):
-            t += self.text[i]
-        self.cursor_surface = self.font.render(t, True, (0, 0, 0))
+
         #-------------------------------------------------------------------------------------
 
 
@@ -75,12 +64,27 @@ class BoxText:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-
-
-    """def reposition(self):
-        pass
-        #self.text_y += + self.top_y"""
-
+    def reposition(self):
+        # coordenadas del box_text
+        #-------------------------------------------------------------------------------------
+        r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        #-------------------------------------------------------------------------------------
+        # Renderiza el texto en una superficie
+        """self.text_superface = self.font.render(self.text, True, self.color_text)
+        # calculando superficie hasta el cursor, de pende de self.cursor_position
+        t = ""
+        for i in range(self.cursor_position):
+            t += self.text[i]
+        self.cursor_surface = self.font.render(t, True, (0, 0, 0))"""
+        # modificar "text_x_displace"
+        """if self.text_x + self.cursor_surface.get_width() > r_x + r_w:
+                self.text_x_displace -= (r_x + r_w) - (self.text_x+ self.cursor_surface.get_width())
+        if self.text_x + self.cursor_surface.get_width() < r_x: 
+                self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) """
+        # coordenadas para el texto
+        self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
+        self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
+        #-------------------------------------------------------------------------------------
 
 
     def edit(self, event_dict = None): # metodo de edicion
@@ -163,11 +167,6 @@ class BoxText:
             #-------------------------------------------------------------------------------------
             # Renderiza el texto en una superficie
             self.text_superface = self.font.render(self.text, True, self.color_text)
-            # coordenadas para el texto
-            self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
-            self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
-            #self.text_x = (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
-            #self.text_y = (r_h - self.text_superface.get_height()) // 2
             # calculando superficie hasta el cursor, de pende de self.cursor_position
             t = ""
             for i in range(self.cursor_position):
@@ -178,10 +177,10 @@ class BoxText:
                     self.text_x_displace -= (r_x + r_w) - (self.text_x+ self.cursor_surface.get_width())
             if self.text_x + self.cursor_surface.get_width() < r_x: 
                     self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) 
-            """if self.text_x + self.cursor_surface.get_width() > 0 + r_w:
-                    self.text_x_displace -= (0 + r_w) - (self.text_x+ self.cursor_surface.get_width())
-            if self.text_x + self.cursor_surface.get_width() < 0: 
-                    self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (0) """
+
+            # coordenadas para el texto
+            self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
+            self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
             #-------------------------------------------------------------------------------------
 
         else: # si dejo de presionar una tecla se reinicia
@@ -202,8 +201,10 @@ class BoxText:
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
 
         # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
-        rect = pg.Rect(r_x - (self.text_x),0,r_w,r_h) 
-        self.surface.blit(self.text_superface, (r_x,r_y),rect)
+        rect = pg.Rect(r_x - (self.text_x),0,r_w,r_h)
+
+        t_y = self.text_superface.get_height()/2
+        self.surface.blit(self.text_superface, (r_x,r_y+t_y),rect)
 
         # rectangulo de edicion de texto  (click izquierdo)
         if self in event_dict["EditPoint"]:
