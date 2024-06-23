@@ -3,6 +3,8 @@ import sys
 import math
 import time
 
+import os # crear carpetas, archivos ect..
+
 class BoxText:
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
     def __init__(self,event_dict,surface,x,y,w,h,color_box = (20,20,20),color_text = (180,180,180), font = pg.font.Font(None, 16), text=""):    
@@ -29,7 +31,10 @@ class BoxText:
         # Variables para el cursor intermitente
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-        self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
+
+        base_name, extension = os.path.splitext(self.text)
+        self.cursor_position = len(base_name)
+        #self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
         t = self.text[:self.cursor_position]
         self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
         #self.cursor_surface = None#self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
@@ -42,6 +47,8 @@ class BoxText:
         self.key_save = None
         # ----------------------------------------------------------------------------
 
+
+        self.sup_cur_x = 0
         
 
         
@@ -82,7 +89,7 @@ class BoxText:
         if self.text_x + self.cursor_surface.get_width() < r_x: 
                 self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) """
         # coordenadas para el texto
-        self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
+        self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
         self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
         #-------------------------------------------------------------------------------------
 
@@ -168,9 +175,7 @@ class BoxText:
             # Renderiza el texto en una superficie
             self.text_superface = self.font.render(self.text, True, self.color_text)
             # calculando superficie hasta el cursor, de pende de self.cursor_position
-            t = ""
-            for i in range(self.cursor_position):
-                t += self.text[i]
+            t = self.text[:self.cursor_position]
             self.cursor_surface = self.font.render(t, True, (0, 0, 0))
             # modificar "text_x_displace"
             if self.text_x + self.cursor_surface.get_width() > r_x + r_w:
@@ -179,7 +184,7 @@ class BoxText:
                     self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) 
 
             # coordenadas para el texto
-            self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 - self.text_x_displace
+            self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
             self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
             #-------------------------------------------------------------------------------------
 
@@ -201,7 +206,16 @@ class BoxText:
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
 
         # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
-        rect = pg.Rect(r_x - (self.text_x),0,r_w,r_h)
+        
+        print(self.cursor_position,self.cursor_surface)
+
+        if self.cursor_surface.get_width() > self.sup_cur_x + r_w:
+            self.sup_cur_x = self.cursor_surface.get_width() - r_w
+        elif self.cursor_surface.get_width() < self.sup_cur_x :
+            self.sup_cur_x = self.cursor_surface.get_width()
+
+        #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()-r_w),0)
+        rect = pg.Rect(0+self.sup_cur_x,0,r_w,r_h)
 
         t_y = self.text_superface.get_height()/2
         self.surface.blit(self.text_superface, (r_x,r_y+t_y),rect)
@@ -219,7 +233,7 @@ class BoxText:
                 
             # Dibuja el cursor intermitente
             if self.cursor_show: 
-                cursor_x = self.text_x + self.cursor_surface.get_width()
-                cursor_y = self.text_y
+                cursor_x = self.cursor_surface.get_width() - self.sup_cur_x
+                cursor_y = r_y+3#self.text_y
                 cursor_height = self.text_superface.get_height()
                 pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
