@@ -207,7 +207,7 @@ class BoxText:
 
         # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
         
-        print(self.cursor_position,self.cursor_surface)
+        #print(self.cursor_position,self.cursor_surface)
 
         if self.cursor_surface.get_width() > self.sup_cur_x + r_w:
             self.sup_cur_x = self.cursor_surface.get_width() - r_w
@@ -233,7 +233,7 @@ class BoxText:
                 
             # Dibuja el cursor intermitente
             if self.cursor_show: 
-                cursor_x = self.cursor_surface.get_width() - self.sup_cur_x
+                cursor_x = r_x + self.cursor_surface.get_width() - self.sup_cur_x
                 cursor_y = r_y+3#self.text_y
                 cursor_height = self.text_superface.get_height()
                 pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
