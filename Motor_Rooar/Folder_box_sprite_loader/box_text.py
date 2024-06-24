@@ -37,6 +37,7 @@ class BoxText:
         #self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
         t = self.text[:self.cursor_position]
         self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+        self.displace_area_x = 0 # la posicion en x del area que se desplaza por text_surface
         #self.cursor_surface = None#self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
         # desplazar el punto x
         self.text_x_displace = 0 # desplazar el punto x del texto cuando el cursor se mueve a izquierda o derecha
@@ -48,7 +49,7 @@ class BoxText:
         # ----------------------------------------------------------------------------
 
 
-        self.sup_cur_x = 0
+        
         
 
         
@@ -208,17 +209,25 @@ class BoxText:
         # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
         
         #print(self.cursor_position,self.cursor_surface)
+        if self.text_superface.get_width() > r_w:
 
-        if self.cursor_surface.get_width() > self.sup_cur_x + r_w:
-            self.sup_cur_x = self.cursor_surface.get_width() - r_w
-        elif self.cursor_surface.get_width() < self.sup_cur_x :
-            self.sup_cur_x = self.cursor_surface.get_width()
+            # flecha izquierda o derecha
+            if self.cursor_surface.get_width() > self.displace_area_x + r_w: # si salgo de r_w por derecha
+                self.displace_area_x = self.cursor_surface.get_width() - r_w
+            elif self.cursor_surface.get_width() < self.displace_area_x : # si salgo de r_w por izquierda
+                self.displace_area_x = self.cursor_surface.get_width()
 
-        #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()-r_w),0)
-        rect = pg.Rect(0+self.sup_cur_x,0,r_w,r_h)
+            # borrar
+            if self.displace_area_x + r_w > self.text_superface.get_width():
+                self.displace_area_x = self.text_superface.get_width() - r_w
 
-        t_y = self.text_superface.get_height()/2
-        self.surface.blit(self.text_superface, (r_x,r_y+t_y),rect)
+        else:
+            self.displace_area_x =   self.text_superface.get_width()/2 -r_w/2
+
+        #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
+        rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
+
+        self.surface.blit(self.text_superface, (r_x,r_y+self.text_superface.get_height()/2),rect)
 
         # rectangulo de edicion de texto  (click izquierdo)
         if self in event_dict["EditPoint"]:
@@ -233,7 +242,7 @@ class BoxText:
                 
             # Dibuja el cursor intermitente
             if self.cursor_show: 
-                cursor_x = r_x + self.cursor_surface.get_width() - self.sup_cur_x
+                cursor_x = r_x + self.cursor_surface.get_width() - self.displace_area_x
                 cursor_y = r_y+3#self.text_y
                 cursor_height = self.text_superface.get_height()
                 pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
