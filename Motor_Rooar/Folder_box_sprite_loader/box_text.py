@@ -18,8 +18,6 @@ class BoxText:
         self.surface = surface
         # rectangulo de texto
         self.rect = pg.Rect(x,y,w,h)
-        #surface
-        #self.surface = surface.subsurface(self.rect) #ESTO ES NECESARIOOO????
 
         # Variables
         # ----------------------------------------------------------------------------
@@ -28,6 +26,8 @@ class BoxText:
         self.color_text = color_text
         self.font = font
         self.text = text
+
+        self.text_superface = self.font.render(self.text, True, self.color_text)
         # Variables para el cursor intermitente
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
@@ -40,7 +40,6 @@ class BoxText:
         self.displace_area_x = 0 # la posicion en x del area que se desplaza por text_surface
         #self.cursor_surface = None#self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
         # desplazar el punto x
-        self.text_x_displace = 0 # desplazar el punto x del texto cuando el cursor se mueve a izquierda o derecha
         # key_down
         self.key_timer = time.time() # temporizador para calcular el tiempo trascurrido
         self.key_alarm = 0 # tiempo que trascurre entre la primera impresion de un caracter y el segundo
@@ -49,22 +48,6 @@ class BoxText:
         # ----------------------------------------------------------------------------
 
 
-        
-        
-
-        
-        # coordenadas del box_text
-        #-------------------------------------------------------------------------------------
-        r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
-        #-------------------------------------------------------------------------------------
-        # Renderiza el texto en una superficie
-        self.text_superface = self.font.render(self.text, True, self.color_text)
-        # calculando superficie hasta el cursor, de pende de self.cursor_position
-        # coordenadas para el texto
-        self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
-        self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
-
-        #-------------------------------------------------------------------------------------
 
 
         # prufundidad del objeto -1
@@ -72,48 +55,93 @@ class BoxText:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def reposition(self):
-        # coordenadas del box_text
-        #-------------------------------------------------------------------------------------
-        r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
-        #-------------------------------------------------------------------------------------
-        # Renderiza el texto en una superficie
-        """self.text_superface = self.font.render(self.text, True, self.color_text)
-        # calculando superficie hasta el cursor, de pende de self.cursor_position
-        t = ""
-        for i in range(self.cursor_position):
-            t += self.text[i]
-        self.cursor_surface = self.font.render(t, True, (0, 0, 0))"""
-        # modificar "text_x_displace"
-        """if self.text_x + self.cursor_surface.get_width() > r_x + r_w:
-                self.text_x_displace -= (r_x + r_w) - (self.text_x+ self.cursor_surface.get_width())
-        if self.text_x + self.cursor_surface.get_width() < r_x: 
-                self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) """
-        # coordenadas para el texto
-        self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
-        self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
-        #-------------------------------------------------------------------------------------
+    # def reposition(self):
+    #      print(self)
+    #      pass
 
 
     def edit(self, event_dict = None): # metodo de edicion
 
-        # Metodos key_down, Key_up
+        
         #-------------------------------------------------------------------------------------
-        def Key_down():
+        def init(): # Comienzo del codigo
+
+            # Si hay teclas presionadas, seleccionamos la última de la lista
+            key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
+
+            # guardando el evento de teclado al precionar tecla
+            if self.key_save != key: 
+                self.key_count = 0 
+                self.key_alarm = 0 
+                self.key_save = key
+
+
+            
+            if key: # si preciono alguna tecla
+
+                #posibilidad de editar texto
+                #-------------------------------------------------------------------------------------
+                t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
+                if t<=0: # gestionar la repeticion de caracteres con la telcla presionada
+                    Key_down(key) # edito el texto
+                    self.key_timer = time.time() # guarda hora actual
+                    if self.key_count == 0: self.key_alarm = 0.5
+                    else: self.key_alarm = 0.05
+                    self.key_count = 1
+                #-------------------------------------------------------------------------------------
+
+                # actualizar superficies 
+                #-------------------------------------------------------------------------------------
+                # superficie del texto
+                self.text_superface = self.font.render(self.text, True, self.color_text)
+                # superficie hasta el cursor
+                t = self.text[:self.cursor_position]
+                self.cursor_surface = self.font.render(t, True, (0, 0, 0))
+                #-------------------------------------------------------------------------------------
+
+
+                # desplazamiento del area en x
+                #-------------------------------------------------------------------------------------
+                #r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
+                r_w = self.rect.width
+                #-------------------------------------------------------------------------------------
+                surf_text_w = self.text_superface.get_width()
+                surf_curs_w = self.cursor_surface.get_width()
+
+                a_x = self.displace_area_x
+
+                
+                if surf_text_w > r_w:
+
+                    # flecha izquierda o derecha
+                    if surf_curs_w > a_x + r_w: # si salgo de r_w por derecha
+                        a_x = surf_curs_w - r_w
+                    elif surf_curs_w < a_x : # si salgo de r_w por izquierda
+                        a_x = surf_curs_w
+
+                    # borrar
+                    if a_x + r_w > surf_text_w:
+                        a_x = surf_text_w - r_w
+
+                else:
+                    a_x =   surf_text_w/2 - r_w/2
+                
+                self.displace_area_x = a_x
+                #-------------------------------------------------------------------------------------
+
+                
+
+            else: # si dejo de presionar una tecla se reinicia
+                Key_up()
+        #-------------------------------------------------------------------------------------
+                
+        
+        #-------------------------------------------------------------------------------------
+        def Key_down(key):
             
             # Manejar la tecla de retroceso (borrar)
             if key["key"] == pg.K_BACKSPACE:
                 if self.cursor_position > 0:  # Solo si hay texto para borrar
-                    # Obtener el carácter a borrar y calcular su ancho
-                    delete_char = self.text[self.cursor_position - 1:self.cursor_position]
-                    delete_char_rendered = self.font.render(delete_char, True, (0, 0, 0))
-                    delete_char_width = delete_char_rendered.get_width()
-                    
-                    # Ajustar la posición del texto en la GUI
-                    if abs(self.text_x_displace) > 5:
-                        self.text_x_displace = (abs(self.text_x_displace) - delete_char_width) * math.copysign(1, self.text_x_displace)
-                    else:
-                        self.text_x_displace = 0
                     
                     # Actualizar el texto eliminando el carácter borrado
                     self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
@@ -140,57 +168,16 @@ class BoxText:
                 # Actualizar el texto insertando el nuevo carácter
                 self.text = self.text[:self.cursor_position] + key["unicode"] + self.text[self.cursor_position:]
                 self.cursor_position += 1
+        #-------------------------------------------------------------------------------------
 
+        
+        #-------------------------------------------------------------------------------------
         def Key_up():
             self.key_count = 0
             self.key_alarm = 0
         #-------------------------------------------------------------------------------------
 
-        # Comienzo del codigo
-
-        # si hay teclas presionadas seleccionamos la ultima de la lista
-        if event_dict["keyPressed"]: key = event_dict["keyPressed"][-1] 
-        else: key = None
-        # guardando el evento de teclado al precionar tecla
-        # si presiono otra tecla mientras haya una presionada se reinicia el contador
-        # si dejo de presionar (key_up) los eventtos no coinciden y se reinicia (key_up != None)
-        if self.key_save != key: 
-            self.key_count = 0 # un contador
-            self.key_alarm = 0 # alarma para poder editar el texto
-            self.key_save = key
-
-
-        if key:
-            t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
-            if t<=0: # gestionar la repeticion de caracteres con la telcla presionada
-                Key_down() # edito el texto
-                self.key_timer = time.time() # guarda hora actual
-                if self.key_count == 0: self.key_alarm = 0.5
-                else: self.key_alarm = 0.05
-                self.key_count = 1
-
-            # coordenadas del box_text
-            #-------------------------------------------------------------------------------------
-            r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
-            #-------------------------------------------------------------------------------------
-            # Renderiza el texto en una superficie
-            self.text_superface = self.font.render(self.text, True, self.color_text)
-            # calculando superficie hasta el cursor, de pende de self.cursor_position
-            t = self.text[:self.cursor_position]
-            self.cursor_surface = self.font.render(t, True, (0, 0, 0))
-            # modificar "text_x_displace"
-            if self.text_x + self.cursor_surface.get_width() > r_x + r_w:
-                    self.text_x_displace -= (r_x + r_w) - (self.text_x+ self.cursor_surface.get_width())
-            if self.text_x + self.cursor_surface.get_width() < r_x: 
-                    self.text_x_displace += (self.text_x+  self.cursor_surface.get_width()) - (r_x) 
-
-            # coordenadas para el texto
-            self.text_x = r_x + (r_w - self.text_superface.get_width()) // 2 #- self.text_x_displace
-            self.text_y = r_y + (r_h - self.text_superface.get_height()) // 2
-            #-------------------------------------------------------------------------------------
-
-        else: # si dejo de presionar una tecla se reinicia
-            Key_up()
+        init() # inicio 
 
 
     def draw(self,event_dict): # cambiar a event_dict!
@@ -200,29 +187,10 @@ class BoxText:
         r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
         #-------------------------------------------------------------------------------------
 
-
         # Dibuja el cuadro de texto en la pantalla
         pg.draw.rect(self.surface, self.color_box, self.rect)
         #rect gris de las imagenes
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
-
-        # NO SERIA MEJOR TOMAR LA POSICION DEL CURSOR PARA DEFINIR RECT?
-        
-        #print(self.cursor_position,self.cursor_surface)
-        if self.text_superface.get_width() > r_w:
-
-            # flecha izquierda o derecha
-            if self.cursor_surface.get_width() > self.displace_area_x + r_w: # si salgo de r_w por derecha
-                self.displace_area_x = self.cursor_surface.get_width() - r_w
-            elif self.cursor_surface.get_width() < self.displace_area_x : # si salgo de r_w por izquierda
-                self.displace_area_x = self.cursor_surface.get_width()
-
-            # borrar
-            if self.displace_area_x + r_w > self.text_superface.get_width():
-                self.displace_area_x = self.text_superface.get_width() - r_w
-
-        else:
-            self.displace_area_x =   self.text_superface.get_width()/2 -r_w/2
 
         #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)

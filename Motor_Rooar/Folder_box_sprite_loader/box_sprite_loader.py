@@ -176,7 +176,7 @@ class BoxSpriteLoader:
                 i[4].surface = self.surface # reposiciono la superficie tambien
                 y = i[1].y + i[1].h - 20
                 i[4].rect.y = y
-                i[4].reposition()
+                #i[4].reposition()
         # --------------------------------------------------------------------------
 
     def save_pickle(self):
