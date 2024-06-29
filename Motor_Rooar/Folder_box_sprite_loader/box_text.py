@@ -37,9 +37,17 @@ class BoxText:
         #self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
         t = self.text[:self.cursor_position]
         self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
-        self.displace_area_x = 0 # la posicion en x del area que se desplaza por text_surface
-        #self.cursor_surface = None#self.font.render(self.text, True, (0, 0, 0)) # superficie del cursor en el texto
-        # desplazar el punto x
+
+        # la posicion en x del area que se desplaza por text_surface
+        # ----------------------------------------------------------------------------
+        dis = self.text_superface.get_width() - self.cursor_surface.get_width()
+        if self.text_superface.get_width() > self.rect.width:
+            self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width/2,self.rect.width-dis)#0 
+        else:
+            print(self.rect.width)
+            self.displace_area_x = -self.rect.width/2 + self.text_superface.get_width()/2 # !!!! como que menos!!
+        # ----------------------------------------------------------------------------
+
         # key_down
         self.key_timer = time.time() # temporizador para calcular el tiempo trascurrido
         self.key_alarm = 0 # tiempo que trascurre entre la primera impresion de un caracter y el segundo
@@ -61,7 +69,6 @@ class BoxText:
 
 
     def edit(self, event_dict = None): # metodo de edicion
-
         
         #-------------------------------------------------------------------------------------
         def init(): # Comienzo del codigo
@@ -75,8 +82,6 @@ class BoxText:
                 self.key_alarm = 0 
                 self.key_save = key
 
-
-            
             if key: # si preciono alguna tecla
 
                 #posibilidad de editar texto
@@ -102,34 +107,25 @@ class BoxText:
 
                 # desplazamiento del area en x
                 #-------------------------------------------------------------------------------------
-                #r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
                 r_w = self.rect.width
-                #-------------------------------------------------------------------------------------
                 surf_text_w = self.text_superface.get_width()
                 surf_curs_w = self.cursor_surface.get_width()
-
                 a_x = self.displace_area_x
 
-                
                 if surf_text_w > r_w:
-
                     # flecha izquierda o derecha
                     if surf_curs_w > a_x + r_w: # si salgo de r_w por derecha
                         a_x = surf_curs_w - r_w
                     elif surf_curs_w < a_x : # si salgo de r_w por izquierda
                         a_x = surf_curs_w
-
                     # borrar
                     if a_x + r_w > surf_text_w:
                         a_x = surf_text_w - r_w
-
                 else:
                     a_x =   surf_text_w/2 - r_w/2
                 
                 self.displace_area_x = a_x
                 #-------------------------------------------------------------------------------------
-
-                
 
             else: # si dejo de presionar una tecla se reinicia
                 Key_up()
