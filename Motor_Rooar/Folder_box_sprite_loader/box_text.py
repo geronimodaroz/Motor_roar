@@ -44,8 +44,7 @@ class BoxText:
         if self.text_superface.get_width() > self.rect.width:
             self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width/2,self.rect.width-dis)#0 
         else:
-            print(self.rect.width)
-            self.displace_area_x = -self.rect.width/2 + self.text_superface.get_width()/2 # !!!! como que menos!!
+            self.displace_area_x = -self.rect.width/2 + self.text_superface.get_width()/2 # por que menos?!!
         # ----------------------------------------------------------------------------
 
         # key_down
@@ -72,6 +71,21 @@ class BoxText:
         
         #-------------------------------------------------------------------------------------
         def init(): # Comienzo del codigo
+
+            
+            save_x_y = event_dict["MouseClickLeft"]
+            if event_dict["MouseClickLeft"]:
+                x = event_dict["MouseClickLeft"][0] - self.rect.x 
+                y = event_dict["MouseClickLeft"][1] - self.rect.y
+                event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
+
+            #if event_dict["MouseClickLeft"]: print(event_dict["MouseClickLeft"][0])
+
+            #to_start_rect_x = -self.displace_area_x+ self.text_superface.get_width()
+            
+            if event_dict["MouseClickLeft"]: print(self.displace_area_x + event_dict["MouseClickLeft"][0])
+
+            event_dict["MouseClickLeft"] = save_x_y
 
             # Si hay teclas presionadas, seleccionamos la última de la lista
             key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
@@ -185,6 +199,7 @@ class BoxText:
 
         # Dibuja el cuadro de texto en la pantalla
         pg.draw.rect(self.surface, self.color_box, self.rect)
+
         #rect gris de las imagenes
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
 

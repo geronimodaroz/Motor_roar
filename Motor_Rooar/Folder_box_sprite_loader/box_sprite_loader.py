@@ -367,9 +367,7 @@ class BoxSpriteLoader:
                             break
                 else: self.image_select.clear()
                     # ----------------------------------------------------------------------------
-        # ----------------------------------------------------------------------------
-        event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
-        # ----------------------------------------------------------------------------
+        
         
 
         # EJECUTO BOX_TEXT- cambio de nombre imagen
@@ -401,7 +399,9 @@ class BoxSpriteLoader:
             #print(f"Error: {e}")
         # ----------------------------------------------------------------------------
 
-            
+        # ----------------------------------------------------------------------------
+        event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
+        # ----------------------------------------------------------------------------  
 
 
 
