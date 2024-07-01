@@ -31,7 +31,7 @@ class BoxText:
         # Variables para el cursor intermitente
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-        self.cursor_click_displace = False # controla cuando es posoble cambiar el cuersor de posicion
+        #self.cursor_displace_if_click = False # controla cuando es posoble cambiar el cuersor de posicion
 
         base_name, extension = os.path.splitext(self.text)
         self.cursor_position = len(base_name)
@@ -55,9 +55,6 @@ class BoxText:
         self.key_save = None
         # ----------------------------------------------------------------------------
 
-
-
-
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
@@ -68,106 +65,112 @@ class BoxText:
     #      pass
 
 
-    def edit(self, event_dict = None): # metodo de edicion
-        
+    def edit(self, event_dict): # metodo de edicion
         #-------------------------------------------------------------------------------------
         def init(): # Comienzo del codigo
-
-            
-            save_x_y = event_dict["MouseClickLeft"]
-            if event_dict["MouseClickLeft"]:
-                x = event_dict["MouseClickLeft"][0] - self.rect.x 
-                y = event_dict["MouseClickLeft"][1] - self.rect.y
-                event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
-
-
-            #if self.cursor_click_displace: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
-
-            #if event_dict["MouseClickLeft"]:
-
-                x_click_in_surface_text = self.displace_area_x + event_dict["MouseClickLeft"][0]
-                w_surface_text = self.text_superface.get_width()
-
-                new_cursor_surface = 0
-                self.cursor_position = 0
-                for char in self.text:
-                    w,h = self.font.size(char)
-
-                    new_cursor_surface += w
-                    self.cursor_position += 1
-
-                    if new_cursor_surface > x_click_in_surface_text:
-
-                        t = self.text[:self.cursor_position]
-                        self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
-                        break
-
-                #if event_dict["MouseClickLeft"]: print(self.displace_area_x + event_dict["MouseClickLeft"][0])
-
-
-            #self.cursor_click_displace = True
-
-
-            event_dict["MouseClickLeft"] = save_x_y
-            
-
-            # Si hay teclas presionadas, seleccionamos la última de la lista
-            key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
-
-            # guardando el evento de teclado al precionar tecla
-            if self.key_save != key: 
-                self.key_count = 0 
-                self.key_alarm = 0 
-                self.key_save = key
-
-            if key: # si preciono alguna tecla
-
-                #posibilidad de editar texto
+            #-------------------------------------------------------------------------------------
+            def click():# si hago click
                 #-------------------------------------------------------------------------------------
-                t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
-                if t<=0: # gestionar la repeticion de caracteres con la telcla presionada
-                    Key_down(key) # edito el texto
-                    self.key_timer = time.time() # guarda hora actual
-                    if self.key_count == 0: self.key_alarm = 0.5
-                    else: self.key_alarm = 0.05
-                    self.key_count = 1
-                #-------------------------------------------------------------------------------------
-
-                # actualizar superficies 
-                #-------------------------------------------------------------------------------------
-                # superficie del texto
-                self.text_superface = self.font.render(self.text, True, self.color_text)
-                # superficie hasta el cursor
-                t = self.text[:self.cursor_position]
-                self.cursor_surface = self.font.render(t, True, (0, 0, 0))
-                #-------------------------------------------------------------------------------------
-
-
-                # desplazamiento del area en x
-                #-------------------------------------------------------------------------------------
-                r_w = self.rect.width
-                surf_text_w = self.text_superface.get_width()
-                surf_curs_w = self.cursor_surface.get_width()
-                a_x = self.displace_area_x
-
-                if surf_text_w > r_w:
-                    # flecha izquierda o derecha
-                    if surf_curs_w > a_x + r_w: # si salgo de r_w por derecha
-                        a_x = surf_curs_w - r_w
-                    elif surf_curs_w < a_x : # si salgo de r_w por izquierda
-                        a_x = surf_curs_w
-                    # borrar
-                    if a_x + r_w > surf_text_w:
-                        a_x = surf_text_w - r_w
-                else:
-                    a_x =   surf_text_w/2 - r_w/2
+                save_x_y = event_dict["MouseClickLeft"]
                 
-                self.displace_area_x = a_x
-                #-------------------------------------------------------------------------------------
+                if event_dict["MouseClickLeft"]:
+                    
+                    x = event_dict["MouseClickLeft"][0] - self.rect.x 
+                    y = event_dict["MouseClickLeft"][1] - self.rect.y
+                    event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
 
-            else: # si dejo de presionar una tecla se reinicia
-                Key_up()
-        #-------------------------------------------------------------------------------------
+                    # Cambiar al cursor predefinido de flecha
+                    #pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
+
+                    #if self.cursor_displace_if_click: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
+
+                    self.cursor_position = 0
+                    self.cursor_show = True
+                    self.cursor_count = 0
+
+                    x_click_in_surface_text = self.displace_area_x + event_dict["MouseClickLeft"][0]
+                    w_text_surface = self.text_superface.get_width()
+
+                    new_cursor_surface = 0 # reinicio la posicion del cursor 
+
+                    if x_click_in_surface_text < 0:
+                        t = self.text[:self.cursor_position]
+                    elif x_click_in_surface_text > w_text_surface:
+                        self.cursor_position = len(self.text)
+                        t = self.text[:self.cursor_position]
+                    else:
+                        for char in self.text:
+                            w,h = self.font.size(char)
+                            new_cursor_surface += w
+                            self.cursor_position += 1
+                            if new_cursor_surface > x_click_in_surface_text-(w/2):
+                                t = self.text[:self.cursor_position]
+                                break
+                    self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+
+                    #self.cursor_displace_if_click = True
+
+                event_dict["MouseClickLeft"] = save_x_y
+                #-------------------------------------------------------------------------------------
+            
+            def key_pressed(): # si preciono una tecla
+                # Si hay teclas presionadas, seleccionamos la última de la lista
+                #-------------------------------------------------------------------------------------
+                key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
+                #-------------------------------------------------------------------------------------
+                # guardando el evento de teclado al precionar tecla
+                #-------------------------------------------------------------------------------------
+                if self.key_save != key: 
+                    self.key_count = 0 
+                    self.key_alarm = 0 
+                    self.key_save = key
+                #-------------------------------------------------------------------------------------
+                if key: # si preciono alguna tecla
+                    #posibilidad de editar texto
+                    #-------------------------------------------------------------------------------------
+                    t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
+                    if t<=0: # gestionar la repeticion de caracteres con la telcla presionada
+                        Key_down(key) # edito el texto
+                        self.key_timer = time.time() # guarda hora actual
+                        if self.key_count == 0: self.key_alarm = 0.5
+                        else: self.key_alarm = 0.05
+                        self.key_count = 1
+                    #-------------------------------------------------------------------------------------
+
+                    # actualizar superficies 
+                    #-------------------------------------------------------------------------------------
+                    # superficie del texto
+                    self.text_superface = self.font.render(self.text, True, self.color_text)
+                    # superficie hasta el cursor
+                    t = self.text[:self.cursor_position]
+                    self.cursor_surface = self.font.render(t, True, (0, 0, 0))
+                    #-------------------------------------------------------------------------------------
+
+                    # desplazamiento del area en x
+                    #-------------------------------------------------------------------------------------
+                    r_w = self.rect.width
+                    surf_text_w = self.text_superface.get_width()
+                    surf_curs_w = self.cursor_surface.get_width()
+                    a_x = self.displace_area_x
+                    if surf_text_w > r_w:
+                        # flecha izquierda o derecha
+                        if surf_curs_w > a_x + r_w: # si salgo de r_w por derecha
+                            a_x = surf_curs_w - r_w
+                        elif surf_curs_w < a_x : # si salgo de r_w por izquierda
+                            a_x = surf_curs_w
+                        # borrar
+                        if a_x + r_w > surf_text_w:
+                            a_x = surf_text_w - r_w
+                    else:
+                        a_x =   surf_text_w/2 - r_w/2
+                    self.displace_area_x = a_x
+                    #-------------------------------------------------------------------------------------
+                else: # si dejo de presionar una tecla se reinicia
+                    Key_up()
+            
+            click()
+            key_pressed()
+            #-------------------------------------------------------------------------------------
                 
         
         #-------------------------------------------------------------------------------------
@@ -176,7 +179,6 @@ class BoxText:
             # Manejar la tecla de retroceso (borrar)
             if key["key"] == pg.K_BACKSPACE:
                 if self.cursor_position > 0:  # Solo si hay texto para borrar
-                    
                     # Actualizar el texto eliminando el carácter borrado
                     self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
                     self.cursor_position -= 1  # Mover el cursor hacia la izquierda

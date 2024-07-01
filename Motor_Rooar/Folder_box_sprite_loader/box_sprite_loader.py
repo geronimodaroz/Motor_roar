@@ -243,11 +243,6 @@ class BoxSpriteLoader:
         #     print(event_dict["EditPoint"])
         #     print(f"Error: {e}")
         # # ----------------------------------------------------------------------------
-        try:
-            print(event_dict["EditPoint"])
-            event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
-        except Exception as e:
-            print(f"Error: {e}")
         
         # HAGO CLICK IZQUIERDO
         # ----------------------------------------------------------------------------
@@ -390,8 +385,7 @@ class BoxSpriteLoader:
         # EJECUTO BOX_TEXT- cambio de nombre imagen
         # ----------------------------------------------------------------------------
         try:
-            pass
-            #event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
+            event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
 
             """if k_enter:
                 box_text = event_dict["EditPoint"][self.depth_number+1]
