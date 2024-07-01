@@ -57,27 +57,36 @@ class BoxConteiner:
 
     def edit(self,event_dict):
 
+        #MousePosition
+        # ----------------------------------------------------------------------------
+        x = event_dict["MousePosition"][0] - self.rect.x 
+        y = event_dict["MousePosition"][1] - self.rect.y
+        event_dict["MousePosition"] = (x,y)
+        #print(event_dict["MousePosition"])
+        # ----------------------------------------------------------------------------
+
+
+        # Scroll
+        # ----------------------------------------------------------------------------
         # si hago clicl en box_conteiner(self) y hago scroll
         if event_dict["EditPoint"][-1] == self and  event_dict["MouseScroll"]:
-
             #from classes.reposition import Reposition
             if event_dict["MouseScroll"] == 1:
                 for obj in self.object_list:
                     Reposition().reposition_y(self,obj,repo_y=30)
-                    
             elif event_dict["MouseScroll"] == -1:
                 for obj in self.object_list:
                     Reposition().reposition_y(self,obj,repo_y=-30)
+        # ----------------------------------------------------------------------------
 
 
-        save_x_y = event_dict["MouseClickLeft"]
-
+        # Click
+        # ----------------------------------------------------------------------------
+        #save_x_y = event_dict["MouseClickLeft"]
         if event_dict["MouseClickLeft"]:
-
             x = event_dict["MouseClickLeft"][0] - self.rect.x 
             y = event_dict["MouseClickLeft"][1] - self.rect.y
             event_dict["MouseClickLeft"] = (x,y)
-
             for obj in self.object_list: # repaso la lista de objectos dentro de box_conteiner
                 if obj.rect.collidepoint(x,y):
                     try:
@@ -85,11 +94,12 @@ class BoxConteiner:
                     except Exception as e:
                         pass
                     #print(f"Error: {e}")
-                
                     event_dict["EditPoint"].append(obj)
                     break
             else:
                 del event_dict["EditPoint"][self.depth_number+1:]
+        # ----------------------------------------------------------------------------
+
 
         
         try:
@@ -100,7 +110,7 @@ class BoxConteiner:
 
 
 
-        event_dict["MouseClickLeft"] = save_x_y
+        #event_dict["MouseClickLeft"] = save_x_y
 
 
 

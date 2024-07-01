@@ -192,6 +192,14 @@ class BoxSpriteLoader:
 
     def edit(self,event_dict):
 
+        #MousePosition
+        # ----------------------------------------------------------------------------
+        x = event_dict["MousePosition"][0] - self.rect.x 
+        y = event_dict["MousePosition"][1] - self.rect.y
+        event_dict["MousePosition"] = (x,y)
+        #print(event_dict["MousePosition"])
+        # ----------------------------------------------------------------------------
+
         # Teclas presionadas
         # ----------------------------------------------------------------------------
         if event_dict["keyPressed"]: 
@@ -229,11 +237,10 @@ class BoxSpriteLoader:
         # ----------------------------------------------------------------------------
 
 
-        # save_x_y = event_dict["MouseClickLeft"] # salvamos posicion del click mouse izquierdo
-        # if event_dict["MouseClickLeft"]:
-        #     x = event_dict["MouseClickLeft"][0] - self.rect.x 
-        #     y = event_dict["MouseClickLeft"][1] - self.rect.y
-        #     event_dict["MouseClickLeft"] = (x,y)
+
+        
+
+
 
         # # EJECUTO BOX_TEXT- cambio de nombre imagen
         # # ----------------------------------------------------------------------------
@@ -246,7 +253,7 @@ class BoxSpriteLoader:
         
         # HAGO CLICK IZQUIERDO
         # ----------------------------------------------------------------------------
-        save_x_y = event_dict["MouseClickLeft"] # salvamos posicion del click mouse izquierdo
+        #save_x_y = event_dict["MouseClickLeft"] # salvamos posicion del click mouse izquierdo
         if event_dict["MouseClickLeft"]:
 
             x = event_dict["MouseClickLeft"][0] - self.rect.x 
@@ -407,12 +414,12 @@ class BoxSpriteLoader:
                 del event_dict["EditPoint"][self.depth_number+1:]"""
 
         except Exception as e:
-            #pass
-            print(f"Error: {e}")
+            pass
+            #print(f"Error: {e}")
         # ----------------------------------------------------------------------------
 
         # ----------------------------------------------------------------------------
-        event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
+        #event_dict["MouseClickLeft"] = save_x_y # devolvemos valor original de "event_dict["MouseClickLeft"]", no es necesario
         # ----------------------------------------------------------------------------  
 
 

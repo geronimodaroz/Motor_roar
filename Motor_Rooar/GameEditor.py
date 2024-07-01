@@ -61,6 +61,7 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
+    "MousePosition": (pg.mouse.get_pos()),
     "MouseClickLeft": (0, 0),
     "MouseScroll": None,
     "EditPoint": [],
@@ -84,7 +85,14 @@ object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
 
 # Bucle principal
 while True:
+
+    #Flecha original
+    # ----------------------------------------------------------------------------
+    #pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+    # ----------------------------------------------------------------------------
+    #print(pg.mouse.get_cursor())
     # FPS
+    # ----------------------------------------------------------------------------
     fps_counter += 1
     elapsed_time = time.time() - start_time
     if elapsed_time >= 0.5:
@@ -94,11 +102,13 @@ while True:
         start_time = time.time()
     # Añadir un pequeño retraso para no consumir demasiados recursos
     #time.sleep(0.01) # esto puede ser buena idea
+    # ----------------------------------------------------------------------------
 
 
     # Reinicio los eventos
     event_dict["MouseClickLeft"] = None
     event_dict["MouseScroll"] = None
+    event_dict["MousePosition"] = pg.mouse.get_pos()
 
 
     for event in pg.event.get():
@@ -140,7 +150,6 @@ while True:
             del event_dict["EditPoint"][depth_number+1:]
 
 
-    #print(event_dict["EditPoint"])
 
     try:
         event_dict["EditPoint"][depth_number+1].edit(event_dict)

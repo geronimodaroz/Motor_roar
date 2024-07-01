@@ -55,6 +55,8 @@ class BoxText:
         self.key_save = None
         # ----------------------------------------------------------------------------
 
+        #self.current_cursor = None  # Variable para almacenar el tipo de cursor actual
+
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
@@ -69,9 +71,19 @@ class BoxText:
         #-------------------------------------------------------------------------------------
         def init(): # Comienzo del codigo
             #-------------------------------------------------------------------------------------
+            
+
+            if self.rect.collidepoint(event_dict["MousePosition"]):
+                if pg.mouse.get_cursor()[0] != 1:
+                    pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
+            else:
+                if pg.mouse.get_cursor()[0] == 1:
+                    pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+
+
             def click():# si hago click
                 #-------------------------------------------------------------------------------------
-                save_x_y = event_dict["MouseClickLeft"]
+                #save_x_y = event_dict["MouseClickLeft"]
                 
                 if event_dict["MouseClickLeft"]:
                     
@@ -103,14 +115,14 @@ class BoxText:
                             w,h = self.font.size(char)
                             new_cursor_surface += w
                             self.cursor_position += 1
-                            if new_cursor_surface > x_click_in_surface_text-(w/2):
+                            if new_cursor_surface > x_click_in_surface_text:
                                 t = self.text[:self.cursor_position]
                                 break
                     self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
 
                     #self.cursor_displace_if_click = True
 
-                event_dict["MouseClickLeft"] = save_x_y
+                #event_dict["MouseClickLeft"] = save_x_y
                 #-------------------------------------------------------------------------------------
             
             def key_pressed(): # si preciono una tecla
