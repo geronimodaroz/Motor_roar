@@ -190,7 +190,7 @@ class BoxSpriteLoader:
         #-------------------------------------------------------------------------
 
 
-    def edit(self,event_dict = None):
+    def edit(self,event_dict):
 
         # Teclas presionadas
         # ----------------------------------------------------------------------------
@@ -229,17 +229,34 @@ class BoxSpriteLoader:
         # ----------------------------------------------------------------------------
 
 
+        # save_x_y = event_dict["MouseClickLeft"] # salvamos posicion del click mouse izquierdo
+        # if event_dict["MouseClickLeft"]:
+        #     x = event_dict["MouseClickLeft"][0] - self.rect.x 
+        #     y = event_dict["MouseClickLeft"][1] - self.rect.y
+        #     event_dict["MouseClickLeft"] = (x,y)
 
-
+        # # EJECUTO BOX_TEXT- cambio de nombre imagen
+        # # ----------------------------------------------------------------------------
+        # try:
+        #     event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
+        # except Exception as e:
+        #     print(event_dict["EditPoint"])
+        #     print(f"Error: {e}")
+        # # ----------------------------------------------------------------------------
+        try:
+            print(event_dict["EditPoint"])
+            event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
+        except Exception as e:
+            print(f"Error: {e}")
         
         # HAGO CLICK IZQUIERDO
         # ----------------------------------------------------------------------------
         save_x_y = event_dict["MouseClickLeft"] # salvamos posicion del click mouse izquierdo
         if event_dict["MouseClickLeft"]:
+
             x = event_dict["MouseClickLeft"][0] - self.rect.x 
             y = event_dict["MouseClickLeft"][1] - self.rect.y
-            event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
-
+            event_dict["MouseClickLeft"] = (x,y) 
 
             # AGREGAR IMAGENES - deteccion 0
             # ----------------------------------------------------------------------------
@@ -373,7 +390,8 @@ class BoxSpriteLoader:
         # EJECUTO BOX_TEXT- cambio de nombre imagen
         # ----------------------------------------------------------------------------
         try:
-            event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
+            pass
+            #event_dict["EditPoint"][self.depth_number+1].edit(event_dict) 
 
             """if k_enter:
                 box_text = event_dict["EditPoint"][self.depth_number+1]
@@ -395,8 +413,8 @@ class BoxSpriteLoader:
                 del event_dict["EditPoint"][self.depth_number+1:]"""
 
         except Exception as e:
-            pass
-            #print(f"Error: {e}")
+            #pass
+            print(f"Error: {e}")
         # ----------------------------------------------------------------------------
 
         # ----------------------------------------------------------------------------

@@ -31,6 +31,7 @@ class BoxText:
         # Variables para el cursor intermitente
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
+        self.cursor_click_displace = False # controla cuando es posoble cambiar el cuersor de posicion
 
         base_name, extension = os.path.splitext(self.text)
         self.cursor_position = len(base_name)
@@ -79,13 +80,36 @@ class BoxText:
                 y = event_dict["MouseClickLeft"][1] - self.rect.y
                 event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
 
-            #if event_dict["MouseClickLeft"]: print(event_dict["MouseClickLeft"][0])
 
-            #to_start_rect_x = -self.displace_area_x+ self.text_superface.get_width()
-            
-            if event_dict["MouseClickLeft"]: print(self.displace_area_x + event_dict["MouseClickLeft"][0])
+            #if self.cursor_click_displace: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
+
+            #if event_dict["MouseClickLeft"]:
+
+                x_click_in_surface_text = self.displace_area_x + event_dict["MouseClickLeft"][0]
+                w_surface_text = self.text_superface.get_width()
+
+                new_cursor_surface = 0
+                self.cursor_position = 0
+                for char in self.text:
+                    w,h = self.font.size(char)
+
+                    new_cursor_surface += w
+                    self.cursor_position += 1
+
+                    if new_cursor_surface > x_click_in_surface_text:
+
+                        t = self.text[:self.cursor_position]
+                        self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+                        break
+
+                #if event_dict["MouseClickLeft"]: print(self.displace_area_x + event_dict["MouseClickLeft"][0])
+
+
+            #self.cursor_click_displace = True
+
 
             event_dict["MouseClickLeft"] = save_x_y
+            
 
             # Si hay teclas presionadas, seleccionamos la última de la lista
             key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
