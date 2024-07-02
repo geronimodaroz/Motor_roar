@@ -91,33 +91,32 @@ class BoxText:
                     y = event_dict["MouseClickLeft"][1] - self.rect.y
                     event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
 
-                    # Cambiar al cursor predefinido de flecha
-                    #pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
-
                     #if self.cursor_displace_if_click: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
-
-                    self.cursor_position = 0
-                    self.cursor_show = True
-                    self.cursor_count = 0
 
                     x_click_in_surface_text = self.displace_area_x + event_dict["MouseClickLeft"][0]
                     w_text_surface = self.text_superface.get_width()
 
+                    self.cursor_position = 0
+                    self.cursor_show = True
+                    self.cursor_count = 0
                     new_cursor_surface = 0 # reinicio la posicion del cursor 
 
-                    if x_click_in_surface_text < 0:
-                        t = self.text[:self.cursor_position]
-                    elif x_click_in_surface_text > w_text_surface:
+                    #if x_click_in_surface_text < 0:
+                    #    self.cursor_position = 0
+                    if x_click_in_surface_text > w_text_surface:
                         self.cursor_position = len(self.text)
-                        t = self.text[:self.cursor_position]
-                    else:
-                        for char in self.text:
-                            w,h = self.font.size(char)
+                    else: 
+                        #  NO COINCIDEN EL CLICK CON LA POSICION DEL CURSOR A VECES
+                        for i, char in enumerate(self.text):
+                            
+                            w, h = self.font.size(char)
+                            #print(char,w)
                             new_cursor_surface += w
-                            self.cursor_position += 1
-                            if new_cursor_surface > x_click_in_surface_text:
-                                t = self.text[:self.cursor_position]
+                            if new_cursor_surface >= x_click_in_surface_text:
+                                self.cursor_position = i + 1
                                 break
+
+                    t = self.text[:self.cursor_position]
                     self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
 
                     #self.cursor_displace_if_click = True

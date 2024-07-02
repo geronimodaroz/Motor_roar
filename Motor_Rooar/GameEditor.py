@@ -86,11 +86,6 @@ object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
 # Bucle principal
 while True:
 
-    #Flecha original
-    # ----------------------------------------------------------------------------
-    #pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
-    # ----------------------------------------------------------------------------
-    #print(pg.mouse.get_cursor())
     # FPS
     # ----------------------------------------------------------------------------
     fps_counter += 1
