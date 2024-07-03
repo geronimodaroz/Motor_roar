@@ -198,6 +198,10 @@ class BoxSpriteLoader:
         y = event_dict["MousePosition"][1] - self.rect.y
         event_dict["MousePosition"] = (x,y)
         #print(event_dict["MousePosition"])
+
+        x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+        y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+        event_dict["Mouse"]["MousePosition"] = (x,y)
         # ----------------------------------------------------------------------------
 
         # Teclas presionadas

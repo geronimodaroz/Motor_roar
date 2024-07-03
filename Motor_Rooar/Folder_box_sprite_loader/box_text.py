@@ -32,6 +32,7 @@ class BoxText:
         self.cursor_show = True # mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
         #self.cursor_displace_if_click = False # controla cuando es posoble cambiar el cuersor de posicion
+        self.cursor_area_select = False # si seleccionamos algun area dentro del texto
 
         base_name, extension = os.path.splitext(self.text)
         self.cursor_position = len(base_name)
@@ -93,42 +94,53 @@ class BoxText:
 
                     #if self.cursor_displace_if_click: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
 
-                    x_click_in_surface_text = self.displace_area_x + event_dict["MouseClickLeft"][0]
+                    x_click_in_surface_text = self.displace_area_x + x#event_dict["MouseClickLeft"][0]
                     
                     w_text_surface = self.text_superface.get_width()
 
                     self.cursor_position = 0
                     self.cursor_show = True
                     self.cursor_count = 0
-                    new_cursor_surface = 0 # reinicio la posicion del cursor 
-                    #t=""
-                    if x_click_in_surface_text <= 0:
-                        
-                        self.cursor_position = 0
-                        t = self.text[:self.cursor_position]
-                    elif x_click_in_surface_text >= w_text_surface:
-                        
+
+                    #if x_click_in_surface_text > 0:
+                    if x_click_in_surface_text >= w_text_surface:
                         self.cursor_position = len(self.text)
-                        t = self.text[:self.cursor_position]
-                    #elif x_click_in_surface_text > 0: 
-                    else:
-                        
-                        #  NO COINCIDEN EL CLICK CON LA POSICION DEL CURSOR A VECES
-                        for i, char in enumerate(self.text):
 
-                            self.cursor_position = i #+ 1
-                            t = self.text[:self.cursor_position]
-                            #t += char
-                            sup = self.font.render(t, True, (0, 0, 0))
-                            #w, h = self.font.size(char)
-                            #new_cursor_surface += w
-                            print(sup.get_width(), x_click_in_surface_text)
-                            if sup.get_width() >= x_click_in_surface_text:
+                    elif x_click_in_surface_text > 0:
+                        for i in range(len(self.text)):
+                            t = self.text[:i + 1]
+                            cursor_surface = self.font.render(t, True, (0, 0, 0))
+                            if cursor_surface.get_width() >= x_click_in_surface_text:
+                                self.cursor_position = i + 1
                                 break
-                    
 
-                    #t = self.text[:self.cursor_position]
-                    self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+                    t = self.text[:self.cursor_position]
+                    self.cursor_surface = self.font.render(t, True, (0, 0, 0))
+
+                if event_dict["Mouse"]["MouseClickLeftPressed"]:
+
+                    x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+                    y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                    event_dict["Mouse"]["MousePosition"] = (x,y)
+
+                    displace = -self.displace_area_x + self.cursor_surface.get_width() - event_dict["Mouse"]["MousePosition"][0]
+
+                    if self.cursor_position > 0:
+                        pre_char = self.text[:self.cursor_position]
+                        pre_char = pre_char[-1]
+                        #print(pre_char)
+                        
+                    if self.cursor_position < len(self.text):
+                        pos_char = self.text[:self.cursor_position+1]
+                        pos_char = pos_char[-1]
+                        print(pos_char)
+
+                    self.cursor_area_select = True
+
+
+                    #print(displace)
+
+                    
 
                     #self.cursor_displace_if_click = True
 

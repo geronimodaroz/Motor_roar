@@ -61,6 +61,7 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
+    "Mouse":{"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,},
     "MousePosition": (pg.mouse.get_pos()),
     "MouseClickLeft": (0, 0),
     "MouseScroll": None,
@@ -105,6 +106,13 @@ while True:
     event_dict["MouseScroll"] = None
     event_dict["MousePosition"] = pg.mouse.get_pos()
 
+    # Restablecer eventos de clic de ratón
+    event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
+    #event_dict["Mouse"]["MouseClickLeftPressed"] = pg.mouse.get_pressed()[0]
+    event_dict["Mouse"]["MouseClickLeftDown"] = False
+    event_dict["Mouse"]["MouseClickLeftUp"] = False
+
+
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -118,15 +126,28 @@ while True:
             i = event_dict["keyPressed"].index({"key":event.key,"unicode":event.unicode})
             del event_dict["keyPressed"][i]
 
-        # click izquierdo sobre la pantalla
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            event_dict["MouseClickLeft"] = event.pos
+        # # click izquierdo sobre la pantalla
+        # if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+        #     event_dict["MouseClickLeft"] = event.pos
+        
+        # Detectar eventos de clic del ratón
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Botón izquierdo del ratón
+                event_dict["MouseClickLeft"] = event.pos
+                event_dict["Mouse"]["MouseClickLeftDown"] = True
+                event_dict["Mouse"]["MouseClickLeftPressed"] = True
+        
+        if event.type == pg.MOUSEBUTTONUP:
+            if event.button == 1:  # Botón izquierdo del ratón
+                event_dict["Mouse"]["MouseClickLeftUp"] = True
+                event_dict["Mouse"]["MouseClickLeftPressed"] = False
 
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["MouseScroll"] = 1 if event.y > 0 else -1
 
 
+    #print(event_dict["Mouse"])
 
     # detectamos colision:
     if event_dict["MouseClickLeft"]:
