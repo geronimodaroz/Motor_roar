@@ -139,12 +139,12 @@ class BoxText:
                                 break
                             pre_char += self.text[i]
 
-                        x = self.rect.x
-                        y = self.rect.y
-                        h = self.rect.height
+                        # x = self.rect.x
+                        # y = self.rect.y
+                        # h = self.rect.height
                         
                         #self.cursor_selected_rect = pg.Rect(x+cursor_displace,y,self.cursor_surface.get_width(),h)
-                        #print(pre_char[::-1])
+                        print(pre_char[::-1])
 
                             
                         
@@ -157,7 +157,7 @@ class BoxText:
                             if sup_width >= dis:
                                 break
                             post_char += self.text[i]
-                        #print(post_char)
+                        print(post_char)
 
                     #self.cursor_area_select = True
 
@@ -285,9 +285,8 @@ class BoxText:
         #rect gris de las imagenes
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
 
-        if self.cursor_selected_rect:
-            print("hola")
-            pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
+        # if self.cursor_selected_rect:
+        #     pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
 
         #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
