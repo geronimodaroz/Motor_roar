@@ -12,7 +12,7 @@ pg.init()
 
 
 # Configurar la pantalla
-width, height = 800, 600
+width, height = 1000, 600
 screen = pg.display.set_mode((width, height))
 pg.display.set_caption("Roar!!")
 
@@ -79,8 +79,15 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # box_conteiner
 from box_conteiner import BoxConteiner
-box_conteiner = BoxConteiner(event_dict,screen,80,80,300,450,(0,0,0))
+box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
 object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
+
+
+
+# box_conteiner2
+from box_conteiner2 import BoxConteiner2
+box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450,(0,0,0))
+object_list.append(box_conteiner2) # agregamos el objeto box_conteiner a la lista
 
 
 
@@ -183,5 +190,8 @@ while True:
     #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
     # Box_conteiner
     box_conteiner.draw(event_dict)
+
+    # Box_conteiner
+    box_conteiner2.draw(event_dict)
     # Actualiza la pantalla
     pg.display.flip()
