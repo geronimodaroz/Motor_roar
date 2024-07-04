@@ -78,9 +78,9 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 
 # box_conteiner
-from box_conteiner import BoxConteiner
-box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
-object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
+#from box_conteiner import BoxConteiner
+#box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
+#object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
 
 
 
@@ -107,7 +107,8 @@ while True:
     #time.sleep(0.01) # esto puede ser buena idea
     # ----------------------------------------------------------------------------
 
-
+    #Eventos
+    # ----------------------------------------------------------------------------
     # Reinicio los eventos
     event_dict["MouseClickLeft"] = None
     event_dict["MouseScroll"] = None
@@ -152,33 +153,53 @@ while True:
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["MouseScroll"] = 1 if event.y > 0 else -1
+    # ----------------------------------------------------------------------------
 
 
-    #print(event_dict["Mouse"])
+    #MousePosition
+    # ----------------------------------------------------------------------------
+    mouse_x = event_dict["Mouse"]["MousePosition"][0] 
+    mouse_y = event_dict["Mouse"]["MousePosition"][1] 
+    event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
+    # ----------------------------------------------------------------------------
 
-    # detectamos colision:
+
+    # detectamos colision: Mouse Position
+    # ----------------------------------------------------------------------------
+    for obj in object_list:
+        if obj.scale_modifier_rect_top.collidepoint(mouse_x,mouse_y):
+            obj.scale_modifier(event_dict)
+
+        else:
+            pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+    # ----------------------------------------------------------------------------
+
+
+
+
+    # detectamos colision: Click
+    # ----------------------------------------------------------------------------
     if event_dict["MouseClickLeft"]:
         for obj in object_list:
             if obj.rect.collidepoint(event_dict["MouseClickLeft"]):
-
                 try:
                     del event_dict["EditPoint"][depth_number+1:]
                 except Exception as e:
-                    pass
                     #print(f"Error: {e}")
-                
+                    pass
                 event_dict["EditPoint"].append(obj)
                 break
         else:
             del event_dict["EditPoint"][depth_number+1:]
+    # ----------------------------------------------------------------------------
 
 
 
     try:
         event_dict["EditPoint"][depth_number+1].edit(event_dict)
     except Exception as e:
-        pass
         #print(f"Error: {e}")
+        pass
 
 
     
@@ -189,7 +210,7 @@ while True:
 
     #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
     # Box_conteiner
-    box_conteiner.draw(event_dict)
+    #box_conteiner.draw(event_dict)
 
     # Box_conteiner
     box_conteiner2.draw(event_dict)
