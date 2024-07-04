@@ -62,6 +62,7 @@ event_dict = {
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
     "Mouse":{"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,},
+    "MouseIcon":pg.SYSTEM_CURSOR_ARROW,
     "MousePosition": (pg.mouse.get_pos()),
     "MouseClickLeft": (0, 0),
     "MouseScroll": None,
@@ -86,7 +87,7 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # box_conteiner2
 from box_conteiner2 import BoxConteiner2
-box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450,(0,0,0))
+box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450,(5,5,5))
 object_list.append(box_conteiner2) # agregamos el objeto box_conteiner a la lista
 
 
@@ -110,6 +111,7 @@ while True:
     #Eventos
     # ----------------------------------------------------------------------------
     # Reinicio los eventos
+    event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW
     event_dict["MouseClickLeft"] = None
     event_dict["MouseScroll"] = None
     event_dict["MousePosition"] = pg.mouse.get_pos()
@@ -160,37 +162,33 @@ while True:
     # ----------------------------------------------------------------------------
     mouse_x = event_dict["Mouse"]["MousePosition"][0] 
     mouse_y = event_dict["Mouse"]["MousePosition"][1] 
-    event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
     # ----------------------------------------------------------------------------
+
 
 
     # detectamos colision: Mouse Position
     # ----------------------------------------------------------------------------
     for obj in object_list:
-        if obj.scale_modifier_rect_top.collidepoint(mouse_x,mouse_y):
-            obj.scale_modifier(event_dict)
-
-        else:
-            pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+        obj.collision_detector(event_dict)
     # ----------------------------------------------------------------------------
-
-
+    
+    
 
 
     # detectamos colision: Click
     # ----------------------------------------------------------------------------
-    if event_dict["MouseClickLeft"]:
-        for obj in object_list:
-            if obj.rect.collidepoint(event_dict["MouseClickLeft"]):
-                try:
-                    del event_dict["EditPoint"][depth_number+1:]
-                except Exception as e:
-                    #print(f"Error: {e}")
-                    pass
-                event_dict["EditPoint"].append(obj)
-                break
-        else:
-            del event_dict["EditPoint"][depth_number+1:]
+    # if event_dict["MouseClickLeft"]:
+    #     for obj in object_list:
+    #         if obj.rect.collidepoint(event_dict["MouseClickLeft"]):
+    #             try:
+    #                 del event_dict["EditPoint"][depth_number+1:]
+    #             except Exception as e:
+    #                 #print(f"Error: {e}")
+    #                 pass
+    #             #event_dict["EditPoint"].append(obj)
+    #             break
+    #     else:
+    #         del event_dict["EditPoint"][depth_number+1:]
     # ----------------------------------------------------------------------------
 
 
@@ -201,10 +199,20 @@ while True:
         #print(f"Error: {e}")
         pass
 
+    
 
+
+    #Draw
+    # ----------------------------------------------------------------------------
+
+    #Modificar icono del mouse
+    # ----------------------------------------------------------------------------
+    if pg.mouse.get_cursor()[0] != event_dict["MouseIcon"]: # si es distinto, cambio
+        pg.mouse.set_cursor(event_dict["MouseIcon"])
+    # ----------------------------------------------------------------------------
     
     # Dibuja el fondo
-    screen.fill((128,128,128)) # limpia escena 
+    screen.fill((50,50,50)) # limpia escena 
     # FPS
     screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
 
@@ -216,3 +224,4 @@ while True:
     box_conteiner2.draw(event_dict)
     # Actualiza la pantalla
     pg.display.flip()
+    # ----------------------------------------------------------------------------

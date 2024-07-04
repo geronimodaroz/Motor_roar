@@ -18,8 +18,10 @@ class BoxConteiner2:
         self.surface = self.screen.subsurface(self.rect) # superficie
         self.color = color
 
-        self.scale_modifier_check = False # modificador de escala
-        self.scale_modifier_rect_top = pg.rect.Rect(x,y-2,w,4) #top
+        
+
+        self.scale_modifier_rect = pg.rect.Rect(x-5,y-5,w+10,h+10) # modifier rect
+        #self.scale_modifier_check = False # modificador de escala
 
 
 
@@ -27,8 +29,8 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
-
-    def scale_modifier(self,event_dict):
+    
+    def collision_detector(self,event_dict):
 
         #MousePosition
         # ----------------------------------------------------------------------------
@@ -36,19 +38,33 @@ class BoxConteiner2:
         mouse_y = event_dict["Mouse"]["MousePosition"][1] 
         # ----------------------------------------------------------------------------
 
+        if self.rect.collidepoint(mouse_x,mouse_y): #rect
+            event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW
 
-        pg.mouse.set_cursor(pg.SYSTEM_CURSOR_SIZENS)
+            if event_dict["Mouse"]["MouseClickLeftDown"]:
+
+                event_dict["EditPoint"].append(self)
+
+                #self.edit(event_dict)
+
+        elif self.scale_modifier_rect.collidepoint(mouse_x,mouse_y): # modifier rect
+            event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZENS
+        
+        #return event_dict
 
 
+    # def scale_modifier(self,event_dict):
 
-        if event_dict["Mouse"]["MouseClickLeftDown"]:
-            self.scale_modifier_check = True
-        if event_dict["Mouse"]["MouseClickLeftUp"]:
-            self.scale_modifier_check = False
+    #     #MousePosition
+    #     # ----------------------------------------------------------------------------
+    #     mouse_x = event_dict["Mouse"]["MousePosition"][0]  
+    #     mouse_y = event_dict["Mouse"]["MousePosition"][1] 
+    #     # ----------------------------------------------------------------------------
 
-        if self.scale_modifier_check:
-            self.rect.y = mouse_y
-            self.surface = self.screen.subsurface(self.rect) # superficie
+
+    #     pg.mouse.set_cursor(pg.SYSTEM_CURSOR_SIZENS)
+
+
 
 
 
@@ -57,17 +73,14 @@ class BoxConteiner2:
 
     def edit(self,event_dict):
 
-        # if self.rect.x < event_dict["Mouse"]["MousePosition"][0] < (self.rect.x + self.rect.width):
-        #     print("hola")
 
-        #MousePosition
+        #MousePosition in the object
         # ----------------------------------------------------------------------------
         mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
         mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
         event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
         # ----------------------------------------------------------------------------
-        
-        #top_x = (self.rect.x,self.rect.y,self.rect.x + self.rect.width,self.rect.y+2)
+        print(event_dict["Mouse"]["MousePosition"])
 
 
 
@@ -76,5 +89,5 @@ class BoxConteiner2:
         pg.draw.rect(self.screen, self.color,self.rect) # box_conteiner
 
 
-        pg.draw.rect(self.screen, (0,200,0),self.scale_modifier_rect_top,1) # box_conteiner
+        pg.draw.rect(self.screen, (0,200,0),self.scale_modifier_rect,1) # box_conteiner
 
