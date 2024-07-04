@@ -57,6 +57,7 @@ class BoxText:
         # ----------------------------------------------------------------------------
 
         #self.current_cursor = None  # Variable para almacenar el tipo de cursor actual
+        self.cursor_selected_rect = None
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
@@ -123,57 +124,42 @@ class BoxText:
                     y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
                     event_dict["Mouse"]["MousePosition"] = (x,y)
 
+                    #x_click_in_surface_text = self.displace_area_x + x
+
                     cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - event_dict["Mouse"]["MousePosition"][0]) # desplazamiento del mouse desde el cursor
 
-                    print(cursor_displace)
 
                     if self.cursor_position > 0 and cursor_displace < 0:
-
                         dis = self.cursor_surface.get_width() + cursor_displace
                         pre_char = ""
-                        cont=0
-                        #t = self.text[:self.cursor_position]
                         for i in range(self.cursor_position - 1, -1, -1):
-                            pre_char += self.text[i]
-                            cont +=1
-                            t = self.text[:self.cursor_position-cont]
-                            sup = self.font.render(t, True, (0, 0, 0))
-                            print(pre_char)
-                            if  sup.get_width() < dis:
-                                pre_char[::-1]
-                                
+                            t = self.text[:i]
+                            sup_width = self.font.size(t)[0]
+                            if sup_width < dis:
                                 break
+                            pre_char += self.text[i]
+
+                        x = self.rect.x
+                        y = self.rect.y
+                        h = self.rect.height
+                        
+                        #self.cursor_selected_rect = pg.Rect(x+cursor_displace,y,self.cursor_surface.get_width(),h)
+                        #print(pre_char[::-1])
 
                             
-
-
-                        #dis = self.cursor_surface.get_width() - cursor_displace
-
-                        pre_char = self.text[:self.cursor_position]
-                        pre_char = pre_char[-1]
-                        pre_char_sup = self.font.render(pre_char, True, (0, 0, 0))
-
-                        # if cursor_displace <= -pre_char_sup.get_width():
-                        #     print("izquierda")
-                        #print(pre_char_sup.get_width())
-
-                        # t = self.text[:self.cursor_position]
-                        # sup1 = self.font.render(t, True, (0, 0, 0))
-                        # t = self.text[:self.cursor_position-1]
-                        # sup2 = self.font.render(t, True, (0, 0, 0))
-
-                        # print(sup1.get_width() - sup2.get_width())
                         
-                    if self.cursor_position < len(self.text):
-                        pos_char = self.text[:self.cursor_position+1]
-                        pos_char = pos_char[-1]
-                        pos_char_sup = self.font.render(pos_char, True, (0, 0, 0))
+                    elif self.cursor_position < len(self.text) and cursor_displace > 0:
+                        dis = self.cursor_surface.get_width() + cursor_displace
+                        post_char = ""
+                        for i in range(self.cursor_position, len(self.text)):
+                            t = self.text[:i + 1]
+                            sup_width = self.font.size(t)[0]
+                            if sup_width >= dis:
+                                break
+                            post_char += self.text[i]
+                        #print(post_char)
 
-                        # if cursor_displace >= pos_char_sup.get_width():
-                        #     print("derecha")
-                        #print(pos_char)
-
-                    self.cursor_area_select = True
+                    #self.cursor_area_select = True
 
 
                     
@@ -298,6 +284,10 @@ class BoxText:
 
         #rect gris de las imagenes
         pg.draw.rect(self.surface,(80,80,80),self.rect,1)
+
+        if self.cursor_selected_rect:
+            print("hola")
+            pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
 
         #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
