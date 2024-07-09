@@ -111,7 +111,7 @@ while True:
     #Eventos
     # ----------------------------------------------------------------------------
     # Reinicio los eventos
-    event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW
+    event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
     event_dict["MouseClickLeft"] = None
     event_dict["MouseScroll"] = None
     event_dict["MousePosition"] = pg.mouse.get_pos()
@@ -168,6 +168,9 @@ while True:
 
     # detectamos colision: Mouse Position
     # ----------------------------------------------------------------------------
+    # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
+    # esto no puede optimizar de alguna manera?
+    
     for obj in object_list:
         obj.collision_detector(event_dict)
     # ----------------------------------------------------------------------------

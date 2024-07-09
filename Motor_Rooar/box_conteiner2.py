@@ -18,10 +18,13 @@ class BoxConteiner2:
         self.surface = self.screen.subsurface(self.rect) # superficie
         self.color = color
 
-        
-
+        # modificar escala
+        # ----------------------------------------------------------------------------
+        self.margin_scale_modifier = 5
+        margin = self.margin_scale_modifier
         self.scale_modifier_rect = pg.rect.Rect(x-5,y-5,w+10,h+10) # modifier rect
         #self.scale_modifier_check = False # modificador de escala
+        # ----------------------------------------------------------------------------
 
 
 
@@ -39,18 +42,37 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
 
         if self.rect.collidepoint(mouse_x,mouse_y): #rect
-            event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW
+
+            event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # cambio cursor a flecha 
 
             if event_dict["Mouse"]["MouseClickLeftDown"]:
 
                 event_dict["EditPoint"].append(self)
 
-                #self.edit(event_dict)
 
         elif self.scale_modifier_rect.collidepoint(mouse_x,mouse_y): # modifier rect
-            event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZENS
+
+            margin = self.margin_scale_modifier #margen "5"
+
+            x = self.scale_modifier_rect.x
+            y = self.scale_modifier_rect.y
+            w = self.scale_modifier_rect.width
+            h = self.scale_modifier_rect.height
+
+            hit_top = mouse_y <= y + margin
+            hit_down = mouse_y >= y + h - margin
+            hit_left = mouse_x <= x + margin
+            hit_right = mouse_x >= x + w - margin
+
+            if hit_top and hit_left or hit_down and hit_right: # top,left o down,right
+                event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZENWSE
+            elif hit_top and hit_right or hit_down and hit_left: # top,right o down,left
+                event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZENESW
+            elif hit_top or hit_down: # top, down
+                event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZENS
+            elif hit_left or mouse_x >= hit_right: # left, right
+                event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_SIZEWE
         
-        #return event_dict
 
 
     # def scale_modifier(self,event_dict):
