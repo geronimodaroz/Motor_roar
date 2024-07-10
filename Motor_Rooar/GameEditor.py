@@ -54,25 +54,6 @@ detection_archive_delate.monitorear_carpeta(game_folder_path)
 # --------------------------------------------------------------------------
 
 
-
-
-# # diccionario de eventos _ ORIGINAL
-# #-----------------------------------------------------------------------------
-# # Diccionario de eventos
-# event_dict = {
-#     "MotorGameFolderpPath": motor_game_folder_path,
-#     "GameFolderpPath": game_folder_path,
-#     "keyPressed": [],
-#     "Mouse":{"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,},
-#     "MouseIcon":pg.SYSTEM_CURSOR_ARROW,
-#     "MousePosition": (pg.mouse.get_pos()),
-#     "MouseClickLeft": (0, 0),
-#     "MouseScroll": None,
-#     "EditPoint": [],
-#     "depth_number": -1
-# }
-# #-----------------------------------------------------------------------------
-
 # diccionario de eventos
 #-----------------------------------------------------------------------------
 # Diccionario de eventos
@@ -80,12 +61,13 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
-    "Mouse":{"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Icon":pg.SYSTEM_CURSOR_ARROW,},
+    "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
     #"MouseIcon":pg.SYSTEM_CURSOR_ARROW,
-    "MousePosition": (pg.mouse.get_pos()),
-    "MouseClickLeft": (0, 0),
-    "MouseScroll": None,
-    "EditPoint": [],
+    #"MousePosition": (pg.mouse.get_pos()),
+    #"MouseClickLeft": (0, 0),
+    #"MouseScroll": None,
+    #"EditPoint": [],
+    "EditableObjects": {"selected":[],"clickable":[]},
     "depth_number": -1
 }
 #-----------------------------------------------------------------------------
@@ -132,14 +114,19 @@ while True:
     # Reinicio los eventos
     #event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
     
-    event_dict["MouseClickLeft"] = None
-    event_dict["MouseScroll"] = None
-    event_dict["MousePosition"] = pg.mouse.get_pos()
+    # event_dict["MouseClickLeft"] = None
+    # event_dict["MouseScroll"] = None
+    # event_dict["MousePosition"] = pg.mouse.get_pos()
 
-    event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
+    
+    # Mouse motion and mouse position
+    if event_dict["Mouse"]["MousePosition"] != pg.mouse.get_pos(): # si el mouse se mueve
+        event_dict["Mouse"]["Motion"] = True
+        event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
+        event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
+    else: 
+        event_dict["Mouse"]["Motion"] = False
     # Restablecer eventos de clic de ratón
-    event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
-    #event_dict["Mouse"]["MouseClickLeftPressed"] = pg.mouse.get_pressed()[0]
     event_dict["Mouse"]["MouseClickLeftDown"] = False
     event_dict["Mouse"]["MouseClickLeftUp"] = False
 
@@ -164,7 +151,7 @@ while True:
         # Detectar eventos de clic del ratón
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:  # Botón izquierdo del ratón
-                event_dict["MouseClickLeft"] = event.pos
+                #event_dict["MouseClickLeft"] = event.pos
                 event_dict["Mouse"]["MouseClickLeftDown"] = True
                 event_dict["Mouse"]["MouseClickLeftPressed"] = True
         
@@ -175,7 +162,8 @@ while True:
 
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
-            event_dict["MouseScroll"] = 1 if event.y > 0 else -1
+            event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
+            #event_dict["MouseScroll"] = 1 if event.y > 0 else -1
     # ----------------------------------------------------------------------------
 
 
@@ -191,9 +179,12 @@ while True:
     # ----------------------------------------------------------------------------
     # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
     # esto no se puede optimizar de alguna manera?
-
-    for obj in object_list:
-        obj.collision_detector(event_dict)
+    if event_dict["Mouse"]["Motion"]:
+        del event_dict["EditableObjects"]["clickable"][depth_number+1:]
+        for obj in object_list:
+            obj.collision_detector(event_dict)
+            if event_dict["EditableObjects"]["clickable"]: break
+        
     # ----------------------------------------------------------------------------
     
     try:
@@ -202,7 +193,7 @@ while True:
         #print(f"Error: {e}")
         pass
     
-    print(event_dict["EditPoint"])
+    #print(event_dict[["EditableObjects"]["clickable"]])
 
 
     # detectamos colision: Click

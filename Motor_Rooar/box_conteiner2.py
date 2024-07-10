@@ -45,12 +45,18 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
         if self.rect.collidepoint(mouse_x,mouse_y): #rect
             event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # cambio cursor a flecha 
+
+            del event_dict["EditableObjects"]["clickable"][self.depth_number:]
+            event_dict["EditableObjects"]["clickable"].append(self.edit)
             
             # if event_dict["Mouse"]["MouseClickLeftDown"]: # click down
             #     del event_dict["EditPoint"][self.depth_number:]
             #     event_dict["EditPoint"].append(self.edit)
 
         elif self.scale_modifier_rect.collidepoint(mouse_x,mouse_y): # modifier rect
+
+            del event_dict["EditableObjects"]["clickable"][self.depth_number:]
+            event_dict["EditableObjects"]["clickable"].append(self.scale_modifier)
 
             # if event_dict["Mouse"]["MouseClickLeftDown"]: # click down
             #     del event_dict["EditPoint"][self.depth_number:]
@@ -77,6 +83,7 @@ class BoxConteiner2:
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENS
             elif hit_left or mouse_x >= hit_right: # left, right
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
+
         # ----------------------------------------------------------------------------
         
 
