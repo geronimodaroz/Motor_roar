@@ -5,7 +5,6 @@ import os # crear carpetas, archivos ect..
 
 from Folder_classes.font import Font # fuentes (string a surface)
 
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 # Inicializar Pygame
@@ -14,7 +13,7 @@ pg.init()
 
 
 # Configurar la pantalla
-width, height = 1000, 600
+width, height = 800, 600
 screen = pg.display.set_mode((width, height))
 pg.display.set_caption("Roar!!")
 
@@ -184,16 +183,34 @@ while True:
         for obj in object_list:
             obj.collision_detector(event_dict)
             if event_dict["EditableObjects"]["clickable"]: break
-        
     # ----------------------------------------------------------------------------
+
+    # si hago click izquierdo copiamos lista clickeable a lista selected
+    if event_dict["Mouse"]["MouseClickLeftDown"]:
+        event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
+        event_dict["EditableObjects"]["clickable"].clear()
+
+    # ----------------------------------------------------------------------------
+    # ejecuto objetos de lista selected
+    selected_in_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
+    if selected_in_list:
+        event_dict["EditableObjects"]["selected"][depth_number+1](event_dict)
+    # ----------------------------------------------------------------------------
+
+
     
-    try:
-        event_dict["EditPoint"][depth_number+1](event_dict)
-    except Exception as e:
-        #print(f"Error: {e}")
-        pass
+
+
+    #print(event_dict["EditableObjects"]["selected"])
+
+    # try:
+    #     event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
+    #     #event_dict["EditPoint"][depth_number+1](event_dict)
+    # except Exception as e:
+    #     #print(f"Error: {e}")
+    #     pass
     
-    #print(event_dict[["EditableObjects"]["clickable"]])
+    
 
 
     # detectamos colision: Click
