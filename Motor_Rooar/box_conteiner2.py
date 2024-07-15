@@ -106,17 +106,22 @@ class BoxConteiner2:
             hit_left = mouse_x <= x + margin
             hit_right = mouse_x >= x + w - margin
 
+            self.hit_scale_modifier_top = False
+            self.hit_scale_modifier_down = False
+            self.hit_scale_modifier_left = False
+            self.hit_scale_modifier_right = False
+
             if hit_top and hit_left:
-                self.hit_scale_modifier_top, self.hit_scale_modifier_left = True,True
+                self.hit_scale_modifier_top = self.hit_scale_modifier_left = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENWSE
             elif hit_down and hit_right:
-                self.hit_scale_modifier_down, self.hit_scale_modifier_right = True,True
+                self.hit_scale_modifier_down = self.hit_scale_modifier_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENWSE
             elif hit_top and hit_right:
-                self.hit_scale_modifier_top, self.hit_scale_modifier_right = True,True
+                self.hit_scale_modifier_top = self.hit_scale_modifier_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENESW
             elif hit_down and hit_left:
-                self.hit_scale_modifier_down, self.hit_scale_modifier_left = True,True
+                self.hit_scale_modifier_down = self.hit_scale_modifier_left = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENESW
             elif hit_top:
                 self.hit_scale_modifier_top = True
@@ -130,6 +135,8 @@ class BoxConteiner2:
             elif hit_right:
                 self.hit_scale_modifier_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
+            
+            print(self.hit_scale_modifier_top,self.hit_scale_modifier_down,self.hit_scale_modifier_left,self.hit_scale_modifier_right)
             # ----------------------------------------------------------------------------
         
         init() # iniciamos
@@ -145,31 +152,56 @@ class BoxConteiner2:
         mouse_y = event_dict["Mouse"]["MousePosition"][1] 
         # ----------------------------------------------------------------------------
 
+        #print(self.hit_scale_modifier_top,self.hit_scale_modifier_down,self.hit_scale_modifier_left,self.hit_scale_modifier_right)
+
         if event_dict["Mouse"]["Motion"]:
+
+            margin = self.margin_scale_modifier #margen "5"
+
+            # ERRORES!!! POR TODAS PARTES!!!
+
+            if self.hit_scale_modifier_top:
+
+                self.rect.height -= event_dict["Mouse"]["Motion"][1]
+                self.scale_modifier_rect.height -= event_dict["Mouse"]["Motion"][1]
+                
+                #self.rect.x += event_dict["Mouse"]["Motion"][0]
+                self.rect.y += event_dict["Mouse"]["Motion"][1]
+                #self.scale_modifier_rect.x = self.rect.x - margin
+                self.scale_modifier_rect.y = self.rect.y - margin
+
+            if self.hit_scale_modifier_down:
+
+                self.rect.height += event_dict["Mouse"]["Motion"][1]
+                self.scale_modifier_rect.height = self.rect.height + (margin*2)
+
             if self.hit_scale_modifier_left:
 
                 self.rect.width = self.rect.width - (mouse_x - self.rect.x)
+                self.scale_modifier_rect.width = self.rect.width + (margin*2)
                 self.rect.x = mouse_x
-                self.scale_modifier_rect.x = mouse_x -5
-                self.scale_modifier_rect.width = self.rect.width + 10
-                self.surface = self.screen.subsurface(self.rect) # superficie
+                self.scale_modifier_rect.x = mouse_x - margin
 
-            elif self.hit_scale_modifier_right:
+
+            if self.hit_scale_modifier_right:
 
                 self.rect.width = mouse_x - self.rect.x 
-                self.scale_modifier_rect.width = self.rect.width + 10
-                self.surface = self.screen.subsurface(self.rect) # superficie
+                self.scale_modifier_rect.width = self.rect.width + (margin*2)
+
+            self.surface = self.screen.subsurface(self.rect) # superficie
 
 
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
 
+            self.hit_scale_modifier_top = False
+            self.hit_scale_modifier_down = False
+            self.hit_scale_modifier_left = False
+            self.hit_scale_modifier_right = False
+
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
-            #self.hit_scale_modifier_top,
-            #self.hit_scale_modifier_down,
-            #self.hit_scale_modifier_left,
-            #self.hit_scale_modifier_right = False,False,False,False
+            
 
         
 

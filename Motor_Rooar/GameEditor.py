@@ -120,11 +120,12 @@ while True:
     
     # Mouse motion and mouse position
     if event_dict["Mouse"]["MousePosition"] != pg.mouse.get_pos(): # si el mouse se mueve
-        event_dict["Mouse"]["Motion"] = True
+        event_dict["Mouse"]["Motion"] = ((pg.mouse.get_pos()[0] - event_dict["Mouse"]["MousePosition"][0]),
+                                         (pg.mouse.get_pos()[1] - event_dict["Mouse"]["MousePosition"][1]))
         event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
         event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
     else: 
-        event_dict["Mouse"]["Motion"] = False
+        event_dict["Mouse"]["Motion"] = None#False
     # Restablecer eventos de clic de ratón
     event_dict["Mouse"]["MouseClickLeftDown"] = False
     event_dict["Mouse"]["MouseClickLeftUp"] = False
@@ -197,8 +198,6 @@ while True:
         event_dict["EditableObjects"]["selected"][depth_number+1](event_dict)
     # ----------------------------------------------------------------------------
 
-
-    
 
 
     #print(event_dict["EditableObjects"]["selected"])
