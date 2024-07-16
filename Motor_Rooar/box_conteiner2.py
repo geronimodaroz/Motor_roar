@@ -14,7 +14,8 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
 
         self.screen = screen
-        self.rect = pg.rect.Rect(x,y,w,h) # rect
+        self.rect_modifier_rect = pg.rect.Rect(x,y,w,h) # rect
+        #self.rect = pg.rect.Rect(x,y,w,h) # rect
         self.surface = self.screen.subsurface(self.rect) # superficie
         self.color = color
 
@@ -23,7 +24,8 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
         self.margin_scale_modifier = 5
         margin = self.margin_scale_modifier
-        self.scale_modifier_rect = pg.rect.Rect(x-(margin),y-(margin),w+(margin*2),h+(margin*2)) # modifier rect
+        #self.scale_modifier_rect = pg.rect.Rect(x-(margin),y-(margin),w+(margin*2),h+(margin*2)) # modifier rect
+        self.view_rect = pg.rect.Rect(x+(margin),y+(margin),w-(margin*2),h-(margin*2)) # modifier rect
         self.hit_scale_modifier_top = False
         self.hit_scale_modifier_down = False
         self.hit_scale_modifier_right = False
@@ -148,45 +150,33 @@ class BoxConteiner2:
         mouse_y = event_dict["Mouse"]["MousePosition"][1] 
         # ----------------------------------------------------------------------------
 
-        #print(self.hit_scale_modifier_top,self.hit_scale_modifier_down,self.hit_scale_modifier_left,self.hit_scale_modifier_right)
-
         if event_dict["Mouse"]["Motion"]:
 
             Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
             Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
 
             if self.hit_scale_modifier_top: # TOP
-
                 self.rect.height -= Mouse_motion_y
                 self.scale_modifier_rect.height -= Mouse_motion_y
                 self.rect.y += Mouse_motion_y
                 self.scale_modifier_rect.y += Mouse_motion_y
-                
-            if self.hit_scale_modifier_down: # DOWN
-
+            elif self.hit_scale_modifier_down: # DOWN
                 self.rect.height += Mouse_motion_y
                 self.scale_modifier_rect.height += Mouse_motion_y
-
             if self.hit_scale_modifier_left: # LEFT
-
                 self.rect.width -= Mouse_motion_x
                 self.scale_modifier_rect.width -= Mouse_motion_x
                 self.rect.x += Mouse_motion_x
                 self.scale_modifier_rect.x += Mouse_motion_x
-
-            if self.hit_scale_modifier_right: # RIGHT
-
+            elif self.hit_scale_modifier_right: # RIGHT
                 self.rect.width += Mouse_motion_x
                 self.scale_modifier_rect.width += Mouse_motion_x
 
             self.surface = self.screen.subsurface(self.rect) # superficie
 
-
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
-
             self.hit_scale_modifier_top = self.hit_scale_modifier_down = self.hit_scale_modifier_left = self.hit_scale_modifier_right = False
-
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
             
@@ -210,7 +200,5 @@ class BoxConteiner2:
     def draw(self,event_dict):
 
         pg.draw.rect(self.screen, self.color,self.rect) # box_conteiner
-
-
         pg.draw.rect(self.screen, (0,200,0),self.scale_modifier_rect,1) # box_conteiner
 
