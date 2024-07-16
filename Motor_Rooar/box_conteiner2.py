@@ -106,10 +106,7 @@ class BoxConteiner2:
             hit_left = mouse_x <= x + margin
             hit_right = mouse_x >= x + w - margin
 
-            self.hit_scale_modifier_top = False
-            self.hit_scale_modifier_down = False
-            self.hit_scale_modifier_left = False
-            self.hit_scale_modifier_right = False
+            self.hit_scale_modifier_top = self.hit_scale_modifier_down = self.hit_scale_modifier_left = self.hit_scale_modifier_right = False
 
             if hit_top and hit_left:
                 self.hit_scale_modifier_top = self.hit_scale_modifier_left = True
@@ -136,7 +133,6 @@ class BoxConteiner2:
                 self.hit_scale_modifier_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
             
-            print(self.hit_scale_modifier_top,self.hit_scale_modifier_down,self.hit_scale_modifier_left,self.hit_scale_modifier_right)
             # ----------------------------------------------------------------------------
         
         init() # iniciamos
@@ -156,37 +152,32 @@ class BoxConteiner2:
 
         if event_dict["Mouse"]["Motion"]:
 
-            margin = self.margin_scale_modifier #margen "5"
+            Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
+            Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
 
-            # ERRORES!!! POR TODAS PARTES!!!
+            if self.hit_scale_modifier_top: # TOP
 
-            if self.hit_scale_modifier_top:
-
-                self.rect.height -= event_dict["Mouse"]["Motion"][1]
-                self.scale_modifier_rect.height -= event_dict["Mouse"]["Motion"][1]
+                self.rect.height -= Mouse_motion_y
+                self.scale_modifier_rect.height -= Mouse_motion_y
+                self.rect.y += Mouse_motion_y
+                self.scale_modifier_rect.y += Mouse_motion_y
                 
-                #self.rect.x += event_dict["Mouse"]["Motion"][0]
-                self.rect.y += event_dict["Mouse"]["Motion"][1]
-                #self.scale_modifier_rect.x = self.rect.x - margin
-                self.scale_modifier_rect.y = self.rect.y - margin
+            if self.hit_scale_modifier_down: # DOWN
 
-            if self.hit_scale_modifier_down:
+                self.rect.height += Mouse_motion_y
+                self.scale_modifier_rect.height += Mouse_motion_y
 
-                self.rect.height += event_dict["Mouse"]["Motion"][1]
-                self.scale_modifier_rect.height = self.rect.height + (margin*2)
+            if self.hit_scale_modifier_left: # LEFT
 
-            if self.hit_scale_modifier_left:
+                self.rect.width -= Mouse_motion_x
+                self.scale_modifier_rect.width -= Mouse_motion_x
+                self.rect.x += Mouse_motion_x
+                self.scale_modifier_rect.x += Mouse_motion_x
 
-                self.rect.width = self.rect.width - (mouse_x - self.rect.x)
-                self.scale_modifier_rect.width = self.rect.width + (margin*2)
-                self.rect.x = mouse_x
-                self.scale_modifier_rect.x = mouse_x - margin
+            if self.hit_scale_modifier_right: # RIGHT
 
-
-            if self.hit_scale_modifier_right:
-
-                self.rect.width = mouse_x - self.rect.x 
-                self.scale_modifier_rect.width = self.rect.width + (margin*2)
+                self.rect.width += Mouse_motion_x
+                self.scale_modifier_rect.width += Mouse_motion_x
 
             self.surface = self.screen.subsurface(self.rect) # superficie
 
@@ -194,10 +185,7 @@ class BoxConteiner2:
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
 
-            self.hit_scale_modifier_top = False
-            self.hit_scale_modifier_down = False
-            self.hit_scale_modifier_left = False
-            self.hit_scale_modifier_right = False
+            self.hit_scale_modifier_top = self.hit_scale_modifier_down = self.hit_scale_modifier_left = self.hit_scale_modifier_right = False
 
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
@@ -213,7 +201,7 @@ class BoxConteiner2:
         # ----------------------------------------------------------------------------
         mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
         mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-        event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
+        #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
         # ----------------------------------------------------------------------------
         print("edit")
 
