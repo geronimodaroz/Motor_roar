@@ -182,7 +182,9 @@ while True:
     if event_dict["Mouse"]["Motion"]:
         del event_dict["EditableObjects"]["clickable"][depth_number+1:]
         for obj in object_list:
-            obj.collision_detector(event_dict)
+            #obj.collision_detector(event_dict)
+            if obj.scale_modifier_rect.collidepoint(mouse_x,mouse_y):
+                obj.collision_detector(event_dict)
             if event_dict["EditableObjects"]["clickable"]: break
     # ----------------------------------------------------------------------------
 
