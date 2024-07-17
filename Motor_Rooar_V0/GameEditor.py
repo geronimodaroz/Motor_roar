@@ -72,10 +72,10 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 
 
-# box_conteiner2
-from box_conteiner2 import BoxConteiner2
-box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450)
-object_list.append(box_conteiner2) # agregamos el objeto box_conteiner a la lista
+# window2
+from windows import Window
+window = Window(event_dict,screen,450,80,300,450)
+object_list.append(window) # agregamos el objeto window a la lista
 
 
 
@@ -200,8 +200,8 @@ while True:
 
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
 
-        # Box_conteiner
-        box_conteiner2.draw(event_dict)
+        # window
+        window.draw(event_dict)
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------

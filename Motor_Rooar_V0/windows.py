@@ -1,9 +1,9 @@
 import pygame as pg
-import sys
-from Folder_classes.reposition import Reposition
+#import sys
+#from Folder_classes.reposition import Reposition
 
 
-class BoxConteiner2:
+class Window:
 
     def __init__(self,event_dict,screen, x, y, w, h):
 
@@ -213,7 +213,97 @@ class BoxConteiner2:
 
 
 
-class BoxConteinerWindows(BoxConteiner2):
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------WindowBase-------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+class WindowBase():
+
     def __init__(self, event_dict, screen, x, y, w, h):
-        super().__init__(event_dict, screen, x, y, w, h)
-    pass
+                # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
+
+        # Rect
+        # ----------------------------------------------------------------------------
+        self.screen = screen
+        self.rect = pg.rect.Rect(x,y,w,h) # rect
+        # ----------------------------------------------------------------------------
+        # scale_modifier
+        # ----------------------------------------------------------------------------
+        self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
+        self.scale_modifier_surface = self.screen.subsurface(self.scale_modifier_rect) # scale_modifier_surface
+        self.hit_scale_modifier_top = self.hit_scale_modifier_down = self.hit_scale_modifier_right = self.hit_scale_modifier_left = False
+        self.margin_scale_modifier = 5
+        self.scale_modifier_color = (90,90,90)
+        # ----------------------------------------------------------------------------
+        # view
+        # ----------------------------------------------------------------------------
+        margin = self.margin_scale_modifier
+        x = margin
+        y = margin
+        w = self.scale_modifier_rect.width - (margin*2)
+        h = self.scale_modifier_rect.height - (margin*2)
+        self.view_rect = pg.rect.Rect(x,y,w,h) # modifier rect
+        self.view_surface = self.scale_modifier_surface.subsurface(self.view_rect) # superficie
+        self.view_color = (5,5,5)
+        # ----------------------------------------------------------------------------
+
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
+
+    
+    def collision_detector(self,event_dict):
+        # INFO:
+        # ----------------------------------------------------------------------------
+        # ESTE METODO ME INDICA CON QUE SECCION DEL OBJETO "SELF" ESTOY COLISIONANDO Y LO AGREGARA A LA LISTA "CLICKABLE"
+        # 1: self.edit
+        # 2: self.scale_modifier + variable de seccion "self.hit_scale_modifier_(top,down,left,right)"
+        # ----------------------------------------------------------------------------
+
+        #MousePosition - scale_modifier_rect (x,y)
+        # ----------------------------------------------------------------------------
+        mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.scale_modifier_rect.x
+        mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.scale_modifier_rect.y
+        # ----------------------------------------------------------------------------
+
+        # METODO INICIADOR
+        def init():
+
+            #Mouse Position Detection
+            # ----------------------------------------------------------------------------
+            if self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
+
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # cambio cursor a flecha 
+
+                del event_dict["EditableObjects"]["clickable"][self.depth_number:]
+                event_dict["EditableObjects"]["clickable"].append(self.edit)
+            # ----------------------------------------------------------------------------
+        
+        init() # iniciamos
+    
+
+    def edit(self,event_dict):
+
+        #MousePosition in the object
+        # ----------------------------------------------------------------------------
+        #mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+        #mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+        #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
+        # ----------------------------------------------------------------------------
+        print("edit")
+
+
+    def draw(self,event_dict):
+
+        pg.draw.rect(self.screen,self.scale_modifier_color,self.scale_modifier_rect,0,20) # box_conteiner
+        pg.draw.rect(self.scale_modifier_surface, self.view_color,self.view_rect,0,15) # box_conteiner
+        pg.draw.rect(self.screen,(255,0,0),self.rect,1) # box_conteiner
