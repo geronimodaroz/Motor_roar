@@ -10,8 +10,6 @@ from Folder_classes.font import Font # fuentes (string a surface)
 # Inicializar Pygame
 pg.init()
 
-
-
 # Configurar la pantalla
 width, height = 800, 600
 screen = pg.display.set_mode((width, height))
@@ -61,11 +59,6 @@ event_dict = {
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
     "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
-    #"MouseIcon":pg.SYSTEM_CURSOR_ARROW,
-    #"MousePosition": (pg.mouse.get_pos()),
-    #"MouseClickLeft": (0, 0),
-    #"MouseScroll": None,
-    #"EditPoint": [],
     "EditableObjects": {"selected":[],"clickable":[]},
     "depth_number": -1
 }
@@ -76,12 +69,6 @@ depth_number = event_dict["depth_number"]
 
 
 object_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
-
-
-# box_conteiner
-#from box_conteiner import BoxConteiner
-#box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
-#object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
 
 
 
@@ -111,12 +98,6 @@ while True:
     #Eventos
     # ----------------------------------------------------------------------------
     # Reinicio los eventos
-    #event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
-    
-    # event_dict["MouseClickLeft"] = None
-    # event_dict["MouseScroll"] = None
-    # event_dict["MousePosition"] = pg.mouse.get_pos()
-
     
     # Mouse motion and mouse position
     if event_dict["Mouse"]["MousePosition"] != pg.mouse.get_pos(): # si el mouse se mueve
@@ -125,7 +106,8 @@ while True:
         event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
         event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
     else: 
-        event_dict["Mouse"]["Motion"] = None#False
+        event_dict["Mouse"]["Motion"] = None
+        
     # Restablecer eventos de clic de ratón
     event_dict["Mouse"]["MouseClickLeftDown"] = False
     event_dict["Mouse"]["MouseClickLeftUp"] = False
@@ -143,10 +125,6 @@ while True:
         elif event.type == pg.KEYUP: # tecla hacia abajo
             i = event_dict["keyPressed"].index({"key":event.key,"unicode":event.unicode})
             del event_dict["keyPressed"][i]
-
-        # # click izquierdo sobre la pantalla
-        # if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-        #     event_dict["MouseClickLeft"] = event.pos
         
         # Detectar eventos de clic del ratón
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -163,16 +141,13 @@ while True:
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
-            #event_dict["MouseScroll"] = 1 if event.y > 0 else -1
     # ----------------------------------------------------------------------------
-
 
     #MousePosition
     # ----------------------------------------------------------------------------
     mouse_x = event_dict["Mouse"]["MousePosition"][0] 
     mouse_y = event_dict["Mouse"]["MousePosition"][1] 
     # ----------------------------------------------------------------------------
-
 
 
     # detectamos colision: Mouse Position
@@ -204,39 +179,6 @@ while True:
 
     #print(event_dict["EditableObjects"]["selected"])
 
-    # try:
-    #     event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
-    #     #event_dict["EditPoint"][depth_number+1](event_dict)
-    # except Exception as e:
-    #     #print(f"Error: {e}")
-    #     pass
-    
-    
-
-
-    # detectamos colision: Click
-    # ----------------------------------------------------------------------------
-    # if event_dict["MouseClickLeft"]:
-    #     for obj in object_list:
-    #         if obj.rect.collidepoint(event_dict["MouseClickLeft"]):
-    #             try:
-    #                 del event_dict["EditPoint"][depth_number+1:]
-    #             except Exception as e:
-    #                 #print(f"Error: {e}")
-    #                 pass
-    #             #event_dict["EditPoint"].append(obj)
-    #             break
-    #     else:
-    #         del event_dict["EditPoint"][depth_number+1:]
-    # ----------------------------------------------------------------------------
-
-
-
-    # try:
-    #     event_dict["EditPoint"][depth_number+1].edit(event_dict)
-    # except Exception as e:
-    #     #print(f"Error: {e}")
-    #     pass
 
     
 
@@ -255,8 +197,6 @@ while True:
     screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
 
     #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
-    # Box_conteiner
-    #box_conteiner.draw(event_dict)
 
     # Box_conteiner
     box_conteiner2.draw(event_dict)
