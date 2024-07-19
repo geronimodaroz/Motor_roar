@@ -57,6 +57,7 @@ detection_archive_delate.monitorear_carpeta(game_folder_path)
 event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
+    "screen":{"width":width, "height":height},
     "keyPressed": [],
     "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
     "EditableObjects": {"selected":[],"clickable":[]},
