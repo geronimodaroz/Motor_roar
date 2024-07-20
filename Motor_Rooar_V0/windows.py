@@ -20,6 +20,7 @@ class Window:
         # ----------------------------------------------------------------------------
         self.screen = screen
         self.rect = pg.rect.Rect(x,y,w,h) # rect
+        self.color = (90,90,90) # color
         #self.surface_rect = pg.rect.Rect(x,y,w,h) # surface rect
         #self.surface =  self.screen.subsurface(self.surface_rect) # surface
         # ----------------------------------------------------------------------------
@@ -36,7 +37,7 @@ class Window:
         self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
         self.scale_modifier_bar = 15
         self.scale_modifier_margin = 5
-        self.scale_modifier_color = (90,90,90)
+        #self.scale_modifier_color = (90,90,90)
         # ----------------------------------------------------------------------------
         # view
         # ----------------------------------------------------------------------------
@@ -50,15 +51,27 @@ class Window:
 
         self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
         self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
-        self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
+        self.surface_reposition # reposicion de la superficie view
+        #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
         self.view_color = (5,5,5)
+        
+
+        self.image = pg.image.load('C:\\Users\\Usuario\\Desktop\\med.png')
         # ----------------------------------------------------------------------------
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
+
+
+    def surface_reposition(self):
+        #view
+        # ----------------------------------------------------------------------------
+        self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
+        # ----------------------------------------------------------------------------
     
+
     def collision_detector(self,event_dict):
         # INFO:
         # ----------------------------------------------------------------------------
@@ -67,7 +80,7 @@ class Window:
         # 2: self.scale_modifier + variable de seccion "self.hit_scale_modifier_(top,down,left,right)"
         # ----------------------------------------------------------------------------
 
-        #MousePosition - scale_rect (x,y)
+        #MousePosition - (x,y)
         # ----------------------------------------------------------------------------
         mouse_x = event_dict["Mouse"]["MousePosition"][0] #- self.rect.x
         mouse_y = event_dict["Mouse"]["MousePosition"][1] #- self.rect.y
@@ -161,6 +174,7 @@ class Window:
         
         init() # iniciamos
 
+
     
 
 
@@ -172,148 +186,56 @@ class Window:
             Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
 
             if self.scale_modifier_hit_top: # TOP
-                # rect 
-                self.rect.x += Mouse_motion_x
+                self.rect.x += Mouse_motion_x # rect 
                 self.rect.y += Mouse_motion_y
-                #self.surface_rect.x = self.rect.x
-                #self.surface_rect.y = self.rect.y
-
-                self.scale_modifier_rect.x += Mouse_motion_x
+                self.scale_modifier_rect.x += Mouse_motion_x # scale_modifie
                 self.scale_modifier_rect.y += Mouse_motion_y
-                # self.scale_modifier_surface_rect.x = self.scale_modifier_rect.x
-                # self.scale_modifier_surface_rect.y = self.scale_modifier_rect.y
-
-                self.view_rect.x += Mouse_motion_x
+                self.view_rect.x += Mouse_motion_x # view_rect
                 self.view_rect.y += Mouse_motion_y
                 self.view_surface_rect.x = self.view_rect.x
                 self.view_surface_rect.y = self.view_rect.y
-
             elif self.scale_modifier_hit_down: # DOWN
-                # rect
-                self.rect.height += Mouse_motion_y 
-                #self.surface_rect.height = self.rect.height
-                # scale_modifier
-                self.scale_modifier_rect.height += Mouse_motion_y 
-                #self.scale_modifier_surface_rect.height = self.scale_modifier_rect.height
-                # view_rect
-                self.view_rect.height += Mouse_motion_y 
+                self.rect.height += Mouse_motion_y # rect
+                self.scale_modifier_rect.height += Mouse_motion_y # scale_modifier
+                self.view_rect.height += Mouse_motion_y # view_rect
                 self.view_surface_rect.height = self.view_rect.height
-
             if self.scale_modifier_hit_left: # LEFT
-                # rect
-                self.rect.width -= Mouse_motion_x 
+                self.rect.width -= Mouse_motion_x # rect
                 self.rect.x += Mouse_motion_x 
-                #self.surface_rect.width = self.rect.width
-                #self.surface_rect.x = self.rect.x
-                # scale_modifier
-                self.scale_modifier_rect.width -= Mouse_motion_x 
+                self.scale_modifier_rect.width -= Mouse_motion_x # scale_modifier
                 self.scale_modifier_rect.x += Mouse_motion_x 
-                
-                #self.scale_modifier_surface_rect.width = self.scale_modifier_rect.width
-                # view_rect
-                self.view_rect.width -= Mouse_motion_x 
+                self.view_rect.width -= Mouse_motion_x # view_rect
                 self.view_rect.x += Mouse_motion_x 
-                self.view_surface_rect.width -= Mouse_motion_x 
-                self.view_surface_rect.x += Mouse_motion_x 
-                
-
+                self.view_surface_rect.width = self.view_rect.width#Mouse_motion_x 
+                self.view_surface_rect.x = self.view_rect.x#Mouse_motion_x 
             elif self.scale_modifier_hit_right: # RIGHT
-                # rect
-                self.rect.width += Mouse_motion_x 
-                #self.surface_rect.width = self.rect.width
-                # scale_modifier
-                self.scale_modifier_rect.width += Mouse_motion_x 
-                #self.scale_modifier_surface_rect.width = self.scale_modifier_rect.width
-                # view_rect
-                self.view_rect.width += Mouse_motion_x 
+                self.rect.width += Mouse_motion_x # rect
+                self.scale_modifier_rect.width += Mouse_motion_x # scale_modifier
+                self.view_rect.width += Mouse_motion_x # view_rect
                 self.view_surface_rect.width = self.view_rect.width
                 
-
+            # # scale_modifier
+            # # ----------------------------------------------------------------------------
+            # x = self.rect.x
+            # y = self.rect.y
+            # w = self.rect.width
+            # h = self.rect.height
+            # self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
+            # # ----------------------------------------------------------------------------
+            # # view
+            # # ----------------------------------------------------------------------------
+            # margin = self.scale_modifier_margin
+            # bar = self.scale_modifier_bar
+            # x = self.scale_modifier_rect.x + margin
+            # y = self.scale_modifier_rect.y + bar
+            # w = self.scale_modifier_rect.width - (margin*2)
+            # h = self.scale_modifier_rect.height - (margin) - bar
+            # self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
+            # self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
+            # # ----------------------------------------------------------------------------
             
-            # ACA COMPROBACION SI COLISION CON PAREDES DE LA SUPERFICIE!
-            
+            self.surface_reposition # reposicion de la superficie view
 
-            # surface_base
-            # rect
-            # surface_rect
-            # surface
-            
-            # self.screen
-            # self.rect
-            # self.surface_rect
-            # self.surface
-
-            # rect
-            #self.surface = SurfaceReposition.surface_reposition(self.screen,self.rect,self.surface_rect,self.surface)
-
-            # if self.rect.x != self.surface_rect.x:
-            #     self.scale_modifier_rect.x =  self.rect.x
-            #     self.view_rect.x =  self.rect.x + 5
-            #     self.view_surface_rect.x = self.view_rect.x
-            # else:
-            #     self.scale_modifier_rect.x =  0
-            #     self.view_rect.x =  5
-            #     self.view_surface_rect.x = self.view_rect.x
-
-            # if self.rect.y != self.surface_rect.y:
-            #     self.scale_modifier_rect.y =  self.rect.y
-            #     self.view_rect.y =  self.rect.y + 15
-            #     self.view_surface_rect.y = self.view_rect.y
-            # else:
-            #     self.scale_modifier_rect.y =  0
-            #     self.view_rect.y =  15
-            #     self.view_surface_rect.y = self.view_rect.y
-
-
-            #self.scale_modifier_surface = SurfaceReposition.surface_reposition(self.surface,self.scale_modifier_rect,self.scale_modifier_surface_rect,self.scale_modifier_surface)
-            self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect,self.view_surface)
-
-            # x
-            # self.surface_rect.x = min(max(0,self.surface_rect.x),event_dict["screen"]["width"])
-
-            # if self.rect.x < 0:
-            #     #self.surface_rect.x = 0
-            #     if self.rect.x + self.rect.width > 0:
-            #         if self.rect.x + self.rect.width < event_dict["screen"]["width"]:
-            #             self.surface_rect.width = self.rect.x + self.rect.width
-            #         else:
-            #             self.surface_rect.width = event_dict["screen"]["width"]
-            #     else:
-            #         self.surface_rect.width = 0
-            # else:
-            #     if self.rect.x < event_dict["screen"]["width"]:
-            #         if self.rect.x + self.rect.width > event_dict["screen"]["width"]:
-            #             self.surface_rect.width = event_dict["screen"]["width"] - self.rect.x
-            #         else:
-            #             self.surface_rect.width = self.rect.width 
-            #     else:
-            #         self.surface_rect.width = 0
-
-            # # y
-            # self.surface_rect.y = min(max(0,self.surface_rect.y),event_dict["screen"]["height"])
-
-            # if self.rect.y < 0:
-            #     if self.rect.y + self.rect.height > 0:
-            #         if self.rect.y + self.rect.height < event_dict["screen"]["height"]:
-            #             self.surface_rect.height = self.rect.y + self.rect.height
-            #         else:
-            #             self.surface_rect.height = event_dict["screen"]["height"]
-            #     else:
-            #         self.surface_rect.height = 0
-            # else:
-            #     if self.rect.y < event_dict["screen"]["height"]:
-            #         if self.rect.y + self.rect.height > event_dict["screen"]["height"]:
-            #             self.surface_rect.height = event_dict["screen"]["height"] - self.rect.y
-            #         else:
-            #             self.surface_rect.height= self.rect.height
-            #     else:
-            #         self.surface_rect.height = 0
-
-
-
-            # self.surface =  self.screen.subsurface(self.surface_rect) # rect surface
-            #self.scale_modifier_surface = self.surface.subsurface(self.scale_modifier_surface_rect) # superficie
-            #self.view_surface = self.surface.subsurface(self.view_surface_rect) # superficie
 
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
@@ -321,8 +243,8 @@ class Window:
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
             
-
-        
+    
+    
 
 
     def edit(self,event_dict):
@@ -340,19 +262,17 @@ class Window:
 
     def draw(self,event_dict):
 
-        #pg.draw.rect(self.screen,(0,0,150),self.surface_rect) # rect
-        pg.draw.rect(self.screen,self.scale_modifier_color,self.rect) # rect
+        pg.draw.rect(self.screen,self.color,self.rect,0,10) # rect
+        #pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
 
-        #pg.draw.rect(self.surface,self.scale_modifier_color,self.scale_modifier_rect,0,15) # scale_modifier
-        pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
+        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
 
-        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,15) # view
-        pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
+        # self.view_surface.blit(self.image,(0,0))
+        # if self.view_rect.x < 0:
+        #     self.view_surface.blit(self.image,(self.view_rect.x,0))
+        
 
-        #pg.draw.rect(self.screen,(255,255,0),self.view_surface_rect,1) # view
-
-
-        #pg.draw.rect(self.screen,(255,0,0),self.rect,1) # box_conteiner
         
 
 
@@ -367,8 +287,9 @@ class Window:
 
 class WindowBase():
 
-    def __init__(self, event_dict, screen, x, y, w, h):
-                # prufundidad del objeto +1
+    def __init__(self,event_dict,screen, x, y, w, h):
+
+        # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]+=1
         self.depth_number = event_dict["depth_number"]
@@ -378,25 +299,25 @@ class WindowBase():
         # ----------------------------------------------------------------------------
         self.screen = screen
         self.rect = pg.rect.Rect(x,y,w,h) # rect
-        # ----------------------------------------------------------------------------
-        # scale_modifier
-        # ----------------------------------------------------------------------------
-        self.scale_modifier_surface_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
-        self.scale_modifier_surface = self.screen.subsurface(self.scale_modifier_surface_rect) # scale_modifier_surface
-        self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
-        self.scale_modifier_margin = 5
-        self.scale_modifier_color = (90,90,90)
+        self.color = (90,90,90) # color
         # ----------------------------------------------------------------------------
         # view
         # ----------------------------------------------------------------------------
-        margin = self.scale_modifier_margin
-        x = margin
-        y = margin
-        w = self.scale_modifier_surface_rect.width - (margin*2)
-        h = self.scale_modifier_surface_rect.height - (margin*2)
-        self.view_surface_rect = pg.rect.Rect(x,y,w,h) # modifier rect
-        self.view_surface = self.scale_modifier_surface.subsurface(self.view_surface_rect) # superficie
+        margin = 5
+        bar = 15
+
+        x = self.rect.x + margin
+        y = self.rect.y + margin
+        w = self.rect.width - (margin*2)
+        h = self.rect.height - (margin*2) 
+
+        self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
+        self.surface_reposition # reposicion de la superficie view
+        #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
         self.view_color = (5,5,5)
+        
+
         # ----------------------------------------------------------------------------
 
         # prufundidad del objeto -1
@@ -404,50 +325,57 @@ class WindowBase():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
+
+    def surface_reposition(self):
+        #view
+        # ----------------------------------------------------------------------------
+        self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
+        # ----------------------------------------------------------------------------
     
+
     def collision_detector(self,event_dict):
         # INFO:
         # ----------------------------------------------------------------------------
         # ESTE METODO ME INDICA CON QUE SECCION DEL OBJETO "SELF" ESTOY COLISIONANDO Y LO AGREGARA A LA LISTA "CLICKABLE"
         # 1: self.edit
-        # 2: self.scale_modifier + variable de seccion "self.hit_scale_modifier_(top,down,left,right)"
         # ----------------------------------------------------------------------------
 
-        #MousePosition - scale_modifier_rect (x,y)
+        #MousePosition - (x,y)
         # ----------------------------------------------------------------------------
-        mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.scale_modifier_surface_rect.x
-        mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.scale_modifier_surface_rect.y
+        mouse_x = event_dict["Mouse"]["MousePosition"][0] #- self.rect.x
+        mouse_y = event_dict["Mouse"]["MousePosition"][1] #- self.rect.y
         # ----------------------------------------------------------------------------
 
+        
+        
         # METODO INICIADOR
         def init():
 
+
             #Mouse Position Detection
             # ----------------------------------------------------------------------------
-            if self.view_surface_rect.collidepoint(mouse_x,mouse_y): # rect (1)
+            if self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
 
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # cambio cursor a flecha 
 
                 del event_dict["EditableObjects"]["clickable"][self.depth_number:]
                 event_dict["EditableObjects"]["clickable"].append(self.edit)
-            # ----------------------------------------------------------------------------
+
         
         init() # iniciamos
+
+
     
 
     def edit(self,event_dict):
-
-        #MousePosition in the object
-        # ----------------------------------------------------------------------------
-        #mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-        #mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-        #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
-        # ----------------------------------------------------------------------------
+        
         print("edit")
+
 
 
     def draw(self,event_dict):
 
-        pg.draw.rect(self.screen,self.scale_modifier_color,self.scale_modifier_surface_rect,0,20) # box_conteiner
-        pg.draw.rect(self.scale_modifier_surface, self.view_color,self.view_surface_rect,0,15) # box_conteiner
-        pg.draw.rect(self.screen,(255,0,0),self.rect,1) # box_conteiner
+        pg.draw.rect(self.screen,self.color,self.rect,0,10) # rect
+
+        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        

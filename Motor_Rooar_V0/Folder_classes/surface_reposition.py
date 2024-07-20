@@ -6,7 +6,7 @@
 class SurfaceReposition:
 
 
-    def surface_reposition(surface_base,rect,surface_rect,surface):
+    def surface_reposition(surface_base,rect,surface_rect):
             
         # surface_base
         # rect

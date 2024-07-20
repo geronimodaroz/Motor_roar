@@ -75,7 +75,7 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # window2
 from windows import Window
-window = Window(event_dict,screen,450,80,300,450)
+window = Window(event_dict,screen,250,80,300,450)
 object_list.append(window) # agregamos el objeto window a la lista
 
 
@@ -162,7 +162,6 @@ while True:
             for obj in object_list:
                 #obj.collision_detector(event_dict)
                 if obj.rect.collidepoint(mouse_x,mouse_y):
-                    
                     obj.collision_detector(event_dict)
                 if event_dict["EditableObjects"]["clickable"]: break
         # ----------------------------------------------------------------------------
