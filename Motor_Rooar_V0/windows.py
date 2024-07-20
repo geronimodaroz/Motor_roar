@@ -125,10 +125,10 @@ class Window:
             w = self.scale_modifier_rect.width
             h = self.scale_modifier_rect.height
 
-            hit_top = mouse_y <= x + bar
-            hit_down = mouse_y >= x + h - margin
-            hit_left = mouse_x <= y + margin
-            hit_right = mouse_x >= y + w - margin
+            hit_top = mouse_y <= y + bar
+            hit_down = mouse_y >= y + h - margin
+            hit_left = mouse_x <= x + margin
+            hit_right = mouse_x >= x + w - margin
 
             self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
 
@@ -207,10 +207,15 @@ class Window:
                 #self.surface_rect.x = self.rect.x
                 # scale_modifier
                 self.scale_modifier_rect.width -= Mouse_motion_x 
+                self.scale_modifier_rect.x += Mouse_motion_x 
+                
                 #self.scale_modifier_surface_rect.width = self.scale_modifier_rect.width
                 # view_rect
                 self.view_rect.width -= Mouse_motion_x 
-                self.view_surface_rect.width = self.view_rect.width
+                self.view_rect.x += Mouse_motion_x 
+                self.view_surface_rect.width -= Mouse_motion_x 
+                self.view_surface_rect.x += Mouse_motion_x 
+                
 
             elif self.scale_modifier_hit_right: # RIGHT
                 # rect
@@ -336,7 +341,7 @@ class Window:
     def draw(self,event_dict):
 
         #pg.draw.rect(self.screen,(0,0,150),self.surface_rect) # rect
-        pg.draw.rect(self.screen,(0,0,255),self.rect,1) # rect
+        pg.draw.rect(self.screen,self.scale_modifier_color,self.rect) # rect
 
         #pg.draw.rect(self.surface,self.scale_modifier_color,self.scale_modifier_rect,0,15) # scale_modifier
         pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
