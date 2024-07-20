@@ -20,13 +20,13 @@ class Window:
         # ----------------------------------------------------------------------------
         self.screen = screen
         self.rect = pg.rect.Rect(x,y,w,h) # rect
-        self.surface_rect = pg.rect.Rect(x,y,w,h) # surface rect
-        self.surface =  self.screen.subsurface(self.surface_rect) # surface
+        #self.surface_rect = pg.rect.Rect(x,y,w,h) # surface rect
+        #self.surface =  self.screen.subsurface(self.surface_rect) # surface
         # ----------------------------------------------------------------------------
         # scale_modifier
         # ----------------------------------------------------------------------------
-        x = 0
-        y = 0
+        x = self.rect.x#0
+        y = self.rect.y#0
         w = self.rect.width
         h = self.rect.height
 
@@ -43,14 +43,14 @@ class Window:
         margin = self.scale_modifier_margin
         bar = self.scale_modifier_bar
 
-        x =  margin
-        y =  bar
+        x = self.scale_modifier_rect.x + margin
+        y = self.scale_modifier_rect.y + bar
         w = self.scale_modifier_rect.width - (margin*2)
         h = self.scale_modifier_rect.height - (margin) - bar
 
         self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
         self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
-        self.view_surface = self.surface.subsurface(self.view_surface_rect) # view_surface
+        self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
         self.view_color = (5,5,5)
         # ----------------------------------------------------------------------------
 
@@ -69,12 +69,15 @@ class Window:
 
         #MousePosition - scale_rect (x,y)
         # ----------------------------------------------------------------------------
-        mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x
-        mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+        mouse_x = event_dict["Mouse"]["MousePosition"][0] #- self.rect.x
+        mouse_y = event_dict["Mouse"]["MousePosition"][1] #- self.rect.y
         # ----------------------------------------------------------------------------
 
+        
+        
         # METODO INICIADOR
         def init():
+
 
             #Mouse Position Detection
             # ----------------------------------------------------------------------------
@@ -85,7 +88,7 @@ class Window:
                 del event_dict["EditableObjects"]["clickable"][self.depth_number:]
                 event_dict["EditableObjects"]["clickable"].append(self.edit)
 
-            if self.scale_modifier_rect.collidepoint(mouse_x,mouse_y): # rect scale_modifier (2)
+            elif self.scale_modifier_rect.collidepoint(mouse_x,mouse_y): # rect scale_modifier (2)
 
                 # Si existe la profundidad "depth" en la lista "selected"
                 exist_depth_in_list_selected = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number
@@ -122,10 +125,10 @@ class Window:
             w = self.scale_modifier_rect.width
             h = self.scale_modifier_rect.height
 
-            hit_top = mouse_y <=  bar
-            hit_down = mouse_y >=  h - margin
-            hit_left = mouse_x <=  margin
-            hit_right = mouse_x >=  w - margin
+            hit_top = mouse_y <= x + bar
+            hit_down = mouse_y >= x + h - margin
+            hit_left = mouse_x <= y + margin
+            hit_right = mouse_x >= y + w - margin
 
             self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
 
@@ -172,23 +175,23 @@ class Window:
                 # rect 
                 self.rect.x += Mouse_motion_x
                 self.rect.y += Mouse_motion_y
-                self.surface_rect.x = self.rect.x
-                self.surface_rect.y = self.rect.y
+                #self.surface_rect.x = self.rect.x
+                #self.surface_rect.y = self.rect.y
 
-                # self.scale_modifier_rect.x += Mouse_motion_x
-                # self.scale_modifier_rect.y += Mouse_motion_y
+                self.scale_modifier_rect.x += Mouse_motion_x
+                self.scale_modifier_rect.y += Mouse_motion_y
                 # self.scale_modifier_surface_rect.x = self.scale_modifier_rect.x
                 # self.scale_modifier_surface_rect.y = self.scale_modifier_rect.y
 
-                # self.view_rect.x += Mouse_motion_x
-                # self.view_rect.y += Mouse_motion_y
-                # self.view_surface_rect.x = self.view_rect.x
-                # self.view_surface_rect.y = self.view_rect.y
+                self.view_rect.x += Mouse_motion_x
+                self.view_rect.y += Mouse_motion_y
+                self.view_surface_rect.x = self.view_rect.x
+                self.view_surface_rect.y = self.view_rect.y
 
             elif self.scale_modifier_hit_down: # DOWN
                 # rect
                 self.rect.height += Mouse_motion_y 
-                self.surface_rect.height = self.rect.height
+                #self.surface_rect.height = self.rect.height
                 # scale_modifier
                 self.scale_modifier_rect.height += Mouse_motion_y 
                 #self.scale_modifier_surface_rect.height = self.scale_modifier_rect.height
@@ -200,8 +203,8 @@ class Window:
                 # rect
                 self.rect.width -= Mouse_motion_x 
                 self.rect.x += Mouse_motion_x 
-                self.surface_rect.width = self.rect.width
-                self.surface_rect.x = self.rect.x
+                #self.surface_rect.width = self.rect.width
+                #self.surface_rect.x = self.rect.x
                 # scale_modifier
                 self.scale_modifier_rect.width -= Mouse_motion_x 
                 #self.scale_modifier_surface_rect.width = self.scale_modifier_rect.width
@@ -212,7 +215,7 @@ class Window:
             elif self.scale_modifier_hit_right: # RIGHT
                 # rect
                 self.rect.width += Mouse_motion_x 
-                self.surface_rect.width = self.rect.width
+                #self.surface_rect.width = self.rect.width
                 # scale_modifier
                 self.scale_modifier_rect.width += Mouse_motion_x 
                 #self.scale_modifier_surface_rect.width = self.scale_modifier_rect.width
@@ -236,21 +239,29 @@ class Window:
             # self.surface
 
             # rect
-            self.surface = SurfaceReposition.surface_reposition(self.screen,self.rect,self.surface_rect,self.surface)
+            #self.surface = SurfaceReposition.surface_reposition(self.screen,self.rect,self.surface_rect,self.surface)
 
-            if self.rect.x != self.surface_rect.x:
-                self.scale_modifier_rect.x =  self.rect.x
-                self.view_rect.x =  self.rect.x + 5
-            if self.rect.y != self.surface_rect.y:
-                self.scale_modifier_rect.y =  self.rect.y
-                self.view_rect.y =  self.rect.y + 15
-
-            # if self.rect.x < 0:
+            # if self.rect.x != self.surface_rect.x:
             #     self.scale_modifier_rect.x =  self.rect.x
             #     self.view_rect.x =  self.rect.x + 5
+            #     self.view_surface_rect.x = self.view_rect.x
+            # else:
+            #     self.scale_modifier_rect.x =  0
+            #     self.view_rect.x =  5
+            #     self.view_surface_rect.x = self.view_rect.x
+
+            # if self.rect.y != self.surface_rect.y:
+            #     self.scale_modifier_rect.y =  self.rect.y
+            #     self.view_rect.y =  self.rect.y + 15
+            #     self.view_surface_rect.y = self.view_rect.y
+            # else:
+            #     self.scale_modifier_rect.y =  0
+            #     self.view_rect.y =  15
+            #     self.view_surface_rect.y = self.view_rect.y
+
 
             #self.scale_modifier_surface = SurfaceReposition.surface_reposition(self.surface,self.scale_modifier_rect,self.scale_modifier_surface_rect,self.scale_modifier_surface)
-            #self.view_surface = SurfaceReposition.surface_reposition(self.surface,self.view_rect,self.view_surface_rect,self.view_surface)
+            self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect,self.view_surface)
 
             # x
             # self.surface_rect.x = min(max(0,self.surface_rect.x),event_dict["screen"]["width"])
@@ -324,14 +335,16 @@ class Window:
 
     def draw(self,event_dict):
 
-        pg.draw.rect(self.screen,(0,0,150),self.surface_rect) # rect
+        #pg.draw.rect(self.screen,(0,0,150),self.surface_rect) # rect
         pg.draw.rect(self.screen,(0,0,255),self.rect,1) # rect
 
-        pg.draw.rect(self.surface,self.scale_modifier_color,self.scale_modifier_rect,0,15) # scale_modifier
-        pg.draw.rect(self.surface,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
+        #pg.draw.rect(self.surface,self.scale_modifier_color,self.scale_modifier_rect,0,15) # scale_modifier
+        pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
 
-        pg.draw.rect(self.surface, self.view_color,self.view_rect,0,15) # view
-        pg.draw.rect(self.surface,(255,0,0),self.view_rect,1) # view
+        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,15) # view
+        pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
+
+        #pg.draw.rect(self.screen,(255,255,0),self.view_surface_rect,1) # view
 
 
         #pg.draw.rect(self.screen,(255,0,0),self.rect,1) # box_conteiner

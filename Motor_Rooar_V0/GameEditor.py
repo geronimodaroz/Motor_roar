@@ -162,12 +162,13 @@ while True:
             for obj in object_list:
                 #obj.collision_detector(event_dict)
                 if obj.rect.collidepoint(mouse_x,mouse_y):
+                    
                     obj.collision_detector(event_dict)
                 if event_dict["EditableObjects"]["clickable"]: break
         # ----------------------------------------------------------------------------
         # si hago click izquierdo copiamos lista clickeable a lista selected
         # ----------------------------------------------------------------------------
-        if event_dict["Mouse"]["MouseClickLeftDown"]:
+        elif event_dict["Mouse"]["MouseClickLeftDown"]:
             event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
             event_dict["EditableObjects"]["clickable"].clear()
         # ----------------------------------------------------------------------------
@@ -180,7 +181,7 @@ while True:
 
 
 
-        #print(event_dict["EditableObjects"]["selected"])
+        #print(event_dict["EditableObjects"]["clickable"])
 
 
         
