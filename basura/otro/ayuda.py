@@ -1,40 +1,48 @@
-import pygame as pg
+import pygame
+import pygame.gfxdraw
+import sys
 
-# Inicializa Pygame
-pg.init()
+# Inicializar Pygame
+pygame.init()
 
-# Configura la ventana principal
-screen_width, screen_height = 800, 600
-screen = pg.display.set_mode((screen_width, screen_height))
-pg.display.set_caption("Ventana Principal con Subventana")
+# Configurar pantalla
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Rectángulo con Bordes Redondeados y Transparencia")
 
-# Crea una superficie principal (fondo de la ventana principal)
-main_surface = pg.Surface((screen_width, screen_height))
-main_surface.fill((200, 200, 200))  # Color gris claro
+# Colores
+background_color = (0, 0, 0)
+rect_color = (255, 0, 0, 128)  # Rojo con 50% de transparencia
 
-# Crea una superficie que actúe como una "ventana" dentro de la ventana principal
-window_width, window_height = 300, 200
-window_surface = pg.Surface((window_width, window_height))
-window_surface.fill((100, 100, 255))  # Color azul claro
+# Función para dibujar un rectángulo con bordes redondeados
+def draw_rounded_rect(surface, rect, color, radius):
+    x, y, w, h = rect
+    pygame.gfxdraw.aacircle(surface, x + radius, y + radius, radius, color)
+    pygame.gfxdraw.filled_circle(surface, x + radius, y + radius, radius, color)
+    pygame.gfxdraw.aacircle(surface, x + w - radius - 1, y + radius, radius, color)
+    pygame.gfxdraw.filled_circle(surface, x + w - radius - 1, y + radius, radius, color)
+    pygame.gfxdraw.aacircle(surface, x + radius, y + h - radius - 1, radius, color)
+    pygame.gfxdraw.filled_circle(surface, x + radius, y + h - radius - 1, radius, color)
+    pygame.gfxdraw.aacircle(surface, x + w - radius - 1, y + h - radius - 1, radius, color)
+    pygame.gfxdraw.filled_circle(surface, x + w - radius - 1, y + h - radius - 1, radius, color)
+    pygame.gfxdraw.box(surface, (x + radius, y, w - 2 * radius, h), color)
+    pygame.gfxdraw.box(surface, (x, y + radius, w, h - 2 * radius), color)
 
-# Posición de la ventana dentro de la ventana principal
-window_x, window_y = 50, 50
-
-# Bucle principal del juego
+# Bucle principal
 running = True
 while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
 
-    # Rellena la pantalla principal
-    screen.blit(main_surface, (0, 0))
+    # Rellenar la pantalla con el color de fondo
+    screen.fill(background_color)
 
-    # Dibuja la ventana dentro de la ventana principal
-    screen.blit(window_surface, (window_x, window_y))
+    # Dibujar el rectángulo con bordes redondeados y transparencia
+    draw_rounded_rect(screen, (300, 225, 200, 150), rect_color, 20)
 
-    # Actualiza la pantalla
-    pg.display.flip()
+    # Actualizar la pantalla
+    pygame.display.flip()
 
-# Finaliza Pygame
-pg.quit()
+# Salir de Pygame
+pygame.quit()
+sys.exit()

@@ -1,5 +1,6 @@
 import pygame as pg
 #import sys
+#import pygame.gfxdraw
 from Folder_classes.surface_reposition import SurfaceReposition
 
 
@@ -7,36 +8,31 @@ from Folder_classes.surface_reposition import SurfaceReposition
 
 class Window:
 
-    def __init__(self,event_dict,screen, x, y, w, h):
-
-        # prufundidad del objeto +1
-        # ----------------------------------------------------------------------------
-        event_dict["depth_number"]+=1
-        self.depth_number = event_dict["depth_number"]
-        # ----------------------------------------------------------------------------
+    def rects_repositions(self,x = 0,y = 0,w = 0,h = 0):
 
         # Rect
         # ----------------------------------------------------------------------------
-        self.screen = screen
-        self.rect = pg.rect.Rect(x,y,w,h) # rect
-        self.color = (90,90,90) # color
-        #self.surface_rect = pg.rect.Rect(x,y,w,h) # surface rect
-        #self.surface =  self.screen.subsurface(self.surface_rect) # surface
+        self.rect.x += x
+        self.rect.y += y
+        self.rect.width += w
+        self.rect.height += h
+
+        # x = self.rect.x
+        # y = self.rect.y
+        # w = self.rect.width
+        # h = self.rect.height
+
+        # self.rect = pg.rect.Rect(x,y,w,h) # rect
         # ----------------------------------------------------------------------------
         # scale_modifier
         # ----------------------------------------------------------------------------
-        x = self.rect.x#0
-        y = self.rect.y#0
+        x = self.rect.x
+        y = self.rect.y
         w = self.rect.width
         h = self.rect.height
 
         self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
-        #self.scale_modifier_surface_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_surface_rect
-        #self.scale_modifier_surface = self.surface.subsurface(self.scale_modifier_surface_rect) # scale_modifier_surface
-        self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
-        self.scale_modifier_bar = 15
-        self.scale_modifier_margin = 3
-        #self.scale_modifier_color = (90,90,90)
+
         # ----------------------------------------------------------------------------
         # view
         # ----------------------------------------------------------------------------
@@ -51,19 +47,110 @@ class Window:
         self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
         self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
         self.surface_reposition # reposicion de la superficie view
-        #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
+        # ----------------------------------------------------------------------------
+        # scroll_bar
+        # ----------------------------------------------------------------------------
+        scroll_bar_thickness = 10
+
+        margin_low = 2
+        margin_high = 10
+
+        # right
+        x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+        y = self.view_rect.y + margin_low + margin_high 
+        w = scroll_bar_thickness 
+        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+
+        # left 
+        x = self.view_rect.x + margin_low
+        y = self.view_rect.y + margin_low + margin_high 
+        w = scroll_bar_thickness 
+        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+
+        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        
+        # down
+        x = self.view_rect.x + margin_low + margin_high
+        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
+        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
+        h = scroll_bar_thickness
+
+        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        # ----------------------------------------------------------------------------
+
+
+    def __init__(self,event_dict,screen, x, y, w, h):
+
+        # prufundidad del objeto +1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]+=1
+        self.depth_number = event_dict["depth_number"]
+        # ----------------------------------------------------------------------------
+
+        # Rect
+        # ----------------------------------------------------------------------------
+        self.screen = screen
+        self.rect = pg.rect.Rect(x,y,w,h) # rect
+        self.color = (90,90,90) # color
+        # ----------------------------------------------------------------------------
+        # scale_modifier
+        # ----------------------------------------------------------------------------
+        x = self.rect.x
+        y = self.rect.y
+        w = self.rect.width
+        h = self.rect.height
+
+        self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
+        self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
+        self.scale_modifier_bar = 15
+        self.scale_modifier_margin = 3
+        # ----------------------------------------------------------------------------
+        # view
+        # ----------------------------------------------------------------------------
+        margin = self.scale_modifier_margin
+        bar = self.scale_modifier_bar
+
+        x = self.scale_modifier_rect.x + margin
+        y = self.scale_modifier_rect.y + bar
+        w = self.scale_modifier_rect.width - (margin*2) 
+        h = self.scale_modifier_rect.height - (margin) - bar
+
+        self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
+        self.surface_reposition # reposicion de la superficie view
         self.view_color = (5,5,5)
     
         # ----------------------------------------------------------------------------
         # scroll_bar
         # ----------------------------------------------------------------------------
-        x = self.view_rect.x + self.view_rect.w - 11
-        y = self.view_rect.y
-        w = 11
-        h = self.view_rect.h
+        scroll_bar_thickness = 10
 
-        self.scroll_bar_rect = pg.rect.Rect(x,y,w,h) # view_rect
-        self.scroll_bar_color =(50,50,50)
+        margin_low = 2
+        margin_high = 10
+
+        self.scroll_bar_color = (50,50,50)
+
+        # right
+        x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+        y = self.view_rect.y + margin_low + margin_high 
+        w = scroll_bar_thickness 
+        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+
+        # left 
+        x = self.view_rect.x + margin_low
+        y = self.view_rect.y + margin_low + margin_high 
+        w = scroll_bar_thickness 
+        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+
+        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        
+        # down
+        x = self.view_rect.x + margin_low + margin_high
+        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
+        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
+        h = scroll_bar_thickness
+
+        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
 
         # ----------------------------------------------------------------------------
 
@@ -200,82 +287,86 @@ class Window:
 
             if self.scale_modifier_hit_top: # TOP
 
-                self.rect.x += Mouse_motion_x # rect 
-                self.rect.y += Mouse_motion_y
-                self.scale_modifier_rect.x += Mouse_motion_x # scale_modifie
-                self.scale_modifier_rect.y += Mouse_motion_y
-                self.view_rect.x += Mouse_motion_x # view_rect
-                self.view_rect.y += Mouse_motion_y
-                self.view_surface_rect.x = self.view_rect.x
-                self.view_surface_rect.y = self.view_rect.y
+                self.rects_repositions(Mouse_motion_x,Mouse_motion_y)
+
+
+                # self.rect.x += Mouse_motion_x # rect 
+                # self.rect.y += Mouse_motion_y
+                # self.scale_modifier_rect.x += Mouse_motion_x # scale_modifie
+                # self.scale_modifier_rect.y += Mouse_motion_y
+                # self.view_rect.x += Mouse_motion_x # view_rect
+                # self.view_rect.y += Mouse_motion_y
+                # self.view_surface_rect.x = self.view_rect.x
+                # self.view_surface_rect.y = self.view_rect.y
+                # self.scroll_bar_side_rect.x += Mouse_motion_x # scroll_bar
+                # self.scroll_bar_side_rect.y += Mouse_motion_y
+                # self.scroll_bar_down_rect.x += Mouse_motion_x
+                # self.scroll_bar_down_rect.y += Mouse_motion_y
 
             elif self.scale_modifier_hit_down: # DOWN
 
                 if self.rect.height + Mouse_motion_y > limit:
 
-                    self.rect.height += Mouse_motion_y # rect
-                    self.scale_modifier_rect.height += Mouse_motion_y # scale_modifier
-                    self.view_rect.height += Mouse_motion_y # view_rect
-                    self.view_surface_rect.height = self.view_rect.height
+                    self.rects_repositions(h = Mouse_motion_y)
+                else:
+                    Mouse_motion_y = self.rect.height - limit 
+
+                    self.rects_repositions(h = -Mouse_motion_y)
+
+                    # self.rect.height += Mouse_motion_y # rect
+                    # self.scale_modifier_rect.height += Mouse_motion_y # scale_modifier
+                    # self.view_rect.height += Mouse_motion_y # view_rect
+                    # self.view_surface_rect.height = self.view_rect.height
 
             if self.scale_modifier_hit_left: # LEFT
 
                 if self.rect.width - Mouse_motion_x > limit:
-                    self.rect.width -= Mouse_motion_x # rect
-                    self.scale_modifier_rect.width -= Mouse_motion_x # scale_modifier
-                    self.view_rect.width -= Mouse_motion_x # view_rect
-                    self.view_surface_rect.width = self.view_rect.width#Mouse_motion_x 
 
-                    self.rect.x += Mouse_motion_x 
-                    self.scale_modifier_rect.x += Mouse_motion_x 
-                    self.view_rect.x += Mouse_motion_x 
-                    self.view_surface_rect.x = self.view_rect.x
+                    self.rects_repositions(x = Mouse_motion_x,w = -Mouse_motion_x)
+
+                    # self.rect.width -= Mouse_motion_x # rect
+                    # self.scale_modifier_rect.width -= Mouse_motion_x # scale_modifier
+                    # self.view_rect.width -= Mouse_motion_x # view_rect
+                    # self.view_surface_rect.width = self.view_rect.width#Mouse_motion_x 
+
+                    # self.rect.x += Mouse_motion_x 
+                    # self.scale_modifier_rect.x += Mouse_motion_x 
+                    # self.view_rect.x += Mouse_motion_x 
+                    # self.view_surface_rect.x = self.view_rect.x
                 else:
                     margin = self.scale_modifier_margin
-                    Mouse_motion_x = limit - self.rect.width
-                    
-                    self.rect.width = limit # rect
-                    self.scale_modifier_rect.width = limit # scale_modifier
-                    self.view_rect.width = limit - (margin*2)# view_rect
-                    self.view_surface_rect.width = limit - (margin*2) # Mouse_motion_x 
+                    Mouse_motion_x = self.rect.width -limit 
 
-                    self.rect.x -= Mouse_motion_x
-                    self.scale_modifier_rect.x -= Mouse_motion_x
-                    self.view_rect.x -= Mouse_motion_x
-                    self.view_surface_rect.x -= Mouse_motion_x
+                    self.rects_repositions(x = Mouse_motion_x, w = -Mouse_motion_x)
+
+                    
+                    # self.rect.width = limit # rect
+                    # self.scale_modifier_rect.width = limit # scale_modifier
+                    # self.view_rect.width = limit - (margin*2)# view_rect
+                    # self.view_surface_rect.width = limit - (margin*2) # Mouse_motion_x 
+
+                    # self.rect.x -= Mouse_motion_x
+                    # self.scale_modifier_rect.x -= Mouse_motion_x
+                    # self.view_rect.x -= Mouse_motion_x
+                    # self.view_surface_rect.x -= Mouse_motion_x
 
             elif self.scale_modifier_hit_right: # RIGHT
 
                 if self.rect.width + Mouse_motion_x > limit:
 
-                    self.rect.width += Mouse_motion_x # rect
-                    self.scale_modifier_rect.width += Mouse_motion_x # scale_modifier
-                    self.view_rect.width += Mouse_motion_x # view_rect
-                    self.view_surface_rect.width = self.view_rect.width
+                    self.rects_repositions(w = Mouse_motion_x)
+                else:
+                    Mouse_motion_x = self.rect.width - limit 
+
+                    self.rects_repositions(w = -Mouse_motion_x)
+
+
+                    # self.rect.width += Mouse_motion_x # rect
+                    # self.scale_modifier_rect.width += Mouse_motion_x # scale_modifier
+                    # self.view_rect.width += Mouse_motion_x # view_rect
+                    # self.view_surface_rect.width = self.view_rect.width
             
 
-            
-            
-
-            # # scale_modifier
-            # # ----------------------------------------------------------------------------
-            # x = self.rect.x
-            # y = self.rect.y
-            # w = self.rect.width
-            # h = self.rect.height
-            # self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
-            # # ----------------------------------------------------------------------------
-            # # view
-            # # ----------------------------------------------------------------------------
-            # margin = self.scale_modifier_margin
-            # bar = self.scale_modifier_bar
-            # x = self.scale_modifier_rect.x + margin
-            # y = self.scale_modifier_rect.y + bar
-            # w = self.scale_modifier_rect.width - (margin*2)
-            # h = self.scale_modifier_rect.height - (margin) - bar
-            # self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
-            # self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
-            # # ----------------------------------------------------------------------------
             
             self.surface_reposition # reposicion de la superficie view
 
@@ -309,10 +400,13 @@ class Window:
         #pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
 
 
-        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        pg.draw.rect(self.screen, self.view_color,self.view_surface_rect,0,10) # view
         #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
 
-        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_rect,0,10,0,-1,0,-1) # scroll_bar 
+        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar 
+        #pygame.gfxdraw.box(self.screen,self.scroll_bar_rect,(50,50,50,200))
+
+        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar 
         
 
         # self.view_surface.blit(self.image,(0,0))
