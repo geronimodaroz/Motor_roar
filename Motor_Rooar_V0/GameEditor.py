@@ -12,7 +12,7 @@ pg.init()
 
 # Configurar la pantalla
 width, height = 800, 600
-screen = pg.display.set_mode((width, height))
+screen = pg.display.set_mode((width, height), pg.RESIZABLE)
 pg.display.set_caption("Roar!!")
 
 

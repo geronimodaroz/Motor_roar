@@ -8,78 +8,7 @@ from Folder_classes.surface_reposition import SurfaceReposition
 
 class Window:
 
-    def rects_repositions(self,x = 0,y = 0,w = 0,h = 0):
-
-        # Rect
-        # ----------------------------------------------------------------------------
-        self.rect.x += x
-        self.rect.y += y
-        self.rect.width += w
-        self.rect.height += h
-
-        # x = self.rect.x
-        # y = self.rect.y
-        # w = self.rect.width
-        # h = self.rect.height
-
-        # self.rect = pg.rect.Rect(x,y,w,h) # rect
-        # ----------------------------------------------------------------------------
-        # scale_modifier
-        # ----------------------------------------------------------------------------
-        x = self.rect.x
-        y = self.rect.y
-        w = self.rect.width
-        h = self.rect.height
-
-        self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
-
-        # ----------------------------------------------------------------------------
-        # view
-        # ----------------------------------------------------------------------------
-        margin = self.scale_modifier_margin
-        bar = self.scale_modifier_bar
-
-        x = self.scale_modifier_rect.x + margin
-        y = self.scale_modifier_rect.y + bar
-        w = self.scale_modifier_rect.width - (margin*2) 
-        h = self.scale_modifier_rect.height - (margin) - bar
-
-        self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
-        self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
-        self.surface_reposition # reposicion de la superficie view
-        # ----------------------------------------------------------------------------
-        # scroll_bar
-        # ----------------------------------------------------------------------------
-        scroll_bar_thickness = 10
-
-        margin_low = 2
-        margin_high = 10
-
-        # right
-        x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
-        y = self.view_rect.y + margin_low + margin_high 
-        w = scroll_bar_thickness 
-        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-
-        # left 
-        x = self.view_rect.x + margin_low
-        y = self.view_rect.y + margin_low + margin_high 
-        w = scroll_bar_thickness 
-        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-
-        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
-        
-        # down
-        x = self.view_rect.x + margin_low + margin_high
-        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
-        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
-        h = scroll_bar_thickness
-
-        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
-        # ----------------------------------------------------------------------------
-
-
-    def __init__(self,event_dict,screen, x, y, w, h):
+    def __init__(self,event_dict,screen, x, y, w, h, scroll_bar = -1):
 
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
@@ -117,9 +46,120 @@ class Window:
 
         self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
         self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
-        self.surface_reposition # reposicion de la superficie view
+        #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
+        self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
+        #self.surface_reposition # reposicion de la superficie view
         self.view_color = (5,5,5)
     
+        # ----------------------------------------------------------------------------
+        # scroll_bar
+        # ----------------------------------------------------------------------------
+        self.scroll_bar = scroll_bar
+
+        scroll_bar_thickness = 10
+
+        margin_low = 2
+        margin_high = 10
+
+        self.scroll_bar_color = (40,40,40)
+
+        if self.scroll_bar == 1:
+            # right
+            x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+            y = self.view_rect.y + margin_low + margin_high 
+            w = scroll_bar_thickness 
+            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+        elif self.scroll_bar == -1:
+            # left 
+            x = self.view_rect.x + margin_low
+            y = self.view_rect.y + margin_low + margin_high 
+            w = scroll_bar_thickness 
+            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
+
+        x = self.scroll_bar_side_rect.x
+        y = self.scroll_bar_side_rect.y + 100
+        w = self.scroll_bar_side_rect.width
+        h = self.scroll_bar_side_rect.height - (100*2) 
+        self.scroll_bar_side_insid_color = (90,90,90)
+        self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
+        
+
+        # down
+        x = self.view_rect.x + margin_low + margin_high
+        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
+        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
+        h = scroll_bar_thickness
+        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
+
+        x = self.scroll_bar_down_rect.x + 50
+        y = self.scroll_bar_down_rect.y
+        w = self.scroll_bar_down_rect.width - (50*2)
+        h = self.scroll_bar_down_rect.height
+        self.scroll_bar_down_insid_color = (90,90,90)
+        self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # view_rect
+
+        # curtain
+        if self.view_rect.x < 0:
+            x = self.view_rect.x+20
+        else:
+            x = 0 +20
+        if self.view_rect.y < 0:
+            y = self.view_rect.y+20
+        else:
+            y = 0 +20
+        w = self.view_rect.width - 40
+        h = self.view_rect.height - 40
+        self.curtain_color = (150,100,150)
+        self.curtain_rect = pg.rect.Rect(x,y,w,h)
+        self.curtain_surface_rect = pg.rect.Rect(x,y,w,h)
+        #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
+        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
+        # ----------------------------------------------------------------------------
+
+        self.prueba_r = pg.rect.Rect(750,150,50,100)
+        self.prueba_s = self.screen.subsurface(self.prueba_r)
+
+        # prufundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"]-=1
+        # ----------------------------------------------------------------------------
+
+
+    def rects_repositions(self,x = 0,y = 0,w = 0,h = 0):
+
+
+        # Rect
+        # ----------------------------------------------------------------------------
+        self.rect.x += x
+        self.rect.y += y
+        self.rect.width += w
+        self.rect.height += h
+        # ----------------------------------------------------------------------------
+        # scale_modifier
+        # ----------------------------------------------------------------------------
+        x = self.rect.x
+        y = self.rect.y
+        w = self.rect.width
+        h = self.rect.height
+
+        self.scale_modifier_rect = pg.rect.Rect(x,y,w,h) # scale_modifier_rect
+        # ----------------------------------------------------------------------------
+        # view
+        # ----------------------------------------------------------------------------
+        margin = self.scale_modifier_margin
+        bar = self.scale_modifier_bar
+
+        x = self.scale_modifier_rect.x + margin
+        y = self.scale_modifier_rect.y + bar
+        w = self.scale_modifier_rect.width - (margin*2) 
+        h = self.scale_modifier_rect.height - (margin) - bar
+
+        self.view_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        self.view_surface_rect = pg.rect.Rect(x,y,w,h) # view_surface_rect
+        #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
+        self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
+        #self.surface_reposition # reposicion de la superficie view
         # ----------------------------------------------------------------------------
         # scroll_bar
         # ----------------------------------------------------------------------------
@@ -128,45 +168,66 @@ class Window:
         margin_low = 2
         margin_high = 10
 
-        self.scroll_bar_color = (50,50,50)
-
-        # right
-        x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
-        y = self.view_rect.y + margin_low + margin_high 
-        w = scroll_bar_thickness 
-        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-
-        # left 
-        x = self.view_rect.x + margin_low
-        y = self.view_rect.y + margin_low + margin_high 
-        w = scroll_bar_thickness 
-        h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+        if self.scroll_bar == 1:
+            # right
+            x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+            y = self.view_rect.y + margin_low + margin_high 
+            w = scroll_bar_thickness 
+            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+        elif self.scroll_bar == -1:
+            # left 
+            x = self.view_rect.x + margin_low
+            y = self.view_rect.y + margin_low + margin_high 
+            w = scroll_bar_thickness 
+            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
 
         self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
+
+        x = self.scroll_bar_side_rect.x
+        y = self.scroll_bar_side_rect.y + 100
+        w = self.scroll_bar_side_rect.width
+        h = self.scroll_bar_side_rect.height - (100*2) 
+        self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
         
+
         # down
         x = self.view_rect.x + margin_low + margin_high
         y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
         w = self.view_rect.width - (margin_low*2) - (margin_high*2)
         h = scroll_bar_thickness
+        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
 
-        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
+        x = self.scroll_bar_down_rect.x + 50
+        y = self.scroll_bar_down_rect.y
+        w = self.scroll_bar_down_rect.width - (50*2)
+        h = self.scroll_bar_down_rect.height
 
+        self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
+
+        # curtain
+        if self.view_rect.x < 0:
+            x = self.view_rect.x+20
+        else:
+            x = 0 +20
+        if self.view_rect.y < 0:
+            y = self.view_rect.y+20
+        else:
+            y = 0 +20
+        w = self.view_rect.width - 40
+        h = self.view_rect.height - 40
+        self.curtain_color = (150,100,150)
+        self.curtain_rect = pg.rect.Rect(x,y,w,h)
+        self.curtain_surface_rect = pg.rect.Rect(x,y,w,h)
+        #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
+        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
         # ----------------------------------------------------------------------------
 
 
-
-        # prufundidad del objeto -1
-        # ----------------------------------------------------------------------------
-        event_dict["depth_number"]-=1
-        # ----------------------------------------------------------------------------
-
-
-    def surface_reposition(self):
-        #view
-        # ----------------------------------------------------------------------------
-        self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
-        # ----------------------------------------------------------------------------
+    # def surface_reposition(self):
+    #     #view
+    #     # ----------------------------------------------------------------------------
+    #     self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
+    #     # ----------------------------------------------------------------------------
     
 
     def collision_detector(self,event_dict):
@@ -368,7 +429,7 @@ class Window:
             
 
             
-            self.surface_reposition # reposicion de la superficie view
+            #self.surface_reposition # reposicion de la superficie view
 
 
         # si click up elimino de lista selected a scale modifier
@@ -390,23 +451,35 @@ class Window:
         #mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
         #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
         # ----------------------------------------------------------------------------
+
+        self.prueba_r.x += 1
+        self.prueba_s = self.screen.subsurface(self.prueba_r)
         print("edit")
 
 
 
     def draw(self,event_dict):
 
+        pg.draw.rect(self.screen,self.color,self.prueba_r,0,10) # rect
+
         pg.draw.rect(self.screen,self.color,self.rect,0,10) # rect
         #pg.draw.rect(self.screen,(255,0,0),self.scale_modifier_rect,1) # scale_modifier
 
 
-        pg.draw.rect(self.screen, self.view_color,self.view_surface_rect,0,10) # view
+        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        pg.draw.rect(self.screen,(0,0,255),self.view_surface_rect) # view_surface
+
+        pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
+        pg.draw.rect(self.view_surface,(255,0,0),self.curtain_surface_rect,1) # curtain
         #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
 
-        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar 
+        pg.draw.rect(self.screen,self.scroll_bar_side_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
+        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
+        
         #pygame.gfxdraw.box(self.screen,self.scroll_bar_rect,(50,50,50,200))
 
-        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar 
+        pg.draw.rect(self.screen,self.scroll_bar_down_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
+        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
         
 
         # self.view_surface.blit(self.image,(0,0))
