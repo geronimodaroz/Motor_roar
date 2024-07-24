@@ -242,6 +242,9 @@ class Window:
                 w = self.scroll_bar_side_rect.width
                 h = self.scroll_bar_side_rect.height * proportion_hight_insid_bar_side
                 self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
+            else:
+                self.scroll_bar_side_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_side
+                self.scroll_bar_side_inside_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_side_inside
 
             # down
             if self.curtain_rect.width > self.view_rect.width:
@@ -262,6 +265,9 @@ class Window:
                 w = self.scroll_bar_down_rect.width * proportion_width_insid_bar_down
                 h = self.scroll_bar_down_rect.height
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
+            else:
+                self.scroll_bar_down_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_down
+                self.scroll_bar_down_inside_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_down_inside
             # ----------------------------------------------------------------------------
 
     
@@ -300,18 +306,10 @@ class Window:
                     if different_from_self_scale_modifier:
                         # comprobamos que seccion del "rect_scale_modifier" esta colisionando
                         comprobation_section_curtain_displace()
-                        #event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
                 else:
                     # si no existe esta "depth" en la lista "selected" la creamos
                     comprobation_section_curtain_displace()
-                    #event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
 
-                # if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y):
-                #     print("side_bar")
-                #     pass
-                # elif self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
-                #     print("down_bar")
-                #     pass
 
             elif self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
 
@@ -411,7 +409,6 @@ class Window:
 
     def curtain_displace(self,event_dict):
 
-
         if event_dict["Mouse"]["Motion"]:
 
             Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
@@ -419,31 +416,31 @@ class Window:
 
             if self.scroll_bar_side_inside_hit:
 
-                self.scroll_bar_side_inside_rect.y += Mouse_motion_y
+                self.scroll_bar_side_inside_rect.y += Mouse_motion_y # bar y
+                self.curtain_rect.y -= Mouse_motion_y # curtain y
 
-                if self.scroll_bar_side_inside_rect.y < self.scroll_bar_side_rect.y:
-                    Mouse_motion_y = 0 
-                    self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y
-                elif self.scroll_bar_side_inside_rect.y + self.scroll_bar_side_inside_rect.height > self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height:
-                     Mouse_motion_y = 0 
-                     self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height - self.scroll_bar_side_inside_rect.height
-
-                self.curtain_rect.y -= Mouse_motion_y
+                if self.scroll_bar_side_inside_rect.y < self.scroll_bar_side_rect.y: # si hit top
+                    self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y # bar y
+                    self.curtain_rect.y = 0 # curtain y
+                elif self.scroll_bar_side_inside_rect.y + self.scroll_bar_side_inside_rect.height > self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height: # hit down
+                     self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height - self.scroll_bar_side_inside_rect.height # bar y
+                     self.curtain_rect.y = self.view_rect.height - self.curtain_rect.height # curtain y
+                
                 self.curtain_surface_rect.y = self.curtain_rect.y
                 self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
 
             elif self.scroll_bar_down_inside_hit:
 
-                self.scroll_bar_down_inside_rect.x += Mouse_motion_x
+                self.scroll_bar_down_inside_rect.x += Mouse_motion_x # bar x
+                self.curtain_rect.x -= Mouse_motion_x # curtain x
 
-                if self.scroll_bar_down_inside_rect.x < self.scroll_bar_down_rect.x:
-                    Mouse_motion_x = 0 
-                    self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x
-                elif self.scroll_bar_down_inside_rect.x + self.scroll_bar_down_inside_rect.width > self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width:
-                     Mouse_motion_x = 0 
-                     self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width - self.scroll_bar_down_inside_rect.width
+                if self.scroll_bar_down_inside_rect.x < self.scroll_bar_down_rect.x: # si hit left
+                    self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x # bar x
+                    self.curtain_rect.x = 0 # curtain x
+                elif self.scroll_bar_down_inside_rect.x + self.scroll_bar_down_inside_rect.width > self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width: # si hit right
+                     self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width - self.scroll_bar_down_inside_rect.width # bar x
+                     self.curtain_rect.x = self.view_rect.width - self.curtain_rect.width # curtain x
                 
-                self.curtain_rect.x -= Mouse_motion_x
                 self.curtain_surface_rect.x = self.curtain_rect.x
                 self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
 
@@ -451,7 +448,6 @@ class Window:
 
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
-
             self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
