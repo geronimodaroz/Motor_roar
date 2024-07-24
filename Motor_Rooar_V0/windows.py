@@ -76,6 +76,11 @@ class Window:
 
         if self.scroll_bar != 0: # si es 0: no existe scroll_bar
 
+            self.scroll_bar_side_hit = False
+            self.scroll_bar_side_inside_hit = False
+            self.scroll_bar_down_hit = False
+            self.scroll_bar_down_inside_hit = False
+
             self.scroll_bar_color = (40,40,40)
             self.scroll_bar_insid_color = (90,90,90)
             # self.scroll_bar_thickness = 10
@@ -285,12 +290,28 @@ class Window:
             # ----------------------------------------------------------------------------
             if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y) or self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
 
-                if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y):
-                    print("side_bar")
-                    pass
-                elif self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
-                    print("down_bar")
-                    pass
+                
+                # Si existe la profundidad "depth" en la lista "selected"
+                exist_depth_in_list_selected = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number
+                if exist_depth_in_list_selected:
+
+                    # y el objeto es diferente a self.scale_modifier
+                    different_from_self_scale_modifier = event_dict["EditableObjects"]["selected"][self.depth_number] != self.scale_modifier
+                    if different_from_self_scale_modifier:
+                        # comprobamos que seccion del "rect_scale_modifier" esta colisionando
+                        comprobation_section_curtain_displace()
+                        #event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
+                else:
+                    # si no existe esta "depth" en la lista "selected" la creamos
+                    comprobation_section_curtain_displace()
+                    #event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
+
+                # if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y):
+                #     print("side_bar")
+                #     pass
+                # elif self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
+                #     print("down_bar")
+                #     pass
 
             elif self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
 
@@ -315,7 +336,23 @@ class Window:
                     comprobation_section_scale_modifier()
             # ----------------------------------------------------------------------------
         
+        def comprobation_section_curtain_displace():
+
+            event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
+
+            self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
+
+            if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y):
+                self.scroll_bar_side_hit = True
+                if self.scroll_bar_side_inside_rect.collidepoint(mouse_x,mouse_y):
+                    self.scroll_bar_side_inside_hit = True
+
+            elif self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
+                self.scroll_bar_down_hit = True
+                if self.scroll_bar_down_inside_rect.collidepoint(mouse_x,mouse_y):
+                    self.scroll_bar_down_inside_hit = True
         
+
         # METODO DE COMPROBACION DE SECCION DEL MODIFICADOR DE ESCALA
         def comprobation_section_scale_modifier():
             
@@ -371,6 +408,52 @@ class Window:
             # ----------------------------------------------------------------------------
         
         init() # iniciamos
+
+    def curtain_displace(self,event_dict):
+
+
+        if event_dict["Mouse"]["Motion"]:
+
+            Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
+            Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
+
+            if self.scroll_bar_side_inside_hit:
+
+                self.scroll_bar_side_inside_rect.y += Mouse_motion_y
+
+                if self.scroll_bar_side_inside_rect.y < self.scroll_bar_side_rect.y:
+                    Mouse_motion_y = 0 
+                    self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y
+                elif self.scroll_bar_side_inside_rect.y + self.scroll_bar_side_inside_rect.height > self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height:
+                     Mouse_motion_y = 0 
+                     self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height - self.scroll_bar_side_inside_rect.height
+
+                self.curtain_rect.y -= Mouse_motion_y
+                self.curtain_surface_rect.y = self.curtain_rect.y
+                self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
+
+            elif self.scroll_bar_down_inside_hit:
+
+                self.scroll_bar_down_inside_rect.x += Mouse_motion_x
+
+                if self.scroll_bar_down_inside_rect.x < self.scroll_bar_down_rect.x:
+                    Mouse_motion_x = 0 
+                    self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x
+                elif self.scroll_bar_down_inside_rect.x + self.scroll_bar_down_inside_rect.width > self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width:
+                     Mouse_motion_x = 0 
+                     self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width - self.scroll_bar_down_inside_rect.width
+                
+                self.curtain_rect.x -= Mouse_motion_x
+                self.curtain_surface_rect.x = self.curtain_rect.x
+                self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
+
+
+
+        # si click up elimino de lista selected a scale modifier
+        if event_dict["Mouse"]["MouseClickLeftUp"]:
+
+            self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
+            del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
 
 
