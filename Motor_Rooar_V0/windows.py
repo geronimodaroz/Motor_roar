@@ -8,7 +8,7 @@ from Folder_classes.surface_reposition import SurfaceReposition
 
 class Window:
 
-    def __init__(self,event_dict,screen, x, y, w, h, scroll_bar = -1):
+    def __init__(self,event_dict,screen, x, y, w, h, scroll_bar = 0):
 
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
@@ -50,72 +50,93 @@ class Window:
         self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
         #self.surface_reposition # reposicion de la superficie view
         self.view_color = (5,5,5)
-    
+
         # ----------------------------------------------------------------------------
-        # scroll_bar
-        # ----------------------------------------------------------------------------
-        self.scroll_bar = scroll_bar
-
-        scroll_bar_thickness = 10
-
-        margin_low = 2
-        margin_high = 10
-
-        self.scroll_bar_color = (40,40,40)
-
-        if self.scroll_bar == 1:
-            # right
-            x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
-            y = self.view_rect.y + margin_low + margin_high 
-            w = scroll_bar_thickness 
-            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-        elif self.scroll_bar == -1:
-            # left 
-            x = self.view_rect.x + margin_low
-            y = self.view_rect.y + margin_low + margin_high 
-            w = scroll_bar_thickness 
-            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
-
-        x = self.scroll_bar_side_rect.x
-        y = self.scroll_bar_side_rect.y + 100
-        w = self.scroll_bar_side_rect.width
-        h = self.scroll_bar_side_rect.height - (100*2) 
-        self.scroll_bar_side_insid_color = (90,90,90)
-        self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
-        
-
-        # down
-        x = self.view_rect.x + margin_low + margin_high
-        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
-        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
-        h = scroll_bar_thickness
-        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # view_rect
-
-        x = self.scroll_bar_down_rect.x + 50
-        y = self.scroll_bar_down_rect.y
-        w = self.scroll_bar_down_rect.width - (50*2)
-        h = self.scroll_bar_down_rect.height
-        self.scroll_bar_down_insid_color = (90,90,90)
-        self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # view_rect
-
         # curtain
+        # ----------------------------------------------------------------------------
         if self.view_rect.x < 0:
-            x = self.view_rect.x+20
+            x = self.view_rect.x
         else:
-            x = 0 +20
+            x = 0 
         if self.view_rect.y < 0:
-            y = self.view_rect.y+20
+            y = self.view_rect.y
         else:
-            y = 0 +20
-        w = self.view_rect.width - 40
-        h = self.view_rect.height - 40
+            y = 0 
+        w = self.view_rect.width 
+        h = 500 
         self.curtain_color = (150,100,150)
         self.curtain_rect = pg.rect.Rect(x,y,w,h)
         self.curtain_surface_rect = pg.rect.Rect(x,y,w,h)
         #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
         self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
         # ----------------------------------------------------------------------------
+        # scroll_bar
+        # ----------------------------------------------------------------------------
+        self.scroll_bar = scroll_bar
+
+        if self.scroll_bar != 0: # si es 0: no existe scroll_bar
+
+            self.scroll_bar_color = (40,40,40)
+            self.scroll_bar_insid_color = (90,90,90)
+            # self.scroll_bar_thickness = 10
+            # self.margin_low = 2
+            # self.margin_high = 10
+            scroll_bar_thickness = 10
+            margin_low = 2
+            margin_high = 10
+
+            # side
+            if self.curtain_rect.height > self.view_rect.height:
+                if self.scroll_bar == 1:
+                    # right
+                    x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+                    y = self.view_rect.y + margin_low + margin_high 
+                    w = scroll_bar_thickness 
+                    h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+                elif self.scroll_bar == -1:
+                    # left 
+                    x = self.view_rect.x + margin_low
+                    y = self.view_rect.y + margin_low + margin_high 
+                    w = scroll_bar_thickness 
+                    h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+                self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side
+                # calculo de proporcion en barra lateral interior
+                proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
+                if self.view_rect.y < 0:
+                    proportion_y_insid_bar_side = self.curtain_rect.y - self.view_rect.y
+                else:
+                    proportion_y_insid_bar_side = self.curtain_rect.y
+                x = self.scroll_bar_side_rect.x
+                y = self.scroll_bar_side_rect.y - proportion_y_insid_bar_side
+                w = self.scroll_bar_side_rect.width
+                h = self.scroll_bar_side_rect.height * proportion_hight_insid_bar_side
+                self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
+            else:
+                self.scroll_bar_side_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_side
+                self.scroll_bar_side_inside_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_side_inside
+
+            # down
+            if self.curtain_rect.width > self.view_rect.width:
+                x = self.view_rect.x + margin_low + margin_high
+                y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
+                w = self.view_rect.width - (margin_low*2) - (margin_high*2)
+                h = scroll_bar_thickness
+                self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down
+                # calculo de proporcion en barra inferior interior
+                proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
+                if self.view_rect.x < 0:
+                    proportion_x_insid_bar_down = self.curtain_rect.x - self.view_rect.x
+                else:
+                    proportion_x_insid_bar_down = self.curtain_rect.x
+                x = self.scroll_bar_down_rect.x - proportion_x_insid_bar_down
+                y = self.scroll_bar_down_rect.y
+                w = self.scroll_bar_down_rect.width * proportion_width_insid_bar_down
+                h = self.scroll_bar_down_rect.height
+                self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
+            else:
+                self.scroll_bar_down_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_down
+                self.scroll_bar_down_inside_rect = pg.rect.Rect(0,0,0,0) # scroll_bar_down_inside
+            # ----------------------------------------------------------------------------
 
         self.prueba_r = pg.rect.Rect(750,150,50,100)
         self.prueba_s = self.screen.subsurface(self.prueba_r)
@@ -125,9 +146,7 @@ class Window:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-
     def rects_repositions(self,x = 0,y = 0,w = 0,h = 0):
-
 
         # Rect
         # ----------------------------------------------------------------------------
@@ -160,74 +179,86 @@ class Window:
         #self.view_surface = self.screen.subsurface(self.view_surface_rect) # view_surface
         self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
         #self.surface_reposition # reposicion de la superficie view
+
+
+        # crear posicion relativa de view_rect!!!
+
+
         # ----------------------------------------------------------------------------
-        # scroll_bar
-        # ----------------------------------------------------------------------------
-        scroll_bar_thickness = 10
-
-        margin_low = 2
-        margin_high = 10
-
-        if self.scroll_bar == 1:
-            # right
-            x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
-            y = self.view_rect.y + margin_low + margin_high 
-            w = scroll_bar_thickness 
-            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-        elif self.scroll_bar == -1:
-            # left 
-            x = self.view_rect.x + margin_low
-            y = self.view_rect.y + margin_low + margin_high 
-            w = scroll_bar_thickness 
-            h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
-
-        self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
-
-        x = self.scroll_bar_side_rect.x
-        y = self.scroll_bar_side_rect.y + 100
-        w = self.scroll_bar_side_rect.width
-        h = self.scroll_bar_side_rect.height - (100*2) 
-        self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
-        
-
-        # down
-        x = self.view_rect.x + margin_low + margin_high
-        y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
-        w = self.view_rect.width - (margin_low*2) - (margin_high*2)
-        h = scroll_bar_thickness
-        self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
-
-        x = self.scroll_bar_down_rect.x + 50
-        y = self.scroll_bar_down_rect.y
-        w = self.scroll_bar_down_rect.width - (50*2)
-        h = self.scroll_bar_down_rect.height
-
-        self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
-
         # curtain
+        # ----------------------------------------------------------------------------
         if self.view_rect.x < 0:
-            x = self.view_rect.x+20
+            x = self.view_rect.x
         else:
-            x = 0 +20
+            x = 0 
         if self.view_rect.y < 0:
-            y = self.view_rect.y+20
+            y = self.view_rect.y
         else:
-            y = 0 +20
-        w = self.view_rect.width - 40
-        h = self.view_rect.height - 40
-        self.curtain_color = (150,100,150)
+            y = 0 
+        w = self.curtain_rect.width#self.view_rect.width - 40
+        h = self.curtain_rect.height#self.view_rect.height - 40
         self.curtain_rect = pg.rect.Rect(x,y,w,h)
         self.curtain_surface_rect = pg.rect.Rect(x,y,w,h)
         #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
         self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
         # ----------------------------------------------------------------------------
+        # scroll_bar
+        # ----------------------------------------------------------------------------
 
+        if self.scroll_bar != 0: # si es 0: no existe scroll_bar
+        
+            scroll_bar_thickness = 10
+            margin_low = 2
+            margin_high = 10
 
-    # def surface_reposition(self):
-    #     #view
-    #     # ----------------------------------------------------------------------------
-    #     self.view_surface = SurfaceReposition.surface_reposition(self.screen,self.view_rect,self.view_surface_rect)
-    #     # ----------------------------------------------------------------------------
+            # side
+            if self.curtain_rect.height > self.view_rect.height:
+                if self.scroll_bar == 1:
+                    # right
+                    x = self.view_rect.x + self.view_rect.width - scroll_bar_thickness - margin_low
+                    y = self.view_rect.y + margin_low + margin_high 
+                    w = scroll_bar_thickness 
+                    h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+                elif self.scroll_bar == -1:
+                    # left 
+                    x = self.view_rect.x + margin_low
+                    y = self.view_rect.y + margin_low + margin_high 
+                    w = scroll_bar_thickness 
+                    h = self.view_rect.h  - (margin_low*2) - (margin_high*2)
+                self.scroll_bar_side_rect = pg.rect.Rect(x,y,w,h) # view_rect
+                # calculo de proporcion en barra lateral interior
+                proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
+                if self.view_rect.y < 0:
+                    proportion_y_insid_bar_side = self.curtain_rect.y - self.view_rect.y
+                else:
+                    proportion_y_insid_bar_side = self.curtain_rect.y
+                x = self.scroll_bar_side_rect.x
+                y = self.scroll_bar_side_rect.y - proportion_y_insid_bar_side
+                w = self.scroll_bar_side_rect.width
+                h = self.scroll_bar_side_rect.height * proportion_hight_insid_bar_side
+                self.scroll_bar_side_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_side_inside
+
+            # down
+            if self.curtain_rect.width > self.view_rect.width:
+                x = self.view_rect.x + margin_low + margin_high
+                y = self.view_rect.y + self.view_rect.height - scroll_bar_thickness - margin_low
+                w = self.view_rect.width - (margin_low*2) - (margin_high*2)
+                h = scroll_bar_thickness
+                self.scroll_bar_down_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
+                # calculo de proporcion en barra inferior interior
+                proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
+                if self.view_rect.x < 0:
+                    proportion_x_insid_bar_down = self.curtain_rect.x - self.view_rect.x
+                else:
+                    proportion_x_insid_bar_down = self.curtain_rect.x
+
+                x = self.scroll_bar_down_rect.x - proportion_x_insid_bar_down
+                y = self.scroll_bar_down_rect.y
+                w = self.scroll_bar_down_rect.width * proportion_width_insid_bar_down
+                h = self.scroll_bar_down_rect.height
+                self.scroll_bar_down_inside_rect = pg.rect.Rect(x,y,w,h) # scroll_bar_down_inside
+            # ----------------------------------------------------------------------------
+
     
 
     def collision_detector(self,event_dict):
@@ -252,7 +283,16 @@ class Window:
 
             #Mouse Position Detection
             # ----------------------------------------------------------------------------
-            if self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
+            if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y) or self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
+
+                if self.scroll_bar_side_rect.collidepoint(mouse_x,mouse_y):
+                    print("side_bar")
+                    pass
+                elif self.scroll_bar_down_rect.collidepoint(mouse_x,mouse_y):
+                    print("down_bar")
+                    pass
+
+            elif self.view_rect.collidepoint(mouse_x,mouse_y): # rect (1)
 
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # cambio cursor a flecha 
 
@@ -333,8 +373,6 @@ class Window:
         init() # iniciamos
 
 
-    
-
 
     def scale_modifier(self,event_dict):
 
@@ -345,92 +383,26 @@ class Window:
 
             limit = 150
 
-
             if self.scale_modifier_hit_top: # TOP
-
                 self.rects_repositions(Mouse_motion_x,Mouse_motion_y)
-
-
-                # self.rect.x += Mouse_motion_x # rect 
-                # self.rect.y += Mouse_motion_y
-                # self.scale_modifier_rect.x += Mouse_motion_x # scale_modifie
-                # self.scale_modifier_rect.y += Mouse_motion_y
-                # self.view_rect.x += Mouse_motion_x # view_rect
-                # self.view_rect.y += Mouse_motion_y
-                # self.view_surface_rect.x = self.view_rect.x
-                # self.view_surface_rect.y = self.view_rect.y
-                # self.scroll_bar_side_rect.x += Mouse_motion_x # scroll_bar
-                # self.scroll_bar_side_rect.y += Mouse_motion_y
-                # self.scroll_bar_down_rect.x += Mouse_motion_x
-                # self.scroll_bar_down_rect.y += Mouse_motion_y
-
             elif self.scale_modifier_hit_down: # DOWN
-
                 if self.rect.height + Mouse_motion_y > limit:
-
                     self.rects_repositions(h = Mouse_motion_y)
                 else:
                     Mouse_motion_y = self.rect.height - limit 
-
                     self.rects_repositions(h = -Mouse_motion_y)
-
-                    # self.rect.height += Mouse_motion_y # rect
-                    # self.scale_modifier_rect.height += Mouse_motion_y # scale_modifier
-                    # self.view_rect.height += Mouse_motion_y # view_rect
-                    # self.view_surface_rect.height = self.view_rect.height
-
             if self.scale_modifier_hit_left: # LEFT
-
                 if self.rect.width - Mouse_motion_x > limit:
-
                     self.rects_repositions(x = Mouse_motion_x,w = -Mouse_motion_x)
-
-                    # self.rect.width -= Mouse_motion_x # rect
-                    # self.scale_modifier_rect.width -= Mouse_motion_x # scale_modifier
-                    # self.view_rect.width -= Mouse_motion_x # view_rect
-                    # self.view_surface_rect.width = self.view_rect.width#Mouse_motion_x 
-
-                    # self.rect.x += Mouse_motion_x 
-                    # self.scale_modifier_rect.x += Mouse_motion_x 
-                    # self.view_rect.x += Mouse_motion_x 
-                    # self.view_surface_rect.x = self.view_rect.x
                 else:
-                    margin = self.scale_modifier_margin
                     Mouse_motion_x = self.rect.width -limit 
-
                     self.rects_repositions(x = Mouse_motion_x, w = -Mouse_motion_x)
-
-                    
-                    # self.rect.width = limit # rect
-                    # self.scale_modifier_rect.width = limit # scale_modifier
-                    # self.view_rect.width = limit - (margin*2)# view_rect
-                    # self.view_surface_rect.width = limit - (margin*2) # Mouse_motion_x 
-
-                    # self.rect.x -= Mouse_motion_x
-                    # self.scale_modifier_rect.x -= Mouse_motion_x
-                    # self.view_rect.x -= Mouse_motion_x
-                    # self.view_surface_rect.x -= Mouse_motion_x
-
             elif self.scale_modifier_hit_right: # RIGHT
-
                 if self.rect.width + Mouse_motion_x > limit:
-
                     self.rects_repositions(w = Mouse_motion_x)
                 else:
                     Mouse_motion_x = self.rect.width - limit 
-
                     self.rects_repositions(w = -Mouse_motion_x)
-
-
-                    # self.rect.width += Mouse_motion_x # rect
-                    # self.scale_modifier_rect.width += Mouse_motion_x # scale_modifier
-                    # self.view_rect.width += Mouse_motion_x # view_rect
-                    # self.view_surface_rect.width = self.view_rect.width
-            
-
-            
-            #self.surface_reposition # reposicion de la superficie view
-
 
         # si click up elimino de lista selected a scale modifier
         if event_dict["Mouse"]["MouseClickLeftUp"]:
@@ -452,9 +424,15 @@ class Window:
         #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
         # ----------------------------------------------------------------------------
 
-        self.prueba_r.x += 1
-        self.prueba_s = self.screen.subsurface(self.prueba_r)
-        print("edit")
+        #self.prueba_r.x += 1
+        #self.prueba_s = self.screen.subsurface(self.prueba_r)
+        
+
+        self.curtain_rect.x += 1
+        self.curtain_surface_rect.x = self.curtain_rect.x
+        #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
+        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
+        #print("edit")
 
 
 
@@ -473,13 +451,15 @@ class Window:
         pg.draw.rect(self.view_surface,(255,0,0),self.curtain_surface_rect,1) # curtain
         #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
 
-        pg.draw.rect(self.screen,self.scroll_bar_side_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
-        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
-        
-        #pygame.gfxdraw.box(self.screen,self.scroll_bar_rect,(50,50,50,200))
-
-        pg.draw.rect(self.screen,self.scroll_bar_down_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
-        pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
+        if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
+            # scroll_bar_side_inside
+            if self.curtain_rect.height > self.view_rect.height:
+                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
+                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
+            # scroll_bar_down_inside
+            if self.curtain_rect.width > self.view_rect.width:
+                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
+                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
         
 
         # self.view_surface.blit(self.image,(0,0))

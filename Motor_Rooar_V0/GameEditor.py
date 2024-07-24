@@ -75,7 +75,7 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # window2
 from windows import Window
-window = Window(event_dict,screen,250,80,300,450)
+window = Window(event_dict,screen,250,80,300,450,-1)
 object_list.append(window) # agregamos el objeto window a la lista
 
 
@@ -95,7 +95,7 @@ while True:
             fps_counter = 0
             start_time = time.time()
         # Añadir un pequeño retraso para no consumir demasiados recursos
-        #time.sleep(0.01) # esto puede ser buena idea
+        time.sleep(0.01) # esto puede ser buena idea
         # ----------------------------------------------------------------------------
 
         #Eventos

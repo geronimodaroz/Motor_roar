@@ -11,7 +11,6 @@ class SurfaceReposition:
         # surface_base
         # rect
         # surface_rect
-        # surface
 
         # x
         surface_rect.x = min(max(0,surface_rect.x),surface_base.get_width())
