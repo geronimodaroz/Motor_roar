@@ -157,7 +157,7 @@ while True:
         # ----------------------------------------------------------------------------
         # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
         # esto no se puede optimizar de alguna manera?
-        if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
+        if event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"]):
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
             for obj in object_list:
                 #obj.collision_detector(event_dict)
@@ -180,7 +180,7 @@ while True:
 
 
 
-        print(event_dict["EditableObjects"]["clickable"])
+        #print(event_dict["EditableObjects"]["clickable"])
         #print(event_dict["EditableObjects"]["selected"])
 
 
