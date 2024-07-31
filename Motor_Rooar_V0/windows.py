@@ -56,8 +56,8 @@ class Window:
             self.scroll_bar_thickness = 10
             self.scroll_bar_margin_low = 2
             self.scroll_bar_margin_high = 10
-            self.save_scroll_bar_rect_x = 0
-            self.save_scroll_bar_rect_y = 0
+            #self.save_scroll_bar_rect_x = 0
+            #self.save_scroll_bar_rect_y = 0
 
             # side
             if self.curtain_rect.height > self.view_rect.height:
@@ -72,14 +72,16 @@ class Window:
                 h = self.view_rect.height - (self.scroll_bar_margin_low * 2) - (self.scroll_bar_margin_high * 2)
                 self.scroll_bar_side_rect = pg.rect.Rect(x, y, w, h)
 
-                self.proportion_height_inside_bar_side = self.view_rect.height / self.curtain_rect.height
-                proportion_y_inside_bar_side = self.curtain_rect.y - self.view_decrement_y
+                self.proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
+                proportion = abs(self.curtain_rect.y)/self.curtain_rect.height
+                proportion_y_insid_bar_side = self.scroll_bar_side_rect.height * proportion
 
-                x = self.scroll_bar_side_rect.x
-                y = self.scroll_bar_side_rect.y - proportion_y_inside_bar_side
-                w = self.scroll_bar_side_rect.width
-                h = self.scroll_bar_side_rect.height * self.proportion_height_inside_bar_side
-                self.scroll_bar_side_inside_rect = pg.rect.Rect(x, y, w, h)
+                self.scroll_bar_side_inside_rect = pg.rect.Rect(
+                    self.scroll_bar_side_rect.x,
+                    self.scroll_bar_side_rect.y + proportion_y_insid_bar_side,
+                    self.scroll_bar_side_rect.width,
+                    self.scroll_bar_side_rect.height * self.proportion_hight_insid_bar_side
+                )
             else:
                 self.scroll_bar_side_rect = pg.rect.Rect(0, 0, 0, 0)
                 self.scroll_bar_side_inside_rect = pg.rect.Rect(0, 0, 0, 0)
@@ -92,14 +94,16 @@ class Window:
                 h = self.scroll_bar_thickness
                 self.scroll_bar_down_rect = pg.rect.Rect(x, y, w, h)
 
-                proportion_width_inside_bar_down = self.view_rect.width / self.curtain_rect.width
-                proportion_x_inside_bar_down = self.curtain_rect.x - self.view_decrement_x
+                proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
+                proportion = abs(self.curtain_rect.x)/self.curtain_rect.width
+                proportion_x_insid_bar_down = self.scroll_bar_down_rect.width * proportion
 
-                x = self.scroll_bar_down_rect.x - proportion_x_inside_bar_down
-                y = self.scroll_bar_down_rect.y
-                w = self.scroll_bar_down_rect.width * proportion_width_inside_bar_down
-                h = self.scroll_bar_down_rect.height
-                self.scroll_bar_down_inside_rect = pg.rect.Rect(x, y, w, h)
+                self.scroll_bar_down_inside_rect = pg.rect.Rect(
+                    self.scroll_bar_down_rect.x + proportion_x_insid_bar_down,
+                    self.scroll_bar_down_rect.y,
+                    self.scroll_bar_down_rect.width * proportion_width_insid_bar_down,
+                    self.scroll_bar_down_rect.height
+                )
             else:
                 self.scroll_bar_down_rect = pg.rect.Rect(0, 0, 0, 0)
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
@@ -144,7 +148,7 @@ class Window:
 
         # curtain
         # ----------------------------------------------------------------------------
-        #self.save_curtain_rect_x += w
+        print(self.view_decrement_x,self.view_decrement_y)
         x = self.save_curtain_rect_x #+ self.view_decrement_x
         y = self.save_curtain_rect_y #+ self.view_decrement_y
         w = 300 #self.curtain_rect.width
@@ -177,11 +181,12 @@ class Window:
                 self.scroll_bar_side_rect = pg.rect.Rect(x, y, w, h)
 
                 self.proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
-                proportion_y_insid_bar_side = self.curtain_rect.y #+ self.view_decrement_y
+                proportion = abs(self.curtain_rect.y)/self.curtain_rect.height
+                proportion_y_insid_bar_side = self.scroll_bar_side_rect.height * proportion
 
                 self.scroll_bar_side_inside_rect = pg.rect.Rect(
                     self.scroll_bar_side_rect.x,
-                    self.scroll_bar_side_rect.y - proportion_y_insid_bar_side,
+                    self.scroll_bar_side_rect.y + proportion_y_insid_bar_side,
                     self.scroll_bar_side_rect.width,
                     self.scroll_bar_side_rect.height * self.proportion_hight_insid_bar_side
                 )
@@ -198,9 +203,11 @@ class Window:
                 self.scroll_bar_down_rect = pg.rect.Rect(x, y, w, h)
 
                 proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
-                proportion_x_insid_bar_down = self.curtain_rect.x #+ self.view_decrement_x
+                proportion = abs(self.curtain_rect.x)/self.curtain_rect.width
+                proportion_x_insid_bar_down = self.scroll_bar_down_rect.width * proportion
+
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(
-                    self.scroll_bar_down_rect.x - proportion_x_insid_bar_down,
+                    self.scroll_bar_down_rect.x + proportion_x_insid_bar_down,
                     self.scroll_bar_down_rect.y,
                     self.scroll_bar_down_rect.width * proportion_width_insid_bar_down,
                     self.scroll_bar_down_rect.height
@@ -358,8 +365,8 @@ class Window:
                 )
 
             # save curtain
-            self.save_scroll_bar_rect_x = self.scroll_bar_side_inside_rect.x
-            self.save_scroll_bar_rect_y = self.scroll_bar_side_inside_rect.y
+            #self.save_scroll_bar_rect_x = self.scroll_bar_side_inside_rect.x
+            #self.save_scroll_bar_rect_y = self.scroll_bar_side_inside_rect.y
             self.save_curtain_rect_x = self.curtain_rect.x
             self.save_curtain_rect_y = self.curtain_rect.y
 
@@ -558,8 +565,13 @@ class Window:
         pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
         pg.draw.rect(self.view_surface,(255,0,0),self.curtain_surface_rect,1) # curtain
 
+
+        #pg.draw.rect(self.curtain_surface,(255,0,0),(self.curtain_rect.x+10,self.curtain_rect.y+10,50,50)) # curtain
+
         # Dibuja la imagen en la pantalla
-        self.curtain_surface.blit(self.image, self.curtain_rect)
+        x = self.curtain_rect.x + self.view_decrement_x
+        y = self.curtain_rect.y + self.view_decrement_y
+        self.curtain_surface.blit(self.image,(x,y))
         #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
 
         if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
