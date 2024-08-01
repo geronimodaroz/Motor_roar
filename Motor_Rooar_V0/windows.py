@@ -16,99 +16,36 @@ class Window:
         self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
 
-        # Rect
+        # Inicializar propiedades
         self.screen = screen
-        self.rect = pg.rect.Rect(x, y, w, h)
+        self.rect = pg.rect.Rect(0,0,0,0)
         self.color = (90, 90, 90)
 
-        # scale_modifier
-        self.scale_modifier_rect = self.rect.copy()
+        # Inicializar scale_modifier
         self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
-        self.scale_modifier_bar = 15
-        self.scale_modifier_margin = 3
+        self.scale_modifier_bar = 25
+        self.scale_modifier_margin = 4
 
-        # view
-        margin = self.scale_modifier_margin
-        bar = self.scale_modifier_bar
-        self.view_rect = pg.rect.Rect(self.scale_modifier_rect.x + margin, self.scale_modifier_rect.y + bar,
-                                      self.scale_modifier_rect.width - 2 * margin, self.scale_modifier_rect.height - margin - bar)
-        self.view_surface_rect = self.view_rect.copy()
-        self.view_surface = SurfaceReposition.surface_reposition(self.screen, self.view_rect, self.view_surface_rect)
-        self.view_decrement_x = self.view_rect.x if self.view_rect.x < 0 else 0
-        self.view_decrement_y = self.view_rect.y if self.view_rect.y < 0 else 0
-        self.view_color = (5, 5, 5)
-
-        # curtain
-        self.curtain_color = (150, 100, 150)
-        self.curtain_rect = pg.rect.Rect(0 + self.view_decrement_x, 0 + self.view_decrement_y, 300, 500)
-        self.curtain_surface_rect = self.curtain_rect.copy()
-        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface, self.curtain_rect, self.curtain_surface_rect)
+        # Inicializar view y curtain
         self.save_curtain_rect_x = 0
         self.save_curtain_rect_y = 0
+        self.view_color = (5, 5, 5)
+        self.curtain_color = (150, 100, 150)
 
-        # scroll_bar
+        # Inicializar scroll_bar
         self.scroll_bar = scroll_bar
-
-        if self.scroll_bar != 0:  # si es 0: no existe scroll_bar
+        if self.scroll_bar != 0:
             self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
             self.scroll_bar_color = (40, 40, 40)
             self.scroll_bar_insid_color = (90, 90, 90)
             self.scroll_bar_thickness = 10
             self.scroll_bar_margin_low = 2
             self.scroll_bar_margin_high = 10
-            #self.save_scroll_bar_rect_x = 0
-            #self.save_scroll_bar_rect_y = 0
 
-            # side
-            if self.curtain_rect.height > self.view_rect.height:
-                if self.scroll_bar == 1:
-                    # right
-                    x = self.view_rect.x + self.view_rect.width - self.scroll_bar_thickness - self.scroll_bar_margin_low
-                elif self.scroll_bar == -1:
-                    # left
-                    x = self.view_rect.x + self.scroll_bar_margin_low
-                y = self.view_rect.y + self.scroll_bar_margin_low + self.scroll_bar_margin_high
-                w = self.scroll_bar_thickness
-                h = self.view_rect.height - (self.scroll_bar_margin_low * 2) - (self.scroll_bar_margin_high * 2)
-                self.scroll_bar_side_rect = pg.rect.Rect(x, y, w, h)
+        # Llamar a rects_repositions para inicializar rectángulos
+        self.rects_repositions(x, y, w, h)
 
-                self.proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
-                proportion = abs(self.curtain_rect.y)/self.curtain_rect.height
-                proportion_y_insid_bar_side = self.scroll_bar_side_rect.height * proportion
-
-                self.scroll_bar_side_inside_rect = pg.rect.Rect(
-                    self.scroll_bar_side_rect.x,
-                    self.scroll_bar_side_rect.y + proportion_y_insid_bar_side,
-                    self.scroll_bar_side_rect.width,
-                    self.scroll_bar_side_rect.height * self.proportion_hight_insid_bar_side
-                )
-            else:
-                self.scroll_bar_side_rect = pg.rect.Rect(0, 0, 0, 0)
-                self.scroll_bar_side_inside_rect = pg.rect.Rect(0, 0, 0, 0)
-
-            # down
-            if self.curtain_rect.width > self.view_rect.width:
-                x = self.view_rect.x + self.scroll_bar_margin_low + self.scroll_bar_margin_high
-                y = self.view_rect.y + self.view_rect.height - self.scroll_bar_thickness - self.scroll_bar_margin_low
-                w = self.view_rect.width - (self.scroll_bar_margin_low * 2) - (self.scroll_bar_margin_high * 2)
-                h = self.scroll_bar_thickness
-                self.scroll_bar_down_rect = pg.rect.Rect(x, y, w, h)
-
-                proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
-                proportion = abs(self.curtain_rect.x)/self.curtain_rect.width
-                proportion_x_insid_bar_down = self.scroll_bar_down_rect.width * proportion
-
-                self.scroll_bar_down_inside_rect = pg.rect.Rect(
-                    self.scroll_bar_down_rect.x + proportion_x_insid_bar_down,
-                    self.scroll_bar_down_rect.y,
-                    self.scroll_bar_down_rect.width * proportion_width_insid_bar_down,
-                    self.scroll_bar_down_rect.height
-                )
-            else:
-                self.scroll_bar_down_rect = pg.rect.Rect(0, 0, 0, 0)
-                self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
-
-        
+        # Cargar imagen
         self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
 
 
@@ -148,22 +85,28 @@ class Window:
 
         # curtain
         # ----------------------------------------------------------------------------
-        print(self.view_decrement_x,self.view_decrement_y)
-        x = self.save_curtain_rect_x #+ self.view_decrement_x
-        y = self.save_curtain_rect_y #+ self.view_decrement_y
+        x = self.save_curtain_rect_x + self.view_decrement_x
+        y = self.save_curtain_rect_y + self.view_decrement_y
         w = 300 #self.curtain_rect.width
         h = 500
 
-        if x + w < self.view_rect.width:
-            x = self.view_rect.width - w
-            self.save_curtain_rect_x = x
-        if y + h < self.view_rect.height:
-            y = self.view_rect.height - h
-            self.save_curtain_rect_y = y
+        # if curtain is outside of view, si la cortina se sale de vista
+        if self.save_curtain_rect_x + w < self.view_rect.width and self.save_curtain_rect_x < 0:
+            x = self.view_rect.width - w + self.view_decrement_x
+            self.save_curtain_rect_x = self.view_rect.width - w
+        elif self.save_curtain_rect_x > 0:
+            x = 0 + self.view_decrement_x
+            self.save_curtain_rect_x = 0
+        if self.save_curtain_rect_y + h < self.view_rect.height and self.save_curtain_rect_y < 0:
+            y = self.view_rect.height - h + self.view_decrement_y
+            self.save_curtain_rect_y = self.view_rect.height - h
+        elif self.save_curtain_rect_y > 0:
+            y = 0 + self.view_decrement_y
+            self.save_curtain_rect_y = 0
 
         self.curtain_rect = pg.rect.Rect(x,y,w,h)
-        self.curtain_surface_rect = self.curtain_rect.copy()
-        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface, self.curtain_rect, self.curtain_surface_rect)
+        #self.curtain_surface_rect = self.curtain_rect.copy()
+        #self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface, self.curtain_rect, self.curtain_surface_rect)
         # ----------------------------------------------------------------------------
 
         # scroll_bar
@@ -180,8 +123,9 @@ class Window:
                 h = self.view_rect.height - 2 * self.scroll_bar_margin_low - 2 * self.scroll_bar_margin_high
                 self.scroll_bar_side_rect = pg.rect.Rect(x, y, w, h)
 
+                # inside
                 self.proportion_hight_insid_bar_side = self.view_rect.height / self.curtain_rect.height
-                proportion = abs(self.curtain_rect.y)/self.curtain_rect.height
+                proportion = abs(self.save_curtain_rect_y)/self.curtain_rect.height
                 proportion_y_insid_bar_side = self.scroll_bar_side_rect.height * proportion
 
                 self.scroll_bar_side_inside_rect = pg.rect.Rect(
@@ -202,8 +146,9 @@ class Window:
                 h = self.scroll_bar_thickness
                 self.scroll_bar_down_rect = pg.rect.Rect(x, y, w, h)
 
+                # inside
                 proportion_width_insid_bar_down = self.view_rect.width / self.curtain_rect.width
-                proportion = abs(self.curtain_rect.x)/self.curtain_rect.width
+                proportion = abs(self.save_curtain_rect_x)/self.curtain_rect.width
                 proportion_x_insid_bar_down = self.scroll_bar_down_rect.width * proportion
 
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(
@@ -306,57 +251,58 @@ class Window:
 
         # ----------------------------------------------------------------------------
         if event_dict["Mouse"]["Motion"]:
+
             mouse_motion_x, mouse_motion_y = event_dict["Mouse"]["Motion"]
 
-
-            def update_vertical(bar, bar_limit, motion, curtain, view_height):
-                bar.y += motion
-                proportion = view_height / bar.height
-                curtain.y = -(bar.y - bar_limit.y) * proportion
-
-                if bar.y < bar_limit.y:
-                    bar.y = bar_limit.y
-                    curtain.y = 0
-                elif bar.y + bar.height > bar_limit.y + bar_limit.height:
-                    bar.y = bar_limit.y + bar_limit.height - bar.height
-                    curtain.y = view_height - curtain.height
-                else:
-                    if curtain.y > 0:
-                        curtain.y = 0
-                    elif curtain.y + curtain.height < view_height:
-                        curtain.y = view_height - curtain.height
-
-                return curtain.y
-
-            def update_horizontal(bar, bar_limit, motion, curtain, view_width):
-                bar.x += motion
-                proportion = view_width / bar.width
-                curtain.x = -(bar.x - bar_limit.x) * proportion
-
-                if bar.x < bar_limit.x:
-                    bar.x = bar_limit.x
-                    curtain.x = 0
-                elif bar.x + bar.width > bar_limit.x + bar_limit.width:
-                    bar.x = bar_limit.x + bar_limit.width - bar.width
-                    curtain.x = view_width - curtain.width
-                else:
-                    if curtain.x > 0:
-                        curtain.x = 0
-                    elif curtain.x + curtain.width < view_width:
-                        curtain.x = view_width - curtain.width
-
-                return curtain.x
-
             if self.scroll_bar_side_inside_hit:
-                self.curtain_surface_rect.y = update_vertical(
+
+                def update_vertical(bar, bar_limit, motion, curtain, view_height):
+
+                    bar.y += motion
+                    proportion = view_height / bar.height
+                    curtain.y = -(bar.y - bar_limit.y) * proportion 
+
+                    if bar.y < bar_limit.y or curtain.y > 0:
+                        bar.y = bar_limit.y
+                        curtain.y = 0
+                    elif bar.y + bar.height > bar_limit.y + bar_limit.height or curtain.y + curtain.height < view_height:
+                        bar.y = bar_limit.y + bar_limit.height - bar.height
+                        curtain.y = view_height - curtain.height
+                        
+                    self.save_curtain_rect_y = curtain.y 
+                    curtain.y  = curtain.y  + self.view_decrement_y
+                    #return curtain.y
+
+                #self.curtain_surface_rect.y = 
+                update_vertical(
                     self.scroll_bar_side_inside_rect,
                     self.scroll_bar_side_rect,
                     mouse_motion_y,
-                    self.curtain_rect,
+                    self.curtain_rect, 
                     self.view_rect.height
                 )
+                
             elif self.scroll_bar_down_inside_hit:
-                self.curtain_surface_rect.x = update_horizontal(
+                
+                def update_horizontal(bar, bar_limit, motion, curtain, view_width):
+
+                    bar.x += motion
+                    proportion = view_width / bar.width
+                    curtain.x = -(bar.x - bar_limit.x) * proportion
+
+                    if bar.x < bar_limit.x or curtain.x > 0:
+                        bar.x = bar_limit.x
+                        curtain.x = 0
+                    elif bar.x + bar.width > bar_limit.x + bar_limit.width or curtain.x + curtain.width < view_width:
+                        bar.x = bar_limit.x + bar_limit.width - bar.width
+                        curtain.x = view_width - curtain.width
+                        
+                    self.save_curtain_rect_x = curtain.x
+                    curtain.x  = curtain.x  + self.view_decrement_x
+                    #return curtain.x
+
+                #self.curtain_surface_rect.x = 
+                update_horizontal(
                     self.scroll_bar_down_inside_rect,
                     self.scroll_bar_down_rect,
                     mouse_motion_x,
@@ -367,62 +313,14 @@ class Window:
             # save curtain
             #self.save_scroll_bar_rect_x = self.scroll_bar_side_inside_rect.x
             #self.save_scroll_bar_rect_y = self.scroll_bar_side_inside_rect.y
-            self.save_curtain_rect_x = self.curtain_rect.x
-            self.save_curtain_rect_y = self.curtain_rect.y
+            #self.save_curtain_rect_x = self.curtain_rect.x #+ self.view_decrement_x 
+            #self.save_curtain_rect_y = self.curtain_rect.y #+ self.view_decrement_y 
 
-            self.curtain_surface = SurfaceReposition.surface_reposition(
-                self.view_surface,
-                self.curtain_rect,
-                self.curtain_surface_rect
-            )
-
-
-            # ----------------------------------------------------------------------------
-
-            # if event_dict["Mouse"]["Motion"]:
-
-            #     Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
-            #     Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
-
-            #     if self.scroll_bar_side_inside_hit:
-            #         # ----------------------------------------------------------------------------
-            #         self.scroll_bar_side_inside_rect.y += Mouse_motion_y # bar y
-            #         self.curtain_rect.y -= Mouse_motion_y # curtain y
-                    
-            #         if self.scroll_bar_side_inside_rect.y < self.scroll_bar_side_rect.y: # si hit top
-            #             self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y # bar y
-            #             self.curtain_rect.y = 0 # curtain y
-            #         elif self.scroll_bar_side_inside_rect.y + self.scroll_bar_side_inside_rect.height > self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height: # hit down
-            #             self.scroll_bar_side_inside_rect.y = self.scroll_bar_side_rect.y + self.scroll_bar_side_rect.height - self.scroll_bar_side_inside_rect.height # bar y
-            #             self.curtain_rect.y = self.view_rect.height - self.curtain_rect.height # curtain y
-
-            #         self.curtain_surface_rect.y = self.curtain_rect.y
-            #         self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
-
-            #         # save
-            #         #self.save_scroll_bar_side_inside_y = self.scroll_bar_side_inside_rect.y # save_bar y
-            #         #self.save_curtain_y = self.curtain_rect.y # save_curtain y
-            #         # ----------------------------------------------------------------------------
-
-            #     elif self.scroll_bar_down_inside_hit:
-            #         # ----------------------------------------------------------------------------
-            #         self.scroll_bar_down_inside_rect.x += Mouse_motion_x # bar x
-            #         self.curtain_rect.x -= Mouse_motion_x # curtain x
-
-            #         if self.scroll_bar_down_inside_rect.x < self.scroll_bar_down_rect.x: # si hit left
-            #             self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x # bar x
-            #             self.curtain_rect.x = 0 # curtain x
-            #         elif self.scroll_bar_down_inside_rect.x + self.scroll_bar_down_inside_rect.width > self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width: # si hit right
-            #             self.scroll_bar_down_inside_rect.x = self.scroll_bar_down_rect.x + self.scroll_bar_down_rect.width - self.scroll_bar_down_inside_rect.width # bar x
-            #             self.curtain_rect.x = self.view_rect.width - self.curtain_rect.width # curtain x
-
-            #         self.curtain_surface_rect.x = self.curtain_rect.x
-            #         self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
-
-            #         # save
-            #         #self.save_scroll_bar_down_inside_x = self.scroll_bar_down_inside_rect.x # save_bar x
-            #         #self.save_curtain_x = self.curtain_rect.x # save_curtain x
-            #         # ----------------------------------------------------------------------------
+            # self.curtain_surface = SurfaceReposition.surface_reposition(
+            #     self.view_surface,
+            #     self.curtain_rect,
+            #     self.curtain_surface_rect
+            # )
 
 
         # si click up elimino de lista selected a scale modifier
@@ -441,9 +339,6 @@ class Window:
             limit_max_w = 300
             limit_max_h = 500
 
-            # def reposition(x=0, y=0, w=0, h=0):
-            #     if x != 0 or y != 0 or w != 0 or h != 0:
-            #         self.rects_repositions(x=x, y=y, w=w, h=h)
 
             def limit_motion(motion, current, limit_min, limit_max):
                 if current + motion < limit_min:
@@ -472,64 +367,6 @@ class Window:
             self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
             del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
-        # if event_dict["Mouse"]["Motion"]:
-
-        #     Mouse_motion_x = event_dict["Mouse"]["Motion"][0]
-        #     Mouse_motion_y = event_dict["Mouse"]["Motion"][1]
-
-        #     limit_min = 150
-        #     limit_max_w = 300#self.curtain_rect.width # 300
-        #     limit_max_h = 500#self.curtain_rect.height # 500
-
-        #     if self.scale_modifier_hit_top: # TOP
-
-        #         self.rects_repositions(Mouse_motion_x,Mouse_motion_y)
-
-        #     elif self.scale_modifier_hit_down: # DOWN
-
-        #         if self.view_rect.height + Mouse_motion_y > limit_min:
-
-        #             if self.view_rect.height + Mouse_motion_y < limit_max_h:
-        #                 self.rects_repositions(h = Mouse_motion_y)
-        #             else:
-        #                 Mouse_motion_y = self.view_rect.height - limit_max_h
-        #                 self.rects_repositions(h = -Mouse_motion_y)
-        #         else:
-        #             Mouse_motion_y = self.view_rect.height - limit_min 
-        #             self.rects_repositions(h = -Mouse_motion_y)
-
-        #     if self.scale_modifier_hit_left: # LEFT
-
-        #         if self.view_rect.width - Mouse_motion_x > limit_min:
-        #             if self.view_rect.width - Mouse_motion_x < limit_max_w:
-        #                 self.rects_repositions(x = Mouse_motion_x,w = -Mouse_motion_x)
-        #             else:
-        #                 Mouse_motion_x = self.view_rect.width - limit_max_w
-        #                 self.rects_repositions(x = Mouse_motion_x,w = -Mouse_motion_x)
-        #         else:
-        #             Mouse_motion_x = self.view_rect.width -limit_min 
-        #             self.rects_repositions(x = Mouse_motion_x, w = -Mouse_motion_x)
-
-        #     elif self.scale_modifier_hit_right: # RIGHT
-
-        #         if self.view_rect.width + Mouse_motion_x > limit_min:
-        #             if self.view_rect.width + Mouse_motion_x < limit_max_w:
-        #                 self.rects_repositions(w = Mouse_motion_x)
-        #             else:
-        #                 Mouse_motion_x = self.view_rect.width - limit_max_w
-        #                 self.rects_repositions(w = -Mouse_motion_x)
-        #         else:
-        #             Mouse_motion_x = self.view_rect.width - limit_min 
-        #             self.rects_repositions(w = -Mouse_motion_x)
-
-        # # si click up elimino de lista selected a scale modifier
-        # if event_dict["Mouse"]["MouseClickLeftUp"]:
-        #     self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
-        #     del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-            
-    
-    
 
 
     def edit(self,event_dict):
@@ -545,9 +382,9 @@ class Window:
         
 
         self.curtain_rect.x += 1
-        self.curtain_surface_rect.x = self.curtain_rect.x
+        #self.curtain_surface_rect.x = self.curtain_rect.x
         #self.curtain_surface = self.view_surface.subsurface(self.curtain_rect)
-        self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
+        #self.curtain_surface = SurfaceReposition.surface_reposition(self.view_surface,self.curtain_rect,self.curtain_surface_rect)
         #print("edit")
 
 
@@ -563,16 +400,21 @@ class Window:
         pg.draw.rect(self.screen,(0,0,255),self.view_surface_rect) # view_surface
 
         pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
-        pg.draw.rect(self.view_surface,(255,0,0),self.curtain_surface_rect,1) # curtain
+        #pg.draw.rect(self.view_surface,(255,0,0),self.curtain_surface_rect,1) # curtain
 
 
         #pg.draw.rect(self.curtain_surface,(255,0,0),(self.curtain_rect.x+10,self.curtain_rect.y+10,50,50)) # curtain
 
         # Dibuja la imagen en la pantalla
-        x = self.curtain_rect.x + self.view_decrement_x
-        y = self.curtain_rect.y + self.view_decrement_y
-        self.curtain_surface.blit(self.image,(x,y))
-        #pg.draw.rect(self.screen,(255,0,0),self.view_rect,1) # view
+        x = self.curtain_rect.x #+ self.view_decrement_x
+        y = self.curtain_rect.y #+ self.view_decrement_y
+        self.view_surface.blit(self.image,(x,y))
+
+        x = self.view_rect.x - 4
+        y = self.view_rect.y - 4
+        w = self.view_rect.w + 8
+        h = self.view_rect.h + 8
+        pg.draw.rect(self.screen,self.color,(x,y,w,h),4,10,-1,-1,-1,-1) # view
 
         if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
             # scroll_bar_side_inside
