@@ -57,7 +57,8 @@ detection_archive_delate.monitorear_carpeta(game_folder_path)
 event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
-    "screen":{"width":width, "height":height},
+    #"screen":{"width":width, "height":height},
+    "Colors":{"GrisOscuro": (5, 5, 5),"GrisIntermedio": (40, 40, 40),"GrisClaro":(90, 90, 90),"Green":(121,254,12)},
     "keyPressed": [],
     "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
     "EditableObjects": {"selected":[],"clickable":[]},
@@ -75,7 +76,7 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # window2
 from windows import Window
-window = Window(event_dict,screen,250,80,300,450,-1)
+window = Window(event_dict,screen,250,80,300,450,500,500,-1)
 object_list.append(window) # agregamos el objeto window a la lista
 
 
