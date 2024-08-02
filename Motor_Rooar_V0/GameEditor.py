@@ -58,7 +58,7 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     #"screen":{"width":width, "height":height},
-    "Colors":{"GrisOscuro": (5, 5, 5),"GrisIntermedio": (40, 40, 40),"GrisClaro":(90, 90, 90),"Green":(121,254,12)},
+    "Colors":{"DarkGrey":(5, 5, 5),"IntermediumGrey":(40, 40, 40),"LightGrey":(90, 90, 90),"GreenFluor":(121,254,12)},
     "keyPressed": [],
     "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
     "EditableObjects": {"selected":[],"clickable":[]},
@@ -67,7 +67,6 @@ event_dict = {
 #-----------------------------------------------------------------------------
 
 depth_number = event_dict["depth_number"]
-
 
 
 object_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
@@ -158,7 +157,8 @@ while True:
         # ----------------------------------------------------------------------------
         # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
         # esto no se puede optimizar de alguna manera?
-        if event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"]):
+        #print((event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"])) or event_dict["Mouse"]["MouseClickLeftDown"])
+        if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
             for obj in object_list:
                 #obj.collision_detector(event_dict)
