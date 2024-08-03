@@ -58,10 +58,20 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     #"screen":{"width":width, "height":height},
-    "Colors":{"DarkGrey":(5, 5, 5),"IntermediumGrey":(40, 40, 40),"LightGrey":(90, 90, 90),"GreenFluor":(121,254,12)},
+    "Colors":{"DarkGrey":(5, 5, 5),
+              "IntermediumGrey":(40, 40, 40),
+              "LightGrey":(90, 90, 90),
+              "GreenFluor":(121,254,12)},
     "keyPressed": [],
-    "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
-    "EditableObjects": {"selected":[],"clickable":[]},
+    "Mouse":{"Motion":False,
+             "MousePosition":(0,0),
+             "MouseClickLeftDown": False,
+             "MouseClickLeftPressed": False,
+             "MouseClickLeftUp": False,
+             "Scroll": None,
+             "Icon":pg.SYSTEM_CURSOR_ARROW,},
+    "EditableObjects": {"selected":[],
+                        "clickable":[]},
     "depth_number": -1
 }
 #-----------------------------------------------------------------------------
@@ -75,8 +85,12 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 # window2
 from windows import Window
-window = Window(event_dict,screen,250,80,300,450,500,500,-1)
+window = Window(event_dict,screen,250,80,300,450,500,500,1)
 object_list.append(window) # agregamos el objeto window a la lista
+
+# # window2
+# window2 = Window(event_dict,screen,25,80,300,450,500,500,-1)
+# object_list.append(window2) # agregamos el objeto window a la lista
 
 
 
@@ -114,6 +128,8 @@ while True:
         # Restablecer eventos de clic de ratón
         event_dict["Mouse"]["MouseClickLeftDown"] = False
         event_dict["Mouse"]["MouseClickLeftUp"] = False
+        # Restableces evento scroll del raton
+        event_dict["Mouse"]["Scroll"] = None
 
 
 
@@ -159,33 +175,45 @@ while True:
         # esto no se puede optimizar de alguna manera?
         #print((event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"])) or event_dict["Mouse"]["MouseClickLeftDown"])
         if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
+
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
+            
+            # Detectamos colisión con objetos dentro de la lista object_list
             for obj in object_list:
-                #obj.collision_detector(event_dict)
-                if obj.rect.collidepoint(mouse_x,mouse_y):
+                if obj.rect.collidepoint(mouse_x, mouse_y):
                     obj.collision_detector(event_dict)
-                if event_dict["EditableObjects"]["clickable"]: break
+                    if event_dict["EditableObjects"]["clickable"]:break
         # ----------------------------------------------------------------------------
         # si hago click izquierdo copiamos lista clickeable a lista selected
         # ----------------------------------------------------------------------------
+
         elif event_dict["Mouse"]["MouseClickLeftDown"]:
             event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
             event_dict["EditableObjects"]["clickable"].clear()
+
+        #print(event_dict["EditableObjects"]["selected"])
+
+        # for obj in object_list:
+        #     any_true = any(obj.conditions_comparator())
+        #     if any_true:
+        #         event_dict["EditableObjects"]["selected"].append(i)
+
         # ----------------------------------------------------------------------------
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        selected_in_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
-        if selected_in_list:
+        selected_in_list_c = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
+        if selected_in_list_c:
+            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
+            
+        selected_in_list_s = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
+        if selected_in_list_s:
             event_dict["EditableObjects"]["selected"][depth_number+1](event_dict)
         # ----------------------------------------------------------------------------
-
 
 
         #print(event_dict["EditableObjects"]["clickable"])
         #print(event_dict["EditableObjects"]["selected"])
 
-
-        
 
         #Draw
         # ----------------------------------------------------------------------------
@@ -205,6 +233,7 @@ while True:
 
         # window
         window.draw(event_dict)
+        #window2.draw(event_dict)
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------
