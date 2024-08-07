@@ -72,7 +72,8 @@ event_dict = {
              "Icon":pg.SYSTEM_CURSOR_ARROW,},
     "EditableObjects": {"selected":[],
                         "clickable":[]},
-    "depth_number": -1
+    "depth_number": -1,
+    "Delate_List" : [],
 }
 #-----------------------------------------------------------------------------
 
@@ -88,9 +89,10 @@ from windows import Window
 window = Window(event_dict,screen,250,80,300,450,500,500,1)
 object_list.append(window) # agregamos el objeto window a la lista
 
+from windows import WindowBase
 # # window2
-# window2 = Window(event_dict,screen,25,80,300,450,500,500,-1)
-# object_list.append(window2) # agregamos el objeto window a la lista
+window2 = WindowBase(event_dict,screen,25,80,300,450,500,500,-1)
+object_list.append(window2) # agregamos el objeto window a la lista
 
 
 
@@ -173,8 +175,8 @@ while True:
         # ----------------------------------------------------------------------------
         # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
         # esto no se puede optimizar de alguna manera?
-        #print((event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"])) or event_dict["Mouse"]["MouseClickLeftDown"])
-        if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
+        if (event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"])) or event_dict["Mouse"]["MouseClickLeftUp"]:
+        #if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
 
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
             
@@ -191,28 +193,36 @@ while True:
             event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
             event_dict["EditableObjects"]["clickable"].clear()
 
-        #print(event_dict["EditableObjects"]["selected"])
-
-        # for obj in object_list:
-        #     any_true = any(obj.conditions_comparator())
-        #     if any_true:
-        #         event_dict["EditableObjects"]["selected"].append(i)
-
         # ----------------------------------------------------------------------------
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        selected_in_list_c = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
-        if selected_in_list_c:
-            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
-            
-        selected_in_list_s = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
-        if selected_in_list_s:
+        clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
+        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
+        
+        if selected_list:
             event_dict["EditableObjects"]["selected"][depth_number+1](event_dict)
+        elif clickable_list:
+            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
+        
+
+        
+        
         # ----------------------------------------------------------------------------
 
 
         #print(event_dict["EditableObjects"]["clickable"])
         #print(event_dict["EditableObjects"]["selected"])
+        
+        #print(event_dict["Delate_List"])
+
+        #print(object_list)
+
+        if event_dict["Delate_List"]:
+            for obj in event_dict["Delate_List"]:
+                if obj in object_list:
+                    object_list.remove(obj)
+            event_dict["Delate_List"].clear()
+            
 
 
         #Draw
@@ -232,8 +242,10 @@ while True:
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
 
         # window
-        window.draw(event_dict)
-        #window2.draw(event_dict)
+        if window in object_list:
+            window.draw(event_dict)
+        if window2 in object_list:
+            window2.draw(event_dict)
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------
