@@ -8,7 +8,7 @@ from typing import Literal
 
 class Window:
 
-    def __init__(self,event_dict,screen,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
+    def __init__(self,event_dict,presurface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
 
         if w < 200: w = 200 
         if h < 200: h = 200
@@ -22,7 +22,7 @@ class Window:
         # ----------------------------------------------------------------------------
 
         # Inicializar propiedades
-        self.screen = screen
+        self.presurface = presurface
         self.rect = pg.rect.Rect(0,0,0,0)
         self.rect_color = event_dict["Colors"]["LightGrey"]#(90, 90, 90)
 
@@ -98,7 +98,7 @@ class Window:
         bar = self.scale_modifier_bar
         self.view_rect = pg.rect.Rect(self.rect.x + margin, self.rect.y + bar, self.rect.width - 2 * margin, self.rect.height - margin - bar)
         self.view_surface_rect = self.view_rect.copy()
-        self.view_surface = SurfaceReposition.surface_reposition(self.screen, self.view_rect, self.view_surface_rect)
+        self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
 
         self.view_decrement_x = self.view_rect.x if self.view_rect.x < 0 else 0
         self.view_decrement_y = self.view_rect.y if self.view_rect.y < 0 else 0
@@ -194,11 +194,6 @@ class Window:
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
         # ----------------------------------------------------------------------------
 
-    def delate(self,event_dict):
-
-        if event_dict["EditableObjects"]["selected"]:
-            event_dict["Delate_List"].append(self)
-            del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
     def collision_detector(self, event_dict):
 
@@ -206,20 +201,15 @@ class Window:
         
         def init(): # Inicio del proceso de comprobación
             if self.quit_rect.collidepoint(mouse_x, mouse_y): # quit
-
                 event_dict["EditableObjects"]["clickable"].append(self.delate)
-
             elif (self.scroll_bar != 0 and (self.scroll_bar_side_rect.collidepoint(mouse_x, mouse_y) or 
                                           self.scroll_bar_down_rect.collidepoint(mouse_x, mouse_y))): # curtain_displace
                 comprobation_section_curtain_displace()
-
             elif self.view_rect.collidepoint(mouse_x, mouse_y): # edit
                 event_dict["EditableObjects"]["clickable"].append(self.edit)
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
-
             elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y): # scale_modifier
                 comprobation_section_scale_modifier()
-
 
         def comprobation_section_curtain_displace():
 
@@ -277,10 +267,14 @@ class Window:
         init()
 
 
+    def delate(self,event_dict):
+        if event_dict["EditableObjects"]["selected"]:
+            event_dict["Delate_List"].append(self)
+            del event_dict["EditableObjects"]["selected"][self.depth_number:]
+
 
     def curtain_displace(self,event_dict):
 
-        
         def update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
             if is_click:
                 motion = motion - bar.y - (bar.height / 2)
@@ -430,7 +424,6 @@ class Window:
             del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
 
-
     def edit(self,event_dict):
 
         # clickeable
@@ -467,29 +460,18 @@ class Window:
         
         # selected
         if event_dict["EditableObjects"]["selected"]:
-        
-            #MousePosition in the object
-            # ----------------------------------------------------------------------------
-            #mouse_x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-            #mouse_y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-            #event_dict["Mouse"]["MousePosition"] = (mouse_x,mouse_y)
-            # ----------------------------------------------------------------------------
             if event_dict["Mouse"]["MouseClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-
-            
-
 
 
     def draw(self,event_dict):
 
 
-        pg.draw.rect(self.screen,self.rect_color,self.rect,0,10) # rect
+        pg.draw.rect(self.presurface,self.rect_color,self.rect,0,10) # rect
 
-        pg.draw.rect(self.screen,(0,0,0),self.quit_rect,0,10) # quit
+        pg.draw.rect(self.presurface,(0,0,0),self.quit_rect,0,10) # quit
 
-        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        pg.draw.rect(self.presurface, self.view_color,self.view_rect,0,10) # view
 
         pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
 
@@ -504,17 +486,17 @@ class Window:
         y = self.view_rect.y - 4
         w = self.view_rect.w + 8
         h = self.view_rect.h + 8
-        pg.draw.rect(self.screen,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
+        pg.draw.rect(self.presurface,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
 
         if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
             # scroll_bar_side_inside
             if self.curtain_rect.height > self.view_rect.height:
-                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
-                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
             # scroll_bar_down_inside
             if self.curtain_rect.width > self.view_rect.width:
-                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
-                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
         
 
         
@@ -528,7 +510,7 @@ class Window:
 
 class WindowBase():
 
-    def __init__(self,event_dict,screen,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
+    def __init__(self,event_dict,presurface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
 
         if w < 200: w = 200 
         if h < 200: h = 200
@@ -542,16 +524,16 @@ class WindowBase():
         # ----------------------------------------------------------------------------
 
         # Inicializar propiedades
-        self.screen = screen
+        self.presurface = presurface
         self.rect = pg.rect.Rect(0,0,0,0)
-        self.rect_color = event_dict["Colors"]["LightGrey"]#(90, 90, 90)
+        self.rect_color = event_dict["Colors"]["LightGrey"]
 
         # Inicializar scale_modifier
         self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
         self.scale_modifier_margin = 4
 
         # Inicializar view
-        self.view_color = event_dict["Colors"]["DarkGrey"]#(5, 5, 5)
+        self.view_color = event_dict["Colors"]["DarkGrey"]
 
         # Inicializar curtain
         self.curtain_w = curtain_w
@@ -564,8 +546,8 @@ class WindowBase():
         self.scroll_bar = scroll_bar
         if self.scroll_bar != 0:
             self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
-            self.scroll_bar_color = event_dict["Colors"]["IntermediumGrey"]#(40, 40, 40)
-            self.scroll_bar_insid_color = event_dict["Colors"]["LightGrey"]#(90, 90, 90)
+            self.scroll_bar_color = event_dict["Colors"]["IntermediumGrey"]
+            self.scroll_bar_insid_color = event_dict["Colors"]["LightGrey"]
             self.scroll_bar_thickness = 10
             self.scroll_bar_margin_low = 1
             self.scroll_bar_margin_high = 10
@@ -575,7 +557,7 @@ class WindowBase():
 
 
         # Cargar imagen
-        self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
+        #self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
 
 
         # prufundidad del objeto -1
@@ -607,7 +589,7 @@ class WindowBase():
         margin = self.scale_modifier_margin
         self.view_rect = pg.rect.Rect(self.rect.x + margin, self.rect.y + margin, self.rect.width - 2 * margin, self.rect.height - 2 * margin)
         self.view_surface_rect = self.view_rect.copy()
-        self.view_surface = SurfaceReposition.surface_reposition(self.screen, self.view_rect, self.view_surface_rect)
+        self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
 
         self.view_decrement_x = self.view_rect.x if self.view_rect.x < 0 else 0
         self.view_decrement_y = self.view_rect.y if self.view_rect.y < 0 else 0
@@ -697,13 +679,11 @@ class WindowBase():
             if (self.scroll_bar != 0 and (self.scroll_bar_side_rect.collidepoint(mouse_x, mouse_y) or 
                                           self.scroll_bar_down_rect.collidepoint(mouse_x, mouse_y))): # curtain_displace
                 comprobation_section_curtain_displace()
-
             elif self.view_rect.collidepoint(mouse_x, mouse_y): # edit
                 event_dict["EditableObjects"]["clickable"].append(self.edit)
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
-
-            elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y): # scale_modifier
-                comprobation_section_scale_modifier()
+            # elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y): # scale_modifier
+            #     comprobation_section_scale_modifier()
 
 
         def comprobation_section_curtain_displace():
@@ -928,7 +908,7 @@ class WindowBase():
 
                 def update_vertical(bar, bar_limit, motion, curtain, view_height):
                     bar.y += motion
-                    proportion = view_height / bar.height # ERROR!!!! no div por 0
+                    proportion = view_height / bar.height
                     curtain.y = -(bar.y - bar_limit.y) * proportion 
                     if bar.y < bar_limit.y or curtain.y > 0:
                         bar.y = bar_limit.y
@@ -950,44 +930,39 @@ class WindowBase():
         
         # selected
         if event_dict["EditableObjects"]["selected"]:
-        
             if event_dict["Mouse"]["MouseClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-
-            
 
 
 
     def draw(self,event_dict):
 
 
-        pg.draw.rect(self.screen,self.rect_color,self.rect,0,10) # rect
+        pg.draw.rect(self.presurface,self.rect_color,self.rect,0,10) # rect
 
-        pg.draw.rect(self.screen, self.view_color,self.view_rect,0,10) # view
+        pg.draw.rect(self.presurface, self.view_color,self.view_rect,0,10) # view
 
-        pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
-
+        #pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
 
 
         # Dibuja la imagen en la pantalla
-        x = self.curtain_rect.x 
-        y = self.curtain_rect.y 
-        self.view_surface.blit(self.image,(x,y))
+        # x = self.curtain_rect.x 
+        # y = self.curtain_rect.y 
+        # self.view_surface.blit(self.image,(x,y))
 
         x = self.view_rect.x - 4
         y = self.view_rect.y - 4
         w = self.view_rect.w + 8
         h = self.view_rect.h + 8
-        pg.draw.rect(self.screen,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
+        pg.draw.rect(self.presurface,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
 
         if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
             # scroll_bar_side_inside
             if self.curtain_rect.height > self.view_rect.height:
-                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
-                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
             # scroll_bar_down_inside
             if self.curtain_rect.width > self.view_rect.width:
-                pg.draw.rect(self.screen,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
-                pg.draw.rect(self.screen,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
+                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
         

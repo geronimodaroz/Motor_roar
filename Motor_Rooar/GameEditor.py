@@ -61,11 +61,11 @@ event_dict = {
     "GameFolderpPath": game_folder_path,
     "keyPressed": [],
     "Mouse":{"Motion":False,"MousePosition":(0,0),"MouseClickLeftDown": False,"MouseClickLeftPressed": False,"MouseClickLeftUp": False,"Scroll": None,"Icon":pg.SYSTEM_CURSOR_ARROW,},
-    #"MouseIcon":pg.SYSTEM_CURSOR_ARROW,
-    #"MousePosition": (pg.mouse.get_pos()),
-    #"MouseClickLeft": (0, 0),
-    #"MouseScroll": None,
-    #"EditPoint": [],
+    "MouseIcon":pg.SYSTEM_CURSOR_ARROW,
+    "MousePosition": (pg.mouse.get_pos()),
+    "MouseClickLeft": (0, 0),
+    "MouseScroll": None,
+    "EditPoint": [],
     "EditableObjects": {"selected":[],"clickable":[]},
     "depth_number": -1
 }
@@ -79,15 +79,15 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 
 # box_conteiner
-#from box_conteiner import BoxConteiner
-#box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
-#object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
+from box_conteiner import BoxConteiner
+box_conteiner = BoxConteiner(event_dict,screen,30,80,300,450,(0,0,0))
+object_list.append(box_conteiner) # agregamos el objeto box_conteiner a la lista
 
 
 
 # box_conteiner2
 from box_conteiner2 import BoxConteiner2
-box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450,(5,5,5))
+box_conteiner2 = BoxConteiner2(event_dict,screen,450,80,300,450)
 object_list.append(box_conteiner2) # agregamos el objeto box_conteiner a la lista
 
 
@@ -105,17 +105,17 @@ while True:
         fps_counter = 0
         start_time = time.time()
     # Añadir un pequeño retraso para no consumir demasiados recursos
-    #time.sleep(0.01) # esto puede ser buena idea
+    time.sleep(0.01) # esto puede ser buena idea
     # ----------------------------------------------------------------------------
 
     #Eventos
     # ----------------------------------------------------------------------------
     # Reinicio los eventos
-    #event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
+    event_dict["MouseIcon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
     
-    # event_dict["MouseClickLeft"] = None
-    # event_dict["MouseScroll"] = None
-    # event_dict["MousePosition"] = pg.mouse.get_pos()
+    event_dict["MouseClickLeft"] = None
+    event_dict["MouseScroll"] = None
+    event_dict["MousePosition"] = pg.mouse.get_pos()
 
     
     # Mouse motion and mouse position
@@ -145,8 +145,8 @@ while True:
             del event_dict["keyPressed"][i]
 
         # # click izquierdo sobre la pantalla
-        # if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-        #     event_dict["MouseClickLeft"] = event.pos
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            event_dict["MouseClickLeft"] = event.pos
         
         # Detectar eventos de clic del ratón
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -163,7 +163,7 @@ while True:
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
-            #event_dict["MouseScroll"] = 1 if event.y > 0 else -1
+            event_dict["MouseScroll"] = 1 if event.y > 0 else -1
     # ----------------------------------------------------------------------------
 
 
@@ -204,12 +204,12 @@ while True:
 
     #print(event_dict["EditableObjects"]["selected"])
 
-    # try:
-    #     event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
-    #     #event_dict["EditPoint"][depth_number+1](event_dict)
-    # except Exception as e:
-    #     #print(f"Error: {e}")
-    #     pass
+    try:
+        event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
+        #event_dict["EditPoint"][depth_number+1](event_dict)
+    except Exception as e:
+        #print(f"Error: {e}")
+        pass
     
     
 
@@ -256,7 +256,7 @@ while True:
 
     #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
     # Box_conteiner
-    #box_conteiner.draw(event_dict)
+    box_conteiner.draw(event_dict)
 
     # Box_conteiner
     box_conteiner2.draw(event_dict)

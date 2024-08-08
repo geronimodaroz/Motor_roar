@@ -85,14 +85,14 @@ object_list = [] # lista de objetos en GameEditor(los objetos deben contener un 
 
 
 # window2
-from windows import Window
-window = Window(event_dict,screen,250,80,300,450,500,500,1)
+from Folder_classes.windows import Window
+window = Window(event_dict,screen,350,80,300,450,500,500,1)
 object_list.append(window) # agregamos el objeto window a la lista
 
-from windows import WindowBase
+from Objects_creator import ObjectsCreator
 # # window2
-window2 = WindowBase(event_dict,screen,25,80,300,450,500,500,-1)
-object_list.append(window2) # agregamos el objeto window a la lista
+objects_creator_window = ObjectsCreator(event_dict,screen,0,80,300,450,500,500,1)
+object_list.append(objects_creator_window) # agregamos el objeto window a la lista
 
 
 
@@ -244,8 +244,8 @@ while True:
         # window
         if window in object_list:
             window.draw(event_dict)
-        if window2 in object_list:
-            window2.draw(event_dict)
+        if objects_creator_window in object_list:
+            objects_creator_window.draw(event_dict)
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------
