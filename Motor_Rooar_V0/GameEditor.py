@@ -69,7 +69,7 @@ event_dict = {
              "MouseClickLeftPressed": False,
              "MouseClickLeftUp": False,
              "Scroll": None,
-             "Icon":pg.SYSTEM_CURSOR_ARROW,},
+             "Icon":pg.SYSTEM_CURSOR_ARROW},
     "EditableObjects": {"selected":[],
                         "clickable":[]},
     "depth_number": -1,
@@ -212,11 +212,10 @@ while True:
 
         #print(event_dict["EditableObjects"]["clickable"])
         #print(event_dict["EditableObjects"]["selected"])
-        
         #print(event_dict["Delate_List"])
-
         #print(object_list)
 
+        # Delate objects from object_list
         if event_dict["Delate_List"]:
             for obj in event_dict["Delate_List"]:
                 if obj in object_list:
@@ -241,11 +240,13 @@ while True:
 
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
 
+        for obj in object_list:
+            obj.draw(event_dict)
         # window
-        if window in object_list:
-            window.draw(event_dict)
-        if objects_creator_window in object_list:
-            objects_creator_window.draw(event_dict)
+        # if window in object_list:
+        #     window.draw(event_dict)
+        # if objects_creator_window in object_list:
+        #     objects_creator_window.draw(event_dict)
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------

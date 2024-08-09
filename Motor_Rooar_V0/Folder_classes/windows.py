@@ -510,7 +510,7 @@ class Window:
 
 class WindowBase():
 
-    def __init__(self,event_dict,presurface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
+    def __init__(self,event_dict,surface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
 
         if w < 200: w = 200 
         if h < 200: h = 200
@@ -524,7 +524,7 @@ class WindowBase():
         # ----------------------------------------------------------------------------
 
         # Inicializar propiedades
-        self.presurface = presurface
+        self.presurface = surface
         self.rect = pg.rect.Rect(0,0,0,0)
         self.rect_color = event_dict["Colors"]["LightGrey"]
 
@@ -541,6 +541,7 @@ class WindowBase():
         self.save_curtain_rect_x = 0
         self.save_curtain_rect_y = 0
         self.curtain_color = (150, 100, 150)
+
 
         # Inicializar scroll_bar
         self.scroll_bar = scroll_bar
@@ -669,6 +670,9 @@ class WindowBase():
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
         # ----------------------------------------------------------------------------
 
+    def load_objects(self,*objects_list):
+        # cargar objetos
+        self.objects_list = objects_list
 
     def collision_detector(self, event_dict):
 
@@ -680,8 +684,19 @@ class WindowBase():
                                           self.scroll_bar_down_rect.collidepoint(mouse_x, mouse_y))): # curtain_displace
                 comprobation_section_curtain_displace()
             elif self.view_rect.collidepoint(mouse_x, mouse_y): # edit
+
                 event_dict["EditableObjects"]["clickable"].append(self.edit)
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
+
+                if self.objects_list: # objs
+                    x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+                    y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                    event_dict["Mouse"]["MousePosition"] = (x,y)
+                    
+                    for obj in self.objects_list:
+                        if obj.rect.collidepoint(x,y): 
+                            event_dict["EditableObjects"]["clickable"].append(obj.edit)
+
             # elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y): # scale_modifier
             #     comprobation_section_scale_modifier()
 
@@ -928,10 +943,10 @@ class WindowBase():
                         self.view_rect.height,
                         )
         
-        # selected
-        if event_dict["EditableObjects"]["selected"]:
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
-                del event_dict["EditableObjects"]["selected"][self.depth_number:]
+        # # selected
+        # if event_dict["EditableObjects"]["selected"]:
+        #     if event_dict["Mouse"]["MouseClickLeftUp"]:
+        #         del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
 
 

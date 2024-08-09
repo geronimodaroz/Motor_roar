@@ -10,7 +10,7 @@ from Folder_classes.surface_reposition import SurfaceReposition
 class BoxText:
     
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
-    def __init__(self,event_dict,surface,x,y,w,h,color_box = (20,20,20),color_text = (180,180,180), font = pg.font.Font(None, 16), text=""):    
+    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (180,180,180), text_font = pg.font.Font(None, 16), text=""):    
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]+=1
@@ -19,62 +19,49 @@ class BoxText:
 
         # presurface 
         self.presurface = surface
-
         # Rect
         self.rect = pg.Rect(x,y,w,h)
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(surface, self.rect, self.surface_rect)
-        #self.surface = surface
+        self.rect_color = rect_color
         
-
-        # Variables
-        # ----------------------------------------------------------------------------
-        # caracteristicas del cuadro de texto y la fuente
-        self.color_box = color_box
-        self.color_text = color_text
-        self.font = font
+        # Características del cuadro de texto y la fuente
         self.text = text
-
-        self.text_superface = self.font.render(self.text, True, self.color_text)
-        # Variables para el cursor intermitente
-        self.cursor_show = True # mostrar cursor o no
-        self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-        #self.cursor_displace_if_click = False # controla cuando es posoble cambiar el cuersor de posicion
-        self.cursor_area_select = False # si seleccionamos algun area dentro del texto
-
+        self.text_font = text_font
+        self.text_color = text_color
+        self.text_surface = self.text_font.render(self.text, True, self.text_color)
+        
+        
+        # cursor
         base_name, extension = os.path.splitext(self.text)
         self.cursor_position = len(base_name)
-        #self.cursor_position = int(len(self.text)/2) # posiscion del cursor en el texto a la mitad
-        t = self.text[:self.cursor_position]
-        self.cursor_surface = self.font.render(t, True, (0, 0, 0)) # superficie del cursor en el texto
+        cursor_text = self.text[:self.cursor_position]
+        self.cursor_surface = self.text_font.render(cursor_text, True, (0, 0, 0))
 
-        # la posicion en x del area que se desplaza por text_surface
-        # ----------------------------------------------------------------------------
-        dis = self.text_superface.get_width() - self.cursor_surface.get_width()
-        if self.text_superface.get_width() > self.rect.width:
-            self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width/2,self.rect.width-dis)#0 
-        else:
-            self.displace_area_x = -self.rect.width/2 + self.text_superface.get_width()/2 # por que menos?!!
-        # ----------------------------------------------------------------------------
-
-        # key_down
-        self.key_timer = time.time() # temporizador para calcular el tiempo trascurrido
-        self.key_alarm = 0 # tiempo que trascurre entre la primera impresion de un caracter y el segundo
-        self.key_count = 0 # contador para diferenciar la impresion del primer caracter del segundo
-        self.key_save = None
-        # ----------------------------------------------------------------------------
-
-        #self.current_cursor = None  # Variable para almacenar el tipo de cursor actual
+        # Variables para el cursor intermitente
+        self.cursor_show = True  # Mostrar cursor o no
+        self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
+        self.cursor_area_select = False  # Si seleccionamos algún área dentro del texto
         self.cursor_selected_rect = None
+
+        # Cálculo del desplazamiento del área de texto
+        dis = self.text_surface.get_width() - self.cursor_surface.get_width()
+        if self.text_surface.get_width() > self.rect.width:
+            self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width / 2, self.rect.width - dis)
+        else:
+            self.displace_area_x = -self.rect.width / 2 + self.text_surface.get_width() / 2
+
+        # Configuración para la gestión de eventos de teclado
+        self.key_timer = time.time()  # Temporizador para calcular el tiempo transcurrido
+        self.key_alarm = 0  # Tiempo entre la primera impresión de un carácter y el segundo
+        self.key_count = 0  # Contador para diferenciar la impresión del primer carácter del segundo
+        self.key_save = None  # Guarda la última tecla presionada
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    # def reposition(self):
-    #      print(self)
-    #      pass
 
 
     def edit(self, event_dict): # metodo de edicion
@@ -82,30 +69,31 @@ class BoxText:
         def init(): # Comienzo del codigo
             #-------------------------------------------------------------------------------------
             
+            if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
+            #     if pg.mouse.get_cursor()[0] != 1:
+            #         pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
+            # else:
+            #     if pg.mouse.get_cursor()[0] == 1:
+            #         pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
 
-            if self.rect.collidepoint(event_dict["MousePosition"]):
-                if pg.mouse.get_cursor()[0] != 1:
-                    pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
-            else:
-                if pg.mouse.get_cursor()[0] == 1:
-                    pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+
+            x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+            y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+            event_dict["Mouse"]["MousePosition"] = (x,y)
 
 
             def click():# si hago click
                 #-------------------------------------------------------------------------------------
                 #save_x_y = event_dict["MouseClickLeft"]
                 
-                if event_dict["MouseClickLeft"]:
-                    
-                    x = event_dict["MouseClickLeft"][0] - self.rect.x 
-                    y = event_dict["MouseClickLeft"][1] - self.rect.y
-                    event_dict["MouseClickLeft"] = (x,y) # ahora esto no es necesario
+                if event_dict["Mouse"]["MouseClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
 
                     #if self.cursor_displace_if_click: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
 
-                    x_click_in_surface_text = self.displace_area_x + x#event_dict["MouseClickLeft"][0]
+                    x_click_in_surface_text = self.displace_area_x + x #event_dict["MouseClickLeft"][0]
                     
-                    w_text_surface = self.text_superface.get_width()
+                    w_text_surface = self.text_surface.get_width()
 
                     self.cursor_position = 0
                     self.cursor_show = True
@@ -118,63 +106,59 @@ class BoxText:
                     elif x_click_in_surface_text > 0:
                         for i in range(len(self.text)):
                             t = self.text[:i + 1]
-                            cursor_surface = self.font.render(t, True, (0, 0, 0))
+                            cursor_surface = self.text_font.render(t, True, (0, 0, 0))
                             if cursor_surface.get_width() >= x_click_in_surface_text:
                                 self.cursor_position = i + 1
                                 break
 
                     t = self.text[:self.cursor_position]
-                    self.cursor_surface = self.font.render(t, True, (0, 0, 0))
-
-                if event_dict["Mouse"]["MouseClickLeftPressed"]:
-
-                    x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                    y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-                    event_dict["Mouse"]["MousePosition"] = (x,y)
-
-                    #x_click_in_surface_text = self.displace_area_x + x
-
-                    cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - event_dict["Mouse"]["MousePosition"][0]) # desplazamiento del mouse desde el cursor
+                    self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
 
 
-                    if self.cursor_position > 0 and cursor_displace < 0:
-                        dis = self.cursor_surface.get_width() + cursor_displace
-                        pre_char = ""
-                        for i in range(self.cursor_position - 1, -1, -1):
-                            t = self.text[:i]
-                            sup_width = self.font.size(t)[0]
-                            if sup_width < dis:
-                                break
-                            pre_char += self.text[i]
+                # if event_dict["Mouse"]["MouseClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
 
-                        # x = self.rect.x
-                        # y = self.rect.y
-                        # h = self.rect.height
+                #     # x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+                #     # y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                #     # event_dict["Mouse"]["MousePosition"] = (x,y)
+
+                #     #x_click_in_surface_text = self.displace_area_x + x
+
+                #     cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - event_dict["Mouse"]["MousePosition"][0]) # desplazamiento del mouse desde el cursor
+
+
+                #     if self.cursor_position > 0 and cursor_displace < 0:
+                #         dis = self.cursor_surface.get_width() + cursor_displace
+                #         pre_char = ""
+                #         for i in range(self.cursor_position - 1, -1, -1):
+                #             t = self.text[:i]
+                #             sup_width = self.text_font.size(t)[0]
+                #             if sup_width < dis:
+                #                 break
+                #             pre_char += self.text[i]
+
+                #         # x = self.rect.x
+                #         # y = self.rect.y
+                #         # h = self.rect.height
                         
-                        #self.cursor_selected_rect = pg.Rect(x+cursor_displace,y,self.cursor_surface.get_width(),h)
-                        print(pre_char[::-1])
+                #         #self.cursor_selected_rect = pg.Rect(x+cursor_displace,y,self.cursor_surface.get_width(),h)
+                #         print(pre_char[::-1])
 
-                            
-                        
-                    elif self.cursor_position < len(self.text) and cursor_displace > 0:
-                        dis = self.cursor_surface.get_width() + cursor_displace
-                        post_char = ""
-                        for i in range(self.cursor_position, len(self.text)):
-                            t = self.text[:i + 1]
-                            sup_width = self.font.size(t)[0]
-                            if sup_width >= dis:
-                                break
-                            post_char += self.text[i]
-                        print(post_char)
+                #     elif self.cursor_position < len(self.text) and cursor_displace > 0:
+                #         dis = self.cursor_surface.get_width() + cursor_displace
+                #         post_char = ""
+                #         for i in range(self.cursor_position, len(self.text)):
+                #             t = self.text[:i + 1]
+                #             sup_width = self.text_font.size(t)[0]
+                #             if sup_width >= dis:
+                #                 break
+                #             post_char += self.text[i]
+                #         print(post_char)
 
-                    #self.cursor_area_select = True
+                #     #self.cursor_area_select = True
 
+                #     #self.cursor_displace_if_click = True
 
-                    
-
-                    #self.cursor_displace_if_click = True
-
-                #event_dict["MouseClickLeft"] = save_x_y
+                # #event_dict["MouseClickLeft"] = save_x_y
                 #-------------------------------------------------------------------------------------
             
             def key_pressed(): # si preciono una tecla
@@ -204,16 +188,16 @@ class BoxText:
                     # actualizar superficies 
                     #-------------------------------------------------------------------------------------
                     # superficie del texto
-                    self.text_superface = self.font.render(self.text, True, self.color_text)
+                    self.text_surface = self.text_font.render(self.text, True, self.text_color)
                     # superficie hasta el cursor
                     t = self.text[:self.cursor_position]
-                    self.cursor_surface = self.font.render(t, True, (0, 0, 0))
+                    self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
                     #-------------------------------------------------------------------------------------
 
                     # desplazamiento del area en x
                     #-------------------------------------------------------------------------------------
                     r_w = self.rect.width
-                    surf_text_w = self.text_superface.get_width()
+                    surf_text_w = self.text_surface.get_width()
                     surf_curs_w = self.cursor_surface.get_width()
                     a_x = self.displace_area_x
                     if surf_text_w > r_w:
@@ -287,19 +271,17 @@ class BoxText:
         r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
         #-------------------------------------------------------------------------------------
 
-        # Dibuja el cuadro de texto en la pantalla
-        pg.draw.rect(self.presurface, self.color_box, self.rect)
-
-        #rect gris de las imagenes
+        # box_text
+        pg.draw.rect(self.presurface, self.rect_color, self.rect)
         pg.draw.rect(self.presurface,(80,80,80),self.rect,1)
 
         # if self.cursor_selected_rect:
         #     pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
 
         #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
-        rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
 
-        self.presurface.blit(self.text_superface, (r_x,r_y+self.text_superface.get_height()/2),rect)
+        rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
+        self.presurface.blit(self.text_surface, (r_x,r_y+self.text_surface.get_height()/2),rect)
 
         # rectangulo de edicion de texto  (click izquierdo)
         if self in event_dict["EditableObjects"]["selected"]:
@@ -316,5 +298,5 @@ class BoxText:
             if self.cursor_show: 
                 cursor_x = r_x + self.cursor_surface.get_width() - self.displace_area_x
                 cursor_y = r_y+3#self.text_y
-                cursor_height = self.text_superface.get_height()
+                cursor_height = self.text_surface.get_height()
                 pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
