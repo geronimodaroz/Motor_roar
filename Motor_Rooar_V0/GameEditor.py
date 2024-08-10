@@ -80,19 +80,19 @@ event_dict = {
 depth_number = event_dict["depth_number"]
 
 
-object_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
+objects_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
 
 
 
 # window2
 from Folder_classes.windows import Window
 window = Window(event_dict,screen,350,80,300,450,500,500,1)
-object_list.append(window) # agregamos el objeto window a la lista
+objects_list.append(window) # agregamos el objeto window a la lista
 
 from Objects_creator import ObjectsCreator
 # # window2
 objects_creator_window = ObjectsCreator(event_dict,screen,0,80,300,450,500,500,1)
-object_list.append(objects_creator_window) # agregamos el objeto window a la lista
+objects_list.append(objects_creator_window) # agregamos el objeto window a la lista
 
 
 
@@ -181,7 +181,7 @@ while True:
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
             
             # Detectamos colisión con objetos dentro de la lista object_list
-            for obj in object_list:
+            for obj in objects_list:
                 if obj.rect.collidepoint(mouse_x, mouse_y):
                     obj.collision_detector(event_dict)
                     if event_dict["EditableObjects"]["clickable"]:break
@@ -197,16 +197,13 @@ while True:
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
         clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
-        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
-        
-        if selected_list:
-            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict)
-        elif clickable_list:
-            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict)
-        
+        if clickable_list:
+            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict) # se ejecuta "selected" y "clickable"
 
-        
-        
+        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
+        if selected_list:
+            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict) # se ejecuta "selected" y "clickable"
+
         # ----------------------------------------------------------------------------
 
 
@@ -218,8 +215,8 @@ while True:
         # Delate objects from object_list
         if event_dict["Delate_List"]:
             for obj in event_dict["Delate_List"]:
-                if obj in object_list:
-                    object_list.remove(obj)
+                if obj in objects_list:
+                    objects_list.remove(obj)
             event_dict["Delate_List"].clear()
             
 
@@ -240,8 +237,9 @@ while True:
 
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
 
-        for obj in object_list:
-            obj.draw(event_dict)
+        if objects_list:
+            for obj in objects_list:
+                obj.draw(event_dict)
         # window
         # if window in object_list:
         #     window.draw(event_dict)

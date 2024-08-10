@@ -13,37 +13,25 @@ class ObjectsCreator(WindowBase):
 
         #self.load_objects(self.box_text)
 
-        super().load_objects(self.box_text)
+        #super().load_objects(self.box_text)
 
-        
-
-    def collision_detector(self, event_dict):
-        super().collision_detector(event_dict)
-
-        # if event_dict["EditableObjects"]["clickable"][self.depth_number] == self.edit:
-
-        #     x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-        #     y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-        #     event_dict["Mouse"]["MousePosition"] = (x,y)
-
-        #     if self.box_text.rect.collidepoint(x,y): # edit
-
-        #         event_dict["EditableObjects"]["clickable"].append(self.box_text.edit)
 
 
 
     def edit(self, event_dict):
         super().edit(event_dict)
 
+
+
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
-        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
+        # clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
+        # selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
         
-        if selected_list:
-            event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict)
-        elif clickable_list:
-            event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict)
+        # if selected_list:
+        #     event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict)
+        # if clickable_list:
+        #     event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict)
 
     
 
@@ -51,7 +39,10 @@ class ObjectsCreator(WindowBase):
     def draw(self, event_dict):
         super().draw(event_dict)
 
-        self.box_text.draw(event_dict)
+        if self.objects_list:
+            for obj in self.objects_list:
+                obj.draw(event_dict)
+        #self.box_text.draw(event_dict)
         
         # object_creator_window
         #objects_creator_window = WindowBase(event_dict,screen,25,80,300,450,500,500,1)
