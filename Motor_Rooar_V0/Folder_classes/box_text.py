@@ -64,50 +64,37 @@ class BoxText:
 
 
 
-    def edit(self, event_dict): # metodo de edicion
+    def edit(self, event_dict, code = None): # metodo de edicion
         #-------------------------------------------------------------------------------------
 
 
-        #if event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
 
             def init(): # Comienzo del codigo
                 #-------------------------------------------------------------------------------------
                 
                 if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
                     event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
-                #     if pg.mouse.get_cursor()[0] != 1:
-                #         pg.mouse.set_cursor(pg.SYSTEM_CURSOR_IBEAM)
-                # else:
-                #     if pg.mouse.get_cursor()[0] == 1:
-                #         pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
 
-
+                # mouse x,y con respecto a box text
                 x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
                 y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-                event_dict["Mouse"]["MousePosition"] = (x,y)
-
 
                 def click():# si hago click
                     #-------------------------------------------------------------------------------------
-                    #save_x_y = event_dict["MouseClickLeft"]
-                    
                     if event_dict["Mouse"]["MouseClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
 
-                        #if self.cursor_displace_if_click: # ESTO HAY QUE MIRAR SI ES NECESARIO !!!
-
-                        x_click_in_surface_text = self.displace_area_x + x #event_dict["MouseClickLeft"][0]
-                        
+                        x_click_in_surface_text = self.displace_area_x + x 
                         w_text_surface = self.text_surface.get_width()
 
-                        self.cursor_position = 0
+                        self.cursor_position = 0 # minima posicion del cursor
                         self.cursor_show = True
                         self.cursor_count = 0
 
-                        #if x_click_in_surface_text > 0:
-                        if x_click_in_surface_text >= w_text_surface:
+                        if x_click_in_surface_text >= w_text_surface: # maxima posicion del cursor
                             self.cursor_position = len(self.text)
 
-                        elif x_click_in_surface_text > 0:
+                        elif x_click_in_surface_text > 0: # posicion del cursor intermedia
                             for i in range(len(self.text)):
                                 t = self.text[:i + 1]
                                 cursor_surface = self.text_font.render(t, True, (0, 0, 0))
@@ -162,7 +149,7 @@ class BoxText:
 
                     #     #self.cursor_displace_if_click = True
 
-                    # #event_dict["MouseClickLeft"] = save_x_y
+                    #event_dict["MouseClickLeft"] = save_x_y
                     #-------------------------------------------------------------------------------------
                 
                 def key_pressed(): # si preciono una tecla
@@ -285,22 +272,23 @@ class BoxText:
         #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
 
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
-        self.presurface.blit(self.text_surface, (r_x,r_y+self.text_surface.get_height()/2),rect)
+        self.surface.blit(self.text_surface, (0,self.text_surface.get_height()/2),rect)
+        #self.surface.blit(self.text_surface, (r_x,r_y+self.text_surface.get_height()/2),rect)
 
         # rectangulo de edicion de texto  (click izquierdo)
         if self.edit in event_dict["EditableObjects"]["selected"]:
             # rectangulo verde
-            pg.draw.rect(self.surface, (204,255,0),self.rect,width=1) 
+            pg.draw.rect(self.presurface, (204,255,0),self.rect,width=1) 
 
             # Lógica para el cursor intermitente
             self.cursor_count += 1
-            if self.cursor_count >= 200:#Cambia el valor según la velocidad deseada del cursor
+            if self.cursor_count >= event_dict["FPS"]["Real"]/2:#Cambia el valor según la velocidad deseada del cursor
                 self.cursor_show = not self.cursor_show
                 self.cursor_count = 0
                 
             # Dibuja el cursor intermitente
             if self.cursor_show: 
-                cursor_x = r_x + self.cursor_surface.get_width() - self.displace_area_x
-                cursor_y = r_y+3#self.text_y
+                cursor_x = self.cursor_surface.get_width() - self.displace_area_x
+                cursor_y = 3#self.text_y
                 cursor_height = self.text_surface.get_height()
                 pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))

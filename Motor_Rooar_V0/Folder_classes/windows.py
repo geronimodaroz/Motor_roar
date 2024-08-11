@@ -267,13 +267,13 @@ class Window:
         init()
 
 
-    def delate(self,event_dict):
-        if event_dict["EditableObjects"]["selected"]:
+    def delate(self,event_dict, code = None):
+        if code == "selected":
             event_dict["Delate_List"].append(self)
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
 
-    def curtain_displace(self,event_dict):
+    def curtain_displace(self,event_dict,code = None):
 
         def update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
             if is_click:
@@ -306,7 +306,7 @@ class Window:
             curtain.x += self.view_decrement_x
 
         # clickeable
-        if event_dict["EditableObjects"]["clickable"]:
+        if code == "clickable":
 
             if event_dict["Mouse"]["Scroll"]:
                 if event_dict["Mouse"]["Scroll"] == 1:
@@ -336,7 +336,7 @@ class Window:
                     )
 
         # selected
-        if event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
 
             if event_dict["Mouse"]["MouseClickLeftDown"]:
                 mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"]
@@ -387,10 +387,10 @@ class Window:
 
 
 
-    def scale_modifier(self,event_dict):
+    def scale_modifier(self,event_dict, code = None):
 
         # selected
-        if event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
 
             if event_dict["Mouse"]["Motion"]:
 
@@ -424,10 +424,10 @@ class Window:
             del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
 
-    def edit(self,event_dict):
+    def edit(self,event_dict, code = None):
 
         # clickeable
-        if event_dict["EditableObjects"]["clickable"] and event_dict["EditableObjects"]["clickable"][self.depth_number] == self.edit:
+        if code == "clickable":
 
             if event_dict["Mouse"]["Scroll"]:
 
@@ -696,9 +696,8 @@ class WindowBase():
             event_dict["EditableObjects"]["clickable"].append(self.edit)
             event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
             if self.objects_list: # objs
-                x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-                event_dict["Mouse"]["MousePosition"] = (x,y)
+                x = event_dict["Mouse"]["MousePosition"][0] - self.view_rect.x # mouse x con respecto a view_rect
+                y = event_dict["Mouse"]["MousePosition"][1] - self.view_rect.y # mouse y con respecto a view_rect
                 for obj in self.objects_list:
                     if obj.rect.collidepoint(x,y): 
                         event_dict["EditableObjects"]["clickable"].append(obj.edit)
@@ -756,7 +755,7 @@ class WindowBase():
 
 
 
-    def curtain_displace(self,event_dict):
+    def curtain_displace(self,event_dict, code = None):
 
         
         def update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
@@ -790,7 +789,7 @@ class WindowBase():
             curtain.x += self.view_decrement_x
 
         # clickeable
-        if self.curtain_displace in event_dict["EditableObjects"]["clickable"]:
+        if code == "clickable":
 
             if event_dict["Mouse"]["Scroll"]:
                 if event_dict["Mouse"]["Scroll"] == 1:
@@ -821,7 +820,7 @@ class WindowBase():
 
 
         # selected
-        if self.curtain_displace in event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
 
             if event_dict["Mouse"]["MouseClickLeftDown"]:
                 mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"]
@@ -871,10 +870,10 @@ class WindowBase():
 
 
 
-    def scale_modifier(self,event_dict):
+    def scale_modifier(self,event_dict,code = None):
 
         # selected
-        if self.scale_modifier in event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
 
             if event_dict["Mouse"]["Motion"]:
 
@@ -909,11 +908,10 @@ class WindowBase():
 
 
 
-    def edit(self,event_dict):
+    def edit(self,event_dict, code = None):
 
         # clickeable
-        #if event_dict["EditableObjects"]["clickable"] and event_dict["EditableObjects"]["clickable"][self.depth_number] == self.edit: # si no esta dentro de clickable, no entra. 
-        if self.edit in event_dict["EditableObjects"]["clickable"]:
+        if code == "clickable":
 
             if event_dict["Mouse"]["Scroll"]:
 
@@ -945,9 +943,9 @@ class WindowBase():
                         )
         
         # selected
-        if self.edit in event_dict["EditableObjects"]["selected"]:
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
-                del event_dict["EditableObjects"]["selected"][self.depth_number:]
+        # if code == "selected":
+        #     if event_dict["Mouse"]["MouseClickLeftUp"]:
+        #         del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
 
 

@@ -16,12 +16,6 @@ screen = pg.display.set_mode((width, height), pg.RESIZABLE)
 pg.display.set_caption("Roar!!")
 
 
-# fuente para el contador de FPS
-fps_text = Font().surf_font("")
-# Inicializar el contador de fotogramas
-fps_counter = 0
-start_time = time.time()
-
 
 # path to the Motor Roar
 #-----------------------------------------------------------------------------
@@ -51,6 +45,17 @@ detection_archive_delate.monitorear_carpeta(game_folder_path)
 # --------------------------------------------------------------------------
 
 
+# FPS
+# --------------------------------------------------------------------------
+fps_text = Font().surf_font("")
+fps_counter = 0
+start_time = time.time()
+# Inicializar el reloj
+clock = pg.time.Clock()
+# --------------------------------------------------------------------------
+
+
+
 # diccionario de eventos
 #-----------------------------------------------------------------------------
 # Diccionario de eventos
@@ -58,6 +63,9 @@ event_dict = {
     "MotorGameFolderpPath": motor_game_folder_path,
     "GameFolderpPath": game_folder_path,
     #"screen":{"width":width, "height":height},
+    "FPS":{"Fixed":60,
+           "Real":None,
+           "delta_time":None},
     "Colors":{"DarkGrey":(5, 5, 5),
               "IntermediumGrey":(40, 40, 40),
               "LightGrey":(90, 90, 90),
@@ -77,11 +85,10 @@ event_dict = {
 }
 #-----------------------------------------------------------------------------
 
+
 depth_number = event_dict["depth_number"]
 
-
 objects_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
-
 
 
 # window2
@@ -96,6 +103,8 @@ objects_list.append(objects_creator_window) # agregamos el objeto window a la li
 
 
 
+
+
 # Bucle principal
 while True:
 
@@ -107,11 +116,11 @@ while True:
         elapsed_time = time.time() - start_time
         if elapsed_time >= 0.5:
             fps = fps_counter / elapsed_time
-            fps_text = Font().surf_font(f"FPS: {fps:.2f}", (250, 250, 250))
-            fps_counter = 0
-            start_time = time.time()
-        # Añadir un pequeño retraso para no consumir demasiados recursos
-        time.sleep(0.01) # esto puede ser buena idea
+            fps_text = Font().surf_font(f"FPS: {fps:.2f}", (250, 250, 250))  # Actualiza la visualización de los FPS
+            fps_counter = 0  # Resetea el contador de fotogramas
+            start_time = time.time()  # Resetea el tiempo de inicio
+        # Añadir un pequeño retraso para limitar los FPS
+        #time.sleep(1 / event_dict["FPS"])  # Esto es correcto, limita los FPS a lo especificado en event_dict["FPS"]
         # ----------------------------------------------------------------------------
 
         #Eventos
@@ -132,7 +141,6 @@ while True:
         event_dict["Mouse"]["MouseClickLeftUp"] = False
         # Restableces evento scroll del raton
         event_dict["Mouse"]["Scroll"] = None
-
 
 
         for event in pg.event.get():
@@ -166,8 +174,8 @@ while True:
 
         #MousePosition
         # ----------------------------------------------------------------------------
-        mouse_x = event_dict["Mouse"]["MousePosition"][0] 
-        mouse_y = event_dict["Mouse"]["MousePosition"][1] 
+        x = event_dict["Mouse"]["MousePosition"][0] 
+        y = event_dict["Mouse"]["MousePosition"][1] 
         # ----------------------------------------------------------------------------
 
 
@@ -182,7 +190,7 @@ while True:
             
             # Detectamos colisión con objetos dentro de la lista object_list
             for obj in objects_list:
-                if obj.rect.collidepoint(mouse_x, mouse_y):
+                if obj.rect.collidepoint(x,y):
                     obj.collision_detector(event_dict)
                     if event_dict["EditableObjects"]["clickable"]:break
         # ----------------------------------------------------------------------------
@@ -198,11 +206,11 @@ while True:
         # ----------------------------------------------------------------------------
         clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
         if clickable_list:
-            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict) # se ejecuta "selected" y "clickable"
+            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict, code = "clickable") # se ejecuta "selected" y "clickable"
 
         selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
         if selected_list:
-            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict) # se ejecuta "selected" y "clickable"
+            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict, code = "selected") # se ejecuta "selected" y "clickable"
 
         # ----------------------------------------------------------------------------
 
@@ -218,9 +226,6 @@ while True:
                 if obj in objects_list:
                     objects_list.remove(obj)
             event_dict["Delate_List"].clear()
-            
-
-
         #Draw
         # ----------------------------------------------------------------------------
 
@@ -232,22 +237,26 @@ while True:
         
         # Dibuja el fondo
         screen.fill((50,50,50)) # limpia escena 
+
         # FPS
         screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
-
+        
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
-
         if objects_list:
             for obj in objects_list:
                 obj.draw(event_dict)
-        # window
-        # if window in object_list:
-        #     window.draw(event_dict)
-        # if objects_creator_window in object_list:
-        #     objects_creator_window.draw(event_dict)
+
         # Actualiza la pantalla
         pg.display.flip()
         # ----------------------------------------------------------------------------
+
+        # Limitar a 60 FPS
+        # ----------------------------------------------------------------------------
+        clock.tick(event_dict["FPS"]["Fixed"])
+        event_dict["FPS"]["Real"] = clock.get_fps()
+        event_dict["FPS"]["delta_time"] = clock.get_time() / 1000 # Calcular tiempo transcurrido
+        # ----------------------------------------------------------------------------
+
 
     except Exception as e:
         #print(f"Error: {e}")

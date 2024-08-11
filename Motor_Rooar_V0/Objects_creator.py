@@ -13,27 +13,32 @@ class ObjectsCreator(WindowBase):
 
         #self.load_objects(self.box_text)
 
-        #super().load_objects(self.box_text)
+        super().load_objects(self.box_text)
 
 
 
 
-    def edit(self, event_dict):
-        super().edit(event_dict)
-
-
+    def edit(self, event_dict,code = None):
+        super().edit(event_dict,code)
+        
+        # mouse x,y con respecto a view_rect
+        x = event_dict["Mouse"]["MousePosition"][0] - self.view_rect.x 
+        y = event_dict["Mouse"]["MousePosition"][1] - self.view_rect.y
+        save_x_y = event_dict["Mouse"]["MousePosition"]
+        event_dict["Mouse"]["MousePosition"] = (x,y)
 
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        # clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
-        # selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
-        
-        # if selected_list:
-        #     event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict)
-        # if clickable_list:
-        #     event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict)
+        clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
+        if clickable_list:
+            event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict, code = "clickable") # se ejecuta "selected" y "clickable"
 
-    
+        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
+        if selected_list:
+            event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict, code = "selected") # se ejecuta "selected" y "clickable"
+        # ----------------------------------------------------------------------------
+
+        event_dict["Mouse"]["MousePosition"] = save_x_y
 
     
     def draw(self, event_dict):
