@@ -23,7 +23,8 @@ class BoxText:
         self.rect = pg.Rect(x,y,w,h)
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(surface, self.rect, self.surface_rect)
-        self.rect_color = rect_color
+        self.rect_box_color = rect_color
+        self.rect_line_color = event_dict["Colors"]["LightGrey"]
         
         # Características del cuadro de texto y la fuente
         self.text = text
@@ -62,26 +63,45 @@ class BoxText:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
+    def pre_edit(self,event_dict, code = None):
+        if code == "selected":
+            self.rect_box_color = (20,20,20)
+            self.rect_line_color = event_dict["Colors"]["GreenFluor"]
+        if code == "clickable" :
+            self.rect_box_color = event_dict["Colors"]["LightGrey"]
 
+    def pos_edit(self,event_dict, code = None):
+        if code == "selected":
+            self.rect_line_color = event_dict["Colors"]["LightGrey"]
+        #self.can_edit = False
+        if code == "clickable" :
+            self.rect_box_color = (20,20,20)
 
     def edit(self, event_dict, code = None): # metodo de edicion
         #-------------------------------------------------------------------------------------
-
-
+        # if code == "clickable":
+        #     self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
         if code == "selected":
 
             def init(): # Comienzo del codigo
                 #-------------------------------------------------------------------------------------
-                
-                if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
-                    event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
 
-                # mouse x,y con respecto a box text
-                x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                def init2():
+                    if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
+                        event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
+
+                    #if self.can_edit:
+                    click()
+                    key_pressed()
+                    #if not(self.can_edit) : self.can_edit = True
+
 
                 def click():# si hago click
                     #-------------------------------------------------------------------------------------
+                    # mouse x,y con respecto a box text
+                    x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
+                    y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+
                     if event_dict["Mouse"]["MouseClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
 
                         x_click_in_surface_text = self.displace_area_x + x 
@@ -149,7 +169,6 @@ class BoxText:
 
                     #     #self.cursor_displace_if_click = True
 
-                    #event_dict["MouseClickLeft"] = save_x_y
                     #-------------------------------------------------------------------------------------
                 
                 def key_pressed(): # si preciono una tecla
@@ -207,11 +226,10 @@ class BoxText:
                     else: # si dejo de presionar una tecla se reinicia
                         Key_up()
                 
-                click()
-                key_pressed()
+                init2() # inicio2
+                
                 #-------------------------------------------------------------------------------------
                     
-            
             #-------------------------------------------------------------------------------------
             def Key_down(key):
                 
@@ -244,8 +262,6 @@ class BoxText:
                     self.text = self.text[:self.cursor_position] + key["unicode"] + self.text[self.cursor_position:]
                     self.cursor_position += 1
             #-------------------------------------------------------------------------------------
-
-            
             #-------------------------------------------------------------------------------------
             def Key_up():
                 self.key_count = 0
@@ -263,8 +279,8 @@ class BoxText:
         #-------------------------------------------------------------------------------------
 
         # box_text
-        pg.draw.rect(self.presurface, self.rect_color, self.rect)
-        pg.draw.rect(self.presurface,(80,80,80),self.rect,1)
+        pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
+        pg.draw.rect(self.presurface,self.rect_line_color,self.rect,1)
 
         # if self.cursor_selected_rect:
         #     pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
@@ -278,7 +294,7 @@ class BoxText:
         # rectangulo de edicion de texto  (click izquierdo)
         if self.edit in event_dict["EditableObjects"]["selected"]:
             # rectangulo verde
-            pg.draw.rect(self.presurface, (204,255,0),self.rect,width=1) 
+            #pg.draw.rect(self.presurface, (204,255,0),self.rect,width=1) 
 
             # Lógica para el cursor intermitente
             self.cursor_count += 1

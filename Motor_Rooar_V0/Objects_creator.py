@@ -9,7 +9,7 @@ class ObjectsCreator(WindowBase):
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
         from Folder_classes.box_text import BoxText
-        self.box_text = BoxText(event_dict,self.view_surface,20,20,50,20,text="hola")
+        self.box_text = BoxText(event_dict,self.view_surface,20,100,50,20,text="hola")
 
         #self.load_objects(self.box_text)
 
@@ -29,13 +29,13 @@ class ObjectsCreator(WindowBase):
 
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
-        if clickable_list:
-            event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict, code = "clickable") # se ejecuta "selected" y "clickable"
+        exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
+        if exists_next_clickable_list:
+            event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict, code = "clickable") 
 
-        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
-        if selected_list:
-            event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict, code = "selected") # se ejecuta "selected" y "clickable"
+        exists_next_selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
+        if exists_next_selected_list:
+            event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict, code = "selected")
         # ----------------------------------------------------------------------------
 
         event_dict["Mouse"]["MousePosition"] = save_x_y

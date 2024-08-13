@@ -47,11 +47,9 @@ detection_archive_delate.monitorear_carpeta(game_folder_path)
 
 # FPS
 # --------------------------------------------------------------------------
-fps_text = Font().surf_font("")
-fps_counter = 0
-start_time = time.time()
 # Inicializar el reloj
 clock = pg.time.Clock()
+fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
 # --------------------------------------------------------------------------
 
 
@@ -69,7 +67,7 @@ event_dict = {
     "Colors":{"DarkGrey":(5, 5, 5),
               "IntermediumGrey":(40, 40, 40),
               "LightGrey":(90, 90, 90),
-              "GreenFluor":(121,254,12)},
+              "GreenFluor":(204,255,0)},
     "keyPressed": [],
     "Mouse":{"Motion":False,
              "MousePosition":(0,0),
@@ -109,19 +107,6 @@ objects_list.append(objects_creator_window) # agregamos el objeto window a la li
 while True:
 
     try: # capturo errores 
-
-        # FPS
-        # ----------------------------------------------------------------------------
-        fps_counter += 1
-        elapsed_time = time.time() - start_time
-        if elapsed_time >= 0.5:
-            fps = fps_counter / elapsed_time
-            fps_text = Font().surf_font(f"FPS: {fps:.2f}", (250, 250, 250))  # Actualiza la visualización de los FPS
-            fps_counter = 0  # Resetea el contador de fotogramas
-            start_time = time.time()  # Resetea el tiempo de inicio
-        # Añadir un pequeño retraso para limitar los FPS
-        #time.sleep(1 / event_dict["FPS"])  # Esto es correcto, limita los FPS a lo especificado en event_dict["FPS"]
-        # ----------------------------------------------------------------------------
 
         #Eventos
         # ----------------------------------------------------------------------------
@@ -172,45 +157,86 @@ while True:
                 event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
         # ----------------------------------------------------------------------------
 
-        #MousePosition
+        # Obtener posición del mouse
         # ----------------------------------------------------------------------------
-        x = event_dict["Mouse"]["MousePosition"][0] 
-        y = event_dict["Mouse"]["MousePosition"][1] 
+        x,y = event_dict["Mouse"]["MousePosition"]
         # ----------------------------------------------------------------------------
 
+        
 
-        # detectamos colision: Mouse Position
+        # Detectar colisión con objetos dentro de la lista objects_list
         # ----------------------------------------------------------------------------
-        # detectamos en cada frama si hay colision con algun objeto dentro de la lista object_list:
-        # esto no se puede optimizar de alguna manera?
-        if (event_dict["Mouse"]["Motion"] and not(event_dict["Mouse"]["MouseClickLeftPressed"])) or event_dict["Mouse"]["MouseClickLeftUp"]:
-        #if not(event_dict["Mouse"]["MouseClickLeftPressed"]):
-
+        if (event_dict["Mouse"]["Motion"] and not event_dict["Mouse"]["MouseClickLeftPressed"]) or event_dict["Mouse"]["MouseClickLeftUp"]:
+            # Limpiar la lista de clickeables a partir del índice depth_number+1
+            #event_dict["EditableObjects"]["clickable"] = event_dict["EditableObjects"]["clickable"][:depth_number + 1]
+            # verifica donde esta el mouse y los objetos que colisionan con el 
+            # ----------------------------------------------------------------------------
+            save_clickable_list = event_dict["EditableObjects"]["clickable"].copy()
             del event_dict["EditableObjects"]["clickable"][depth_number+1:]
-            
-            # Detectamos colisión con objetos dentro de la lista object_list
+            # Detectar colisión con objetos
             for obj in objects_list:
-                if obj.rect.collidepoint(x,y):
+                if obj.rect.collidepoint(x, y):
                     obj.collision_detector(event_dict)
-                    if event_dict["EditableObjects"]["clickable"]:break
+                    if event_dict["EditableObjects"]["clickable"]: break
+            # ----------------------------------------------------------------------------
+            # si el mouse cambio de objetos ejecuto cambios pre o pos de los objetos en las listas 
+            # ----------------------------------------------------------------------------
+            if save_clickable_list != event_dict["EditableObjects"]["clickable"]:
+                def pre_pos_methods(list, prefix, event_dict, code):
+                    """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
+                    for obj_func in list:
+                        if not(obj_func in event_dict["EditableObjects"]["selected"]): # si es "selected" no entrar a "clickable"
+                            try:
+                                obj = obj_func.__self__  # desvincula el objeto 
+                                func = obj_func.__func__  # desvincula el método
+                                method_name = f"{prefix}{func.__name__}"
+                                method_to_call = getattr(obj, method_name, None)
+                                if callable(method_to_call):
+                                    method_to_call(event_dict, code)
+                            except Exception as e:
+                                print(e)
+                # Ejecutar métodos pos_ para objetos clickados
+                pre_pos_methods(save_clickable_list,"pos_", event_dict, code = "clickable")
+                # Ejecutar métodos pre_ para objetos clickados
+                pre_pos_methods(event_dict["EditableObjects"]["clickable"],"pre_", event_dict, code = "clickable")
+            # ----------------------------------------------------------------------------
         # ----------------------------------------------------------------------------
-        # si hago click izquierdo copiamos lista clickeable a lista selected
+        # Si se hace clic izquierdo, copiar lista clickeable a lista seleccionada
         # ----------------------------------------------------------------------------
-
         elif event_dict["Mouse"]["MouseClickLeftDown"]:
-            event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
-            event_dict["EditableObjects"]["clickable"].clear()
+            if event_dict["EditableObjects"]["selected"] != event_dict["EditableObjects"]["clickable"]:
+                def pre_pos_methods(list, prefix, event_dict, code):
+                    """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
+                    for obj_func in list:
+                        try:
+                            obj = obj_func.__self__  # desvincula el objeto 
+                            func = obj_func.__func__  # desvincula el método
+                            method_name = f"{prefix}{func.__name__}"
+                            method_to_call = getattr(obj, method_name, None)
+                            if callable(method_to_call):
+                                method_to_call(event_dict, code)
+                        except Exception as e:
+                            print(e)
+                # Ejecutar métodos pos_ para objetos seleccionados
+                pre_pos_methods(event_dict["EditableObjects"]["selected"],"pos_", event_dict, code = "selected")
+                # Actualizar listas de seleccionados y clickeables
+                event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
+                event_dict["EditableObjects"]["clickable"].clear()
+                # Ejecutar métodos pre_ para objetos seleccionados
+                pre_pos_methods(event_dict["EditableObjects"]["selected"],"pre_", event_dict, code = "selected")
+        # ----------------------------------------------------------------------------
 
+            
         # ----------------------------------------------------------------------------
         # ejecuto objetos de lista selected
         # ----------------------------------------------------------------------------
-        clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
-        if clickable_list:
-            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict, code = "clickable") # se ejecuta "selected" y "clickable"
+        exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
+        if exists_next_clickable_list:
+            event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict, code = "clickable") 
 
-        selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
-        if selected_list:
-            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict, code = "selected") # se ejecuta "selected" y "clickable"
+        exists_next_selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= depth_number+1 
+        if exists_next_selected_list:
+            event_dict["EditableObjects"]["selected"][depth_number+1](event_dict, code = "selected") 
 
         # ----------------------------------------------------------------------------
 
@@ -239,12 +265,16 @@ while True:
         screen.fill((50,50,50)) # limpia escena 
 
         # FPS
+        # ----------------------------------------------------------------------------
+        fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
         screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
+        # ----------------------------------------------------------------------------
         
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
         if objects_list:
             for obj in objects_list:
                 obj.draw(event_dict)
+
 
         # Actualiza la pantalla
         pg.display.flip()
