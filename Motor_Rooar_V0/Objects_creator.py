@@ -9,7 +9,7 @@ class ObjectsCreator(WindowBase):
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
         from Folder_classes.box_text import BoxText
-        self.box_text = BoxText(event_dict,self.view_surface,20,100,50,20,text="hola")
+        self.box_text = BoxText(event_dict,self.view_surface,20,100,150,20,text="hola")
 
         #self.load_objects(self.box_text)
 

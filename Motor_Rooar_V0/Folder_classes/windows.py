@@ -194,7 +194,6 @@ class Window:
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
         # ----------------------------------------------------------------------------
 
-
     def collision_detector(self, event_dict):
 
         mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"] # Obtención de la posición del ratón
@@ -266,12 +265,10 @@ class Window:
 
         init()
 
-
     def delate(self,event_dict, code = None):
         if code == "selected":
             event_dict["Delate_List"].append(self)
             del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
 
     def curtain_displace(self,event_dict,code = None):
 
@@ -334,7 +331,6 @@ class Window:
                         self.view_rect.width,
                         is_click=False
                     )
-
         # selected
         if code == "selected":
 
@@ -380,15 +376,12 @@ class Window:
                         is_click=False
                     )
 
-        # si click up elimino de lista selected a scale modifier
-        if event_dict["Mouse"]["MouseClickLeftUp"]:
-            #self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
-            del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-
+            # si click up elimino de lista selected a scale modifier
+            if event_dict["Mouse"]["MouseClickLeftUp"]:
+                #self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
     def scale_modifier(self,event_dict, code = None):
-
         # selected
         if code == "selected":
 
@@ -418,14 +411,12 @@ class Window:
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
                     self.rects_repositions(w=Mouse_motion_x)
 
-        # Reset hit flags on mouse button release
-        if event_dict["Mouse"]["MouseClickLeftUp"]:
-            #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
-            del event_dict["EditableObjects"]["selected"][self.depth_number:]    
-
+            # Reset hit flags on mouse button release
+            if event_dict["Mouse"]["MouseClickLeftUp"]:
+                #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
     def edit(self,event_dict, code = None):
-
         # clickeable
         if code == "clickable":
 
@@ -457,12 +448,10 @@ class Window:
                         self.curtain_rect, 
                         self.view_rect.height,
                         )
-        
         # selected
-        if event_dict["EditableObjects"]["selected"]:
+        if code == "selected":
             if event_dict["Mouse"]["MouseClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
 
     def draw(self,event_dict):
 
@@ -497,8 +486,6 @@ class Window:
             if self.curtain_rect.width > self.view_rect.width:
                 pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
                 pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
-        
-
         
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -716,7 +703,6 @@ class WindowBase():
             elif self.scroll_bar_down_rect.collidepoint(mouse_x, mouse_y):
                 self.scroll_bar_down_hit = True
                 
-
         def comprobation_section_scale_modifier():
             event_dict["EditableObjects"]["clickable"].append(self.scale_modifier)
             margin = self.scale_modifier_margin
@@ -753,11 +739,8 @@ class WindowBase():
 
         init()
 
-
-
     def curtain_displace(self,event_dict, code = None):
 
-        
         def update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
             if is_click:
                 motion = motion - bar.y - (bar.height / 2)
@@ -864,11 +847,9 @@ class WindowBase():
                         is_click=False
                     )
 
-        # si click up elimino de lista selected a scale modifier
-        if event_dict["Mouse"]["MouseClickLeftUp"]:
-            del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-
+            # si click up elimino de lista selected a scale modifier
+            if event_dict["Mouse"]["MouseClickLeftUp"]:
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
     def scale_modifier(self,event_dict,code = None):
 
@@ -902,10 +883,9 @@ class WindowBase():
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
                     self.rects_repositions(w=Mouse_motion_x)
 
-        # Reset hit flags on mouse button release
-        if event_dict["Mouse"]["MouseClickLeftUp"]:
-            del event_dict["EditableObjects"]["selected"][self.depth_number:]    
-
+            # Reset hit flags on mouse button release
+            if event_dict["Mouse"]["MouseClickLeftUp"]:
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
 
     def edit(self,event_dict, code = None):

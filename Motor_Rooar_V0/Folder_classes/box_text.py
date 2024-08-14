@@ -10,7 +10,7 @@ from Folder_classes.surface_reposition import SurfaceReposition
 class BoxText:
     
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
-    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (180,180,180), text_font = pg.font.Font(None, 16), text=""):    
+    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (190,190,190), text_font = pg.font.Font(None, 16), text=""):    
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]+=1
@@ -38,12 +38,13 @@ class BoxText:
         self.cursor_position = len(base_name)
         cursor_text = self.text[:self.cursor_position]
         self.cursor_surface = self.text_font.render(cursor_text, True, (0, 0, 0))
-
-        # Variables para el cursor intermitente
         self.cursor_show = True  # Mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-        self.cursor_area_select = False  # Si seleccionamos algún área dentro del texto
-        self.cursor_selected_rect = None
+
+        # selected
+        self.list_text_selected = []
+        self.rect_text_selected = pg.Rect(0,0,0,0)
+
 
         # Cálculo del desplazamiento del área de texto
         dis = self.text_surface.get_width() - self.cursor_surface.get_width()
@@ -68,12 +69,16 @@ class BoxText:
             self.rect_box_color = (20,20,20)
             self.rect_line_color = event_dict["Colors"]["GreenFluor"]
         if code == "clickable" :
-            self.rect_box_color = event_dict["Colors"]["LightGrey"]
+            self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
 
     def pos_edit(self,event_dict, code = None):
         if code == "selected":
             self.rect_line_color = event_dict["Colors"]["LightGrey"]
-        #self.can_edit = False
+            # Reset selected
+            #-------------------------------------------------------------------------------------
+            self.list_text_selected.clear()
+            self.rect_text_selected = pg.Rect(0,0,0,0)
+            #-------------------------------------------------------------------------------------
         if code == "clickable" :
             self.rect_box_color = (20,20,20)
 
@@ -82,27 +87,29 @@ class BoxText:
         # if code == "clickable":
         #     self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
         if code == "selected":
-
             def init(): # Comienzo del codigo
                 #-------------------------------------------------------------------------------------
-
                 def init2():
                     if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
                         event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
 
-                    #if self.can_edit:
                     click()
                     key_pressed()
-                    #if not(self.can_edit) : self.can_edit = True
-
 
                 def click():# si hago click
-                    #-------------------------------------------------------------------------------------
                     # mouse x,y con respecto a box text
                     x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                    y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                    #y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
 
+                    #-------------------------------------------------------------------------------------
                     if event_dict["Mouse"]["MouseClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
+                        
+                        
+                        # Reset selected
+                        #-------------------------------------------------------------------------------------
+                        self.list_text_selected.clear()
+                        self.rect_text_selected = pg.Rect(0,0,0,0)
+                        #-------------------------------------------------------------------------------------
 
                         x_click_in_surface_text = self.displace_area_x + x 
                         w_text_surface = self.text_surface.get_width()
@@ -121,57 +128,83 @@ class BoxText:
                                 if cursor_surface.get_width() >= x_click_in_surface_text:
                                     self.cursor_position = i + 1
                                     break
-
                         t = self.text[:self.cursor_position]
                         self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
 
 
-                    # if event_dict["Mouse"]["MouseClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
+                    if event_dict["Mouse"]["MouseClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
 
-                    #     # x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                    #     # y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
-                    #     # event_dict["Mouse"]["MousePosition"] = (x,y)
+                        cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - x)
+                        dis = self.cursor_surface.get_width() + cursor_displace
+                        selected_indices = []
 
-                    #     #x_click_in_surface_text = self.displace_area_x + x
+                        if self.cursor_position > 0 and cursor_displace < 0:
+                            # Calcular índices seleccionados hacia la izquierda
+                            for i in range(self.cursor_position - 1, -1, -1):
+                                text_until_i = self.text[:i]
+                                if self.text_font.size(text_until_i)[0] < dis: break
+                                selected_indices.append(self.cursor_position - (self.cursor_position - i) + 1)
 
-                    #     cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - event_dict["Mouse"]["MousePosition"][0]) # desplazamiento del mouse desde el cursor
+                        elif self.cursor_position < len(self.text) and cursor_displace > 0:
+                            # Calcular índices seleccionados hacia la derecha
+                            for i in range(self.cursor_position, len(self.text)):
+                                text_until_next = self.text[:i + 1]
+                                if self.text_font.size(text_until_next)[0] >= dis: break
+                                selected_indices.append(i + 1)
+
+                        # Calcula x1 y w1 en una sola iteración
+                        #-------------------------------------------------------------------------------------
+                        x1, w1 = 0, 0
+                        text_so_far = ""
+                        selection_started = False
+
+                        for num, char in enumerate(self.text):
+                            text_so_far += char
+                            char_width = self.text_font.size(char)[0]
+                            if num + 1 in selected_indices:
+                                if not selection_started:
+                                    x1 = self.text_font.size(text_so_far)[0] - char_width
+                                    selection_started = True
+                                w1 = self.text_font.size(text_so_far)[0] - x1
+
+                        self.rect_text_selected.x = x1 - self.displace_area_x
+                        self.rect_text_selected.y = 0#(self.rect.height - self.text_surface.get_height()) / 2
+                        self.rect_text_selected.width = w1
+                        self.rect_text_selected.height = self.rect.height#self.text_surface.get_height()
+
+                        self.list_text_selected = selected_indices.copy()
+                        #-------------------------------------------------------------------------------------
 
 
-                    #     if self.cursor_position > 0 and cursor_displace < 0:
-                    #         dis = self.cursor_surface.get_width() + cursor_displace
-                    #         pre_char = ""
-                    #         for i in range(self.cursor_position - 1, -1, -1):
-                    #             t = self.text[:i]
-                    #             sup_width = self.text_font.size(t)[0]
-                    #             if sup_width < dis:
-                    #                 break
-                    #             pre_char += self.text[i]
-
-                    #         # x = self.rect.x
-                    #         # y = self.rect.y
-                    #         # h = self.rect.height
-                            
-                    #         #self.cursor_selected_rect = pg.Rect(x+cursor_displace,y,self.cursor_surface.get_width(),h)
-                    #         print(pre_char[::-1])
-
-                    #     elif self.cursor_position < len(self.text) and cursor_displace > 0:
-                    #         dis = self.cursor_surface.get_width() + cursor_displace
-                    #         post_char = ""
-                    #         for i in range(self.cursor_position, len(self.text)):
-                    #             t = self.text[:i + 1]
-                    #             sup_width = self.text_font.size(t)[0]
-                    #             if sup_width >= dis:
-                    #                 break
-                    #             post_char += self.text[i]
-                    #         print(post_char)
-
-                    #     #self.cursor_area_select = True
-
-                    #     #self.cursor_displace_if_click = True
+                        # # Desplazamiento en x
+                        # #-------------------------------------------------------------------------------------
+                        if self.text_surface.get_width() > self.rect.width:
+                            if x < 0:
+                                # Desplazar a la izquierda
+                                self.displace_area_x = max(self.displace_area_x - 1, 0)
+                            elif x > self.rect.width:
+                                # Desplazar a la derecha
+                                max_displacement = self.text_surface.get_width() - self.rect.width
+                                self.displace_area_x = min(self.displace_area_x + 1, max_displacement)
+                        
+                        #desplazamiento en x
+                        # if self.text_surface.get_width() > self.rect.width:
+                        #     if x < 0:
+                        #         if self.displace_area_x <= 0: self.displace_area_x = 0
+                        #         else: self.displace_area_x -= 1
+                                
+                        #     elif x > self.rect.width:
+                        #         if self.displace_area_x + self.rect.width >= self.text_surface.get_width():  # Si el área ya está en el límite derecho
+                        #             self.displace_area_x = self.text_surface.get_width() - self.rect.width  # No desplazar más a la derecha
+                        #         else:
+                        #             self.displace_area_x += 1  # Desplazar el área de visualización a la derecha
+                        #-------------------------------------------------------------------------------------
 
                     #-------------------------------------------------------------------------------------
                 
                 def key_pressed(): # si preciono una tecla
+                     
+
                     # Si hay teclas presionadas, seleccionamos la última de la lista
                     #-------------------------------------------------------------------------------------
                     key = event_dict["keyPressed"][-1] if event_dict["keyPressed"] else None
@@ -184,6 +217,13 @@ class BoxText:
                         self.key_save = key
                     #-------------------------------------------------------------------------------------
                     if key: # si preciono alguna tecla
+
+                        # Reset selected
+                        #-------------------------------------------------------------------------------------
+                        # self.list_text_selected.clear()
+                        # self.rect_text_selected = pg.Rect(0,0,0,0)
+                        #-------------------------------------------------------------------------------------
+
                         #posibilidad de editar texto
                         #-------------------------------------------------------------------------------------
                         t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
@@ -280,12 +320,15 @@ class BoxText:
 
         # box_text
         pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
+        pg.draw.rect(self.surface,(70,70,70), self.rect_text_selected) #text_selected
         pg.draw.rect(self.presurface,self.rect_line_color,self.rect,1)
 
         # if self.cursor_selected_rect:
         #     pg.draw.rect(self.surface,(0,200,0),self.cursor_selected_rect)
 
-        #self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
+        # self.sup_cur_x = max(min(self.sup_cur_x,self.cursor_surface.get_width()),0)
+
+        
 
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
         self.surface.blit(self.text_surface, (0,self.text_surface.get_height()/2),rect)
