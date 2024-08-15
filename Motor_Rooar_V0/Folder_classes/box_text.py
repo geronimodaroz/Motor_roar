@@ -72,13 +72,13 @@ class BoxText:
             self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
 
     def pos_edit(self,event_dict, code = None):
+        # Reset selected
+        #-------------------------------------------------------------------------------------
+        self.list_text_selected.clear()
+        self.rect_text_selected = pg.Rect(0,0,0,0)
+        #-------------------------------------------------------------------------------------
         if code == "selected":
             self.rect_line_color = event_dict["Colors"]["LightGrey"]
-            # Reset selected
-            #-------------------------------------------------------------------------------------
-            self.list_text_selected.clear()
-            self.rect_text_selected = pg.Rect(0,0,0,0)
-            #-------------------------------------------------------------------------------------
         if code == "clickable" :
             self.rect_box_color = (20,20,20)
 
@@ -90,37 +90,45 @@ class BoxText:
             def init(): # Comienzo del codigo
                 #-------------------------------------------------------------------------------------
                 def init2():
-                    if self.rect.collidepoint(event_dict["Mouse"]["MousePosition"]):
+                    if self.rect.collidepoint(event_dict["Mouse"]["Position"]):
                         event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_IBEAM
 
                     click()
                     key_pressed()
 
                 def click():# si hago click
+
                     # mouse x,y con respecto a box text
-                    x = event_dict["Mouse"]["MousePosition"][0] - self.rect.x 
-                    #y = event_dict["Mouse"]["MousePosition"][1] - self.rect.y
+                    x = event_dict["Mouse"]["Position"][0] - self.rect.x 
+                    #y = event_dict["Mouse"]["Position"][1] - self.rect.y
+
+                    # if event_dict["Mouse"]["ClickLeftDoubleClick"]:
+                    #     # for i in range(1,len(self.text)+1):
+                    #     #     self.list_text_selected.append(i)
+                    #     for num,char in enumerate(self.text):
+                    #         self.list_text_selected.append(num+1)
+                    #     self.rect_text_selected.x = -self.displace_area_x
+                    #     self.rect_text_selected.y = 0
+                    #     self.rect_text_selected.width = self.text_surface.get_width()
+                    #     self.rect_text_selected.height = self.rect.height
+                    #     print(self.rect_text_selected)
 
                     #-------------------------------------------------------------------------------------
-                    if event_dict["Mouse"]["MouseClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
-                        
-                        
+                    if event_dict["Mouse"]["ClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
                         # Reset selected
                         #-------------------------------------------------------------------------------------
+                        # if not(event_dict["Mouse"]["ClickLeftDoubleClick"]):
                         self.list_text_selected.clear()
                         self.rect_text_selected = pg.Rect(0,0,0,0)
                         #-------------------------------------------------------------------------------------
 
                         x_click_in_surface_text = self.displace_area_x + x 
                         w_text_surface = self.text_surface.get_width()
-
                         self.cursor_position = 0 # minima posicion del cursor
                         self.cursor_show = True
                         self.cursor_count = 0
-
                         if x_click_in_surface_text >= w_text_surface: # maxima posicion del cursor
                             self.cursor_position = len(self.text)
-
                         elif x_click_in_surface_text > 0: # posicion del cursor intermedia
                             for i in range(len(self.text)):
                                 t = self.text[:i + 1]
@@ -132,32 +140,28 @@ class BoxText:
                         self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
 
 
-                    if event_dict["Mouse"]["MouseClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
+                    if event_dict["Mouse"]["ClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
 
                         cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - x)
                         dis = self.cursor_surface.get_width() + cursor_displace
                         selected_indices = []
-
                         if self.cursor_position > 0 and cursor_displace < 0:
                             # Calcular índices seleccionados hacia la izquierda
                             for i in range(self.cursor_position - 1, -1, -1):
                                 text_until_i = self.text[:i]
                                 if self.text_font.size(text_until_i)[0] < dis: break
                                 selected_indices.append(self.cursor_position - (self.cursor_position - i) + 1)
-
                         elif self.cursor_position < len(self.text) and cursor_displace > 0:
                             # Calcular índices seleccionados hacia la derecha
                             for i in range(self.cursor_position, len(self.text)):
                                 text_until_next = self.text[:i + 1]
                                 if self.text_font.size(text_until_next)[0] >= dis: break
                                 selected_indices.append(i + 1)
-
                         # Calcula x1 y w1 en una sola iteración
                         #-------------------------------------------------------------------------------------
                         x1, w1 = 0, 0
                         text_so_far = ""
                         selection_started = False
-
                         for num, char in enumerate(self.text):
                             text_so_far += char
                             char_width = self.text_font.size(char)[0]
@@ -172,7 +176,10 @@ class BoxText:
                         self.rect_text_selected.width = w1
                         self.rect_text_selected.height = self.rect.height#self.text_surface.get_height()
 
+                        if len(selected_indices)>1 and selected_indices[0] > selected_indices[-1]: selected_indices.reverse()
+
                         self.list_text_selected = selected_indices.copy()
+
                         #-------------------------------------------------------------------------------------
 
 
@@ -186,18 +193,6 @@ class BoxText:
                                 # Desplazar a la derecha
                                 max_displacement = self.text_surface.get_width() - self.rect.width
                                 self.displace_area_x = min(self.displace_area_x + 1, max_displacement)
-                        
-                        #desplazamiento en x
-                        # if self.text_surface.get_width() > self.rect.width:
-                        #     if x < 0:
-                        #         if self.displace_area_x <= 0: self.displace_area_x = 0
-                        #         else: self.displace_area_x -= 1
-                                
-                        #     elif x > self.rect.width:
-                        #         if self.displace_area_x + self.rect.width >= self.text_surface.get_width():  # Si el área ya está en el límite derecho
-                        #             self.displace_area_x = self.text_surface.get_width() - self.rect.width  # No desplazar más a la derecha
-                        #         else:
-                        #             self.displace_area_x += 1  # Desplazar el área de visualización a la derecha
                         #-------------------------------------------------------------------------------------
 
                     #-------------------------------------------------------------------------------------
@@ -217,12 +212,6 @@ class BoxText:
                         self.key_save = key
                     #-------------------------------------------------------------------------------------
                     if key: # si preciono alguna tecla
-
-                        # Reset selected
-                        #-------------------------------------------------------------------------------------
-                        # self.list_text_selected.clear()
-                        # self.rect_text_selected = pg.Rect(0,0,0,0)
-                        #-------------------------------------------------------------------------------------
 
                         #posibilidad de editar texto
                         #-------------------------------------------------------------------------------------
@@ -272,35 +261,67 @@ class BoxText:
                     
             #-------------------------------------------------------------------------------------
             def Key_down(key):
-                
-                # Manejar la tecla de retroceso (borrar)
-                if key["key"] == pg.K_BACKSPACE:
-                    if self.cursor_position > 0:  # Solo si hay texto para borrar
-                        # Actualizar el texto eliminando el carácter borrado
-                        self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
-                        self.cursor_position -= 1  # Mover el cursor hacia la izquierda
 
-                # Flecha izquierda
-                elif key["key"] == pg.K_LEFT: 
-                    if self.cursor_position > 0: 
-                        self.cursor_position -= 1
-                    self.cursor_show = True
-                    self.cursor_count = 0
+                def init():
+                    # Manejar la tecla de retroceso (borrar)
+                    if key["key"] == pg.K_BACKSPACE:
+                        
+                        if not self.list_text_selected:  # Si no hay caracteres seleccionados 
+                            if self.cursor_position > 0:  # Solo si hay texto para borrar
+                                self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
+                                self.cursor_position -= 1  # Mover el cursor hacia la izquierda
+                        else:  # Si hay caracteres seleccionados
+                            #_delete_selected_text()
+                            _edit_selected_text()
 
-                # Flecha derecha
-                elif key["key"] == pg.K_RIGHT: 
-                    if self.cursor_position < len(self.text): 
-                        self.cursor_position += 1
-                    self.cursor_show = True
-                    self.cursor_count = 0
+                    # Flecha izquierda
+                    elif key["key"] == pg.K_LEFT:
+                        if self.cursor_position > 0:
+                            self.cursor_position -= 1
+                        _reset_selection()
+
+                    # Flecha derecha
+                    elif key["key"] == pg.K_RIGHT:
+                        if self.cursor_position < len(self.text):
+                            self.cursor_position += 1
+                        _reset_selection()
+
+                    # Manejar la entrada de caracteres permitidos
+                    elif (key["unicode"].isalpha() or
+                        key["unicode"].isnumeric() or
+                        key["key"] in {pg.K_SPACE, pg.K_UNDERSCORE, pg.K_MINUS, pg.K_PERIOD}):
+
+                        if not self.list_text_selected:
+                            # Insertar el nuevo carácter
+                            self.text = self.text[:self.cursor_position] + key["unicode"] + self.text[self.cursor_position:]
+                            self.cursor_position += 1
+                        else:
+                            # Reemplazar el texto seleccionado con el nuevo carácter
+                            #_replace_selected_text(key["unicode"])
+                            _edit_selected_text(key["unicode"])
                     
-                # Manejar la entrada de caracteres permitidos
-                elif (key["unicode"].isalpha() or
-                    key["unicode"].isnumeric() or
-                    key["key"] in {pg.K_SPACE, pg.K_UNDERSCORE, pg.K_MINUS, pg.K_PERIOD}):
-                    # Actualizar el texto insertando el nuevo carácter
-                    self.text = self.text[:self.cursor_position] + key["unicode"] + self.text[self.cursor_position:]
-                    self.cursor_position += 1
+                def _edit_selected_text(replacement_char=None):
+                    """Eliminar o reemplazar el texto seleccionado y ajustar el cursor."""
+                    selection_indices = self.list_text_selected
+                    if selection_indices:
+                        if replacement_char is None:
+                            # Eliminar el texto seleccionado
+                            self.text = self.text[:(selection_indices[0] - 1)] + self.text[selection_indices[-1]:]
+                            self.cursor_position = max(0, selection_indices[0] - 1)
+                        else:
+                            # Reemplazar el texto seleccionado con el nuevo carácter
+                            self.text = self.text[:(selection_indices[0] - 1)] + replacement_char + self.text[selection_indices[-1]:]
+                            self.cursor_position = max(0, selection_indices[0] - 1) + 1
+                        _reset_selection()
+
+                def _reset_selection():
+                    """Resetear la selección de texto y reiniciar el cursor intermitente."""
+                    self.list_text_selected.clear()
+                    self.rect_text_selected = pg.Rect(0, 0, 0, 0)
+                    self.cursor_show = True
+                    self.cursor_count = 0
+                
+                init()
             #-------------------------------------------------------------------------------------
             #-------------------------------------------------------------------------------------
             def Key_up():
@@ -317,7 +338,6 @@ class BoxText:
         #-------------------------------------------------------------------------------------
         r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
         #-------------------------------------------------------------------------------------
-
         # box_text
         pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
         pg.draw.rect(self.surface,(70,70,70), self.rect_text_selected) #text_selected
@@ -346,7 +366,7 @@ class BoxText:
                 self.cursor_count = 0
                 
             # Dibuja el cursor intermitente
-            if self.cursor_show: 
+            if self.cursor_show and not(self.list_text_selected): 
                 cursor_x = self.cursor_surface.get_width() - self.displace_area_x
                 cursor_y = 3#self.text_y
                 cursor_height = self.text_surface.get_height()

@@ -22,23 +22,27 @@ class ObjectsCreator(WindowBase):
         super().edit(event_dict,code)
         
         # mouse x,y con respecto a view_rect
-        x = event_dict["Mouse"]["MousePosition"][0] - self.view_rect.x 
-        y = event_dict["Mouse"]["MousePosition"][1] - self.view_rect.y
-        save_x_y = event_dict["Mouse"]["MousePosition"]
-        event_dict["Mouse"]["MousePosition"] = (x,y)
+        x = event_dict["Mouse"]["Position"][0] - self.view_rect.x 
+        y = event_dict["Mouse"]["Position"][1] - self.view_rect.y
+        save_x_y = event_dict["Mouse"]["Position"]
+        event_dict["Mouse"]["Position"] = (x,y)
+
 
         # ejecuto objetos de lista selected
+        #ESTO ESTA MAL!!
         # ----------------------------------------------------------------------------
-        exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
-        if exists_next_clickable_list:
-            event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict, code = "clickable") 
+        if code == "clickable":
+            exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
+            if exists_next_clickable_list:
+                event_dict["EditableObjects"]["clickable"][self.depth_number+1](event_dict, code ) 
 
-        exists_next_selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
-        if exists_next_selected_list:
-            event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict, code = "selected")
+        if code == "selected":
+            exists_next_selected_list = len(event_dict["EditableObjects"]["selected"])-1 >= self.depth_number+1 
+            if exists_next_selected_list:
+                event_dict["EditableObjects"]["selected"][self.depth_number+1](event_dict, code )
         # ----------------------------------------------------------------------------
 
-        event_dict["Mouse"]["MousePosition"] = save_x_y
+        event_dict["Mouse"]["Position"] = save_x_y
 
     
     def draw(self, event_dict):

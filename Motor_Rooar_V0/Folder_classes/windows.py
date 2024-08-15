@@ -196,7 +196,7 @@ class Window:
 
     def collision_detector(self, event_dict):
 
-        mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"] # Obtención de la posición del ratón
+        mouse_x, mouse_y = event_dict["Mouse"]["Position"] # Obtención de la posición del ratón
         
         def init(): # Inicio del proceso de comprobación
             if self.quit_rect.collidepoint(mouse_x, mouse_y): # quit
@@ -334,8 +334,8 @@ class Window:
         # selected
         if code == "selected":
 
-            if event_dict["Mouse"]["MouseClickLeftDown"]:
-                mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"]
+            if event_dict["Mouse"]["ClickLeftDown"]:
+                mouse_x, mouse_y = event_dict["Mouse"]["Position"]
                 if self.scroll_bar_side_hit:
                     update_vertical(
                         self.scroll_bar_side_inside_rect,
@@ -377,7 +377,7 @@ class Window:
                     )
 
             # si click up elimino de lista selected a scale modifier
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
+            if event_dict["Mouse"]["ClickLeftUp"]:
                 #self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
@@ -412,7 +412,7 @@ class Window:
                     self.rects_repositions(w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
+            if event_dict["Mouse"]["ClickLeftUp"]:
                 #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
@@ -450,7 +450,7 @@ class Window:
                         )
         # selected
         if code == "selected":
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
+            if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
     def draw(self,event_dict):
@@ -667,7 +667,7 @@ class WindowBase():
         
     def collision_detector(self, event_dict):
 
-        mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"] # Obtención de la posición del ratón
+        mouse_x, mouse_y = event_dict["Mouse"]["Position"] # Obtención de la posición del ratón
         
         def init(): # Inicio del proceso de comprobación
 
@@ -683,8 +683,8 @@ class WindowBase():
             event_dict["EditableObjects"]["clickable"].append(self.edit)
             event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
             if self.objects_list: # objs
-                x = event_dict["Mouse"]["MousePosition"][0] - self.view_rect.x # mouse x con respecto a view_rect
-                y = event_dict["Mouse"]["MousePosition"][1] - self.view_rect.y # mouse y con respecto a view_rect
+                x = event_dict["Mouse"]["Position"][0] - self.view_rect.x # mouse x con respecto a view_rect
+                y = event_dict["Mouse"]["Position"][1] - self.view_rect.y # mouse y con respecto a view_rect
                 for obj in self.objects_list:
                     if obj.rect.collidepoint(x,y): 
                         event_dict["EditableObjects"]["clickable"].append(obj.edit)
@@ -805,8 +805,8 @@ class WindowBase():
         # selected
         if code == "selected":
 
-            if event_dict["Mouse"]["MouseClickLeftDown"]:
-                mouse_x, mouse_y = event_dict["Mouse"]["MousePosition"]
+            if event_dict["Mouse"]["ClickLeftDown"]:
+                mouse_x, mouse_y = event_dict["Mouse"]["Position"]
                 if self.scroll_bar_side_hit:
                     update_vertical(
                         self.scroll_bar_side_inside_rect,
@@ -848,7 +848,7 @@ class WindowBase():
                     )
 
             # si click up elimino de lista selected a scale modifier
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
+            if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
     def scale_modifier(self,event_dict,code = None):
@@ -884,7 +884,7 @@ class WindowBase():
                     self.rects_repositions(w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
-            if event_dict["Mouse"]["MouseClickLeftUp"]:
+            if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
 
@@ -924,7 +924,7 @@ class WindowBase():
         
         # selected
         # if code == "selected":
-        #     if event_dict["Mouse"]["MouseClickLeftUp"]:
+        #     if event_dict["Mouse"]["ClickLeftUp"]:
         #         del event_dict["EditableObjects"]["selected"][self.depth_number:]
 
 

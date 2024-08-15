@@ -52,6 +52,11 @@ clock = pg.time.Clock()
 fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
 # --------------------------------------------------------------------------
 
+# Variables para detectar el doble clic
+# --------------------------------------------------------------------------
+last_click_time = 0
+double_click_interval = 0.5  # Intervalo en segundos permitido para considerar un doble clic
+# --------------------------------------------------------------------------
 
 
 # diccionario de eventos
@@ -70,10 +75,11 @@ event_dict = {
               "GreenFluor":(204,255,0)},
     "keyPressed": [],
     "Mouse":{"Motion":False,
-             "MousePosition":(0,0),
-             "MouseClickLeftDown": False,
-             "MouseClickLeftPressed": False,
-             "MouseClickLeftUp": False,
+             "Position":(0,0),
+             "ClickLeftDown": False,
+             "ClickLeftPressed": False,
+             "ClickLeftUp": False,
+             "ClickLeftDoubleClick": False,
              "Scroll": None,
              "Icon":pg.SYSTEM_CURSOR_ARROW},
     "EditableObjects": {"selected":[],
@@ -113,17 +119,18 @@ while True:
         # Reinicio los eventos
         
         # Mouse motion and mouse position
-        if event_dict["Mouse"]["MousePosition"] != pg.mouse.get_pos(): # si el mouse se mueve
-            event_dict["Mouse"]["Motion"] = ((pg.mouse.get_pos()[0] - event_dict["Mouse"]["MousePosition"][0]),
-                                            (pg.mouse.get_pos()[1] - event_dict["Mouse"]["MousePosition"][1]))
-            event_dict["Mouse"]["MousePosition"] = pg.mouse.get_pos()
+        if event_dict["Mouse"]["Position"] != pg.mouse.get_pos(): # si el mouse se mueve
+            event_dict["Mouse"]["Motion"] = ((pg.mouse.get_pos()[0] - event_dict["Mouse"]["Position"][0]),
+                                            (pg.mouse.get_pos()[1] - event_dict["Mouse"]["Position"][1]))
+            event_dict["Mouse"]["Position"] = pg.mouse.get_pos()
             event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW # reinicio icono del mouse
         else: 
             event_dict["Mouse"]["Motion"] = None
 
         # Restablecer eventos de clic de ratón
-        event_dict["Mouse"]["MouseClickLeftDown"] = False
-        event_dict["Mouse"]["MouseClickLeftUp"] = False
+        event_dict["Mouse"]["ClickLeftDown"] = False
+        event_dict["Mouse"]["ClickLeftUp"] = False
+        event_dict["Mouse"]["ClickLeftDoubleClick"] = False
         # Restableces evento scroll del raton
         event_dict["Mouse"]["Scroll"] = None
 
@@ -143,14 +150,24 @@ while True:
             # Detectar eventos de clic del ratón
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Botón izquierdo del ratón
-                    #event_dict["MouseClickLeft"] = event.pos
-                    event_dict["Mouse"]["MouseClickLeftDown"] = True
-                    event_dict["Mouse"]["MouseClickLeftPressed"] = True
+                    event_dict["Mouse"]["ClickLeftDown"] = True
+                    event_dict["Mouse"]["ClickLeftPressed"] = True
+
+                    # doble click
+                    # ----------------------------------------------------------------------------
+                    # Guardar el tiempo del clic
+                    current_time = time.time()
+                    # Comparar el tiempo entre clics
+                    if current_time - last_click_time <= double_click_interval:
+                        event_dict["Mouse"]["ClickLeftDoubleClick"] = True
+                    # Actualizar el último tiempo de clic
+                    last_click_time = current_time
+                    # ----------------------------------------------------------------------------
             
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:  # Botón izquierdo del ratón
-                    event_dict["Mouse"]["MouseClickLeftUp"] = True
-                    event_dict["Mouse"]["MouseClickLeftPressed"] = False
+                    event_dict["Mouse"]["ClickLeftUp"] = True
+                    event_dict["Mouse"]["ClickLeftPressed"] = False
 
             # scroll del mouse
             if event.type == pg.MOUSEWHEEL:
@@ -159,14 +176,17 @@ while True:
 
         # Obtener posición del mouse
         # ----------------------------------------------------------------------------
-        x,y = event_dict["Mouse"]["MousePosition"]
+        x,y = event_dict["Mouse"]["Position"]
         # ----------------------------------------------------------------------------
 
+        # if event_dict["Mouse"]["ClickLeftDoubleClick"]:
+        #     print(event_dict["Mouse"]["ClickLeftDoubleClick"])
+        
         
 
         # Detectar colisión con objetos dentro de la lista objects_list
         # ----------------------------------------------------------------------------
-        if (event_dict["Mouse"]["Motion"] and not event_dict["Mouse"]["MouseClickLeftPressed"]) or event_dict["Mouse"]["MouseClickLeftUp"]:
+        if (event_dict["Mouse"]["Motion"] and not event_dict["Mouse"]["ClickLeftPressed"]) or event_dict["Mouse"]["ClickLeftUp"]:
             # Limpiar la lista de clickeables a partir del índice depth_number+1
             #event_dict["EditableObjects"]["clickable"] = event_dict["EditableObjects"]["clickable"][:depth_number + 1]
             # verifica donde esta el mouse y los objetos que colisionan con el 
@@ -182,6 +202,7 @@ while True:
             # si el mouse cambio de objetos ejecuto cambios pre o pos de los objetos en las listas 
             # ----------------------------------------------------------------------------
             if save_clickable_list != event_dict["EditableObjects"]["clickable"]:
+
                 def pre_pos_methods(list, prefix, event_dict, code):
                     """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
                     for obj_func in list:
@@ -195,6 +216,7 @@ while True:
                                     method_to_call(event_dict, code)
                             except Exception as e:
                                 print(e)
+
                 # Ejecutar métodos pos_ para objetos clickados
                 pre_pos_methods(save_clickable_list,"pos_", event_dict, code = "clickable")
                 # Ejecutar métodos pre_ para objetos clickados
@@ -203,9 +225,10 @@ while True:
         # ----------------------------------------------------------------------------
         # Si se hace clic izquierdo, copiar lista clickeable a lista seleccionada
         # ----------------------------------------------------------------------------
-        elif event_dict["Mouse"]["MouseClickLeftDown"]:
+        elif event_dict["Mouse"]["ClickLeftDown"]:
             if event_dict["EditableObjects"]["selected"] != event_dict["EditableObjects"]["clickable"]:
                 def pre_pos_methods(list, prefix, event_dict, code):
+
                     """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
                     for obj_func in list:
                         try:
@@ -218,6 +241,7 @@ while True:
                         except Exception as e:
                             print(e)
                 # Ejecutar métodos pos_ para objetos seleccionados
+
                 pre_pos_methods(event_dict["EditableObjects"]["selected"],"pos_", event_dict, code = "selected")
                 # Actualizar listas de seleccionados y clickeables
                 event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
