@@ -54,8 +54,8 @@ fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
 
 # Variables para detectar el doble clic
 # --------------------------------------------------------------------------
-last_click_time = 0
-double_click_interval = 0.5  # Intervalo en segundos permitido para considerar un doble clic
+# last_click_time = 0
+# double_click_interval = 0.5  # Intervalo en segundos permitido para considerar un doble clic
 # --------------------------------------------------------------------------
 
 
@@ -79,7 +79,7 @@ event_dict = {
              "ClickLeftDown": False,
              "ClickLeftPressed": False,
              "ClickLeftUp": False,
-             "ClickLeftDoubleClick": False,
+             #"ClickLeftDoubleClick": False,
              "Scroll": None,
              "Icon":pg.SYSTEM_CURSOR_ARROW},
     "EditableObjects": {"selected":[],
@@ -130,7 +130,7 @@ while True:
         # Restablecer eventos de clic de ratón
         event_dict["Mouse"]["ClickLeftDown"] = False
         event_dict["Mouse"]["ClickLeftUp"] = False
-        event_dict["Mouse"]["ClickLeftDoubleClick"] = False
+        #event_dict["Mouse"]["ClickLeftDoubleClick"] = False
         # Restableces evento scroll del raton
         event_dict["Mouse"]["Scroll"] = None
 
@@ -155,13 +155,13 @@ while True:
 
                     # doble click
                     # ----------------------------------------------------------------------------
-                    # Guardar el tiempo del clic
-                    current_time = time.time()
-                    # Comparar el tiempo entre clics
-                    if current_time - last_click_time <= double_click_interval:
-                        event_dict["Mouse"]["ClickLeftDoubleClick"] = True
-                    # Actualizar el último tiempo de clic
-                    last_click_time = current_time
+                    # # Guardar el tiempo del clic
+                    # current_time = time.time()
+                    # # Comparar el tiempo entre clics
+                    # if current_time - last_click_time <= double_click_interval:
+                    #     event_dict["Mouse"]["ClickLeftDoubleClick"] = True
+                    # # Actualizar el último tiempo de clic
+                    # last_click_time = current_time
                     # ----------------------------------------------------------------------------
             
             if event.type == pg.MOUSEBUTTONUP:
@@ -178,10 +178,6 @@ while True:
         # ----------------------------------------------------------------------------
         x,y = event_dict["Mouse"]["Position"]
         # ----------------------------------------------------------------------------
-
-        # if event_dict["Mouse"]["ClickLeftDoubleClick"]:
-        #     print(event_dict["Mouse"]["ClickLeftDoubleClick"])
-        
         
 
         # Detectar colisión con objetos dentro de la lista objects_list
@@ -269,6 +265,7 @@ while True:
         #print(event_dict["EditableObjects"]["selected"])
         #print(event_dict["Delate_List"])
         #print(object_list)
+
 
         # Delate objects from object_list
         if event_dict["Delate_List"]:

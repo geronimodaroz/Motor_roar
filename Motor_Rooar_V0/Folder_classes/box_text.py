@@ -59,6 +59,13 @@ class BoxText:
         self.key_count = 0  # Contador para diferenciar la impresión del primer carácter del segundo
         self.key_save = None  # Guarda la última tecla presionada
 
+        # doble click 
+        # ----------------------------------------------------------------------------
+        self.double_click_timer = pg.time.get_ticks()
+        self.double_click_timer2 = pg.time.get_ticks()
+        self.double_click_delay = 500  # Tiempo máximo entre clics para ser considerado doble clic (en ms)
+        # ----------------------------------------------------------------------------
+
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
@@ -86,6 +93,7 @@ class BoxText:
         #-------------------------------------------------------------------------------------
         # if code == "clickable":
         #     self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
+
         if code == "selected":
             def init(): # Comienzo del codigo
                 #-------------------------------------------------------------------------------------
@@ -102,19 +110,45 @@ class BoxText:
                     x = event_dict["Mouse"]["Position"][0] - self.rect.x 
                     #y = event_dict["Mouse"]["Position"][1] - self.rect.y
 
-                    # if event_dict["Mouse"]["ClickLeftDoubleClick"]:
-                    #     # for i in range(1,len(self.text)+1):
-                    #     #     self.list_text_selected.append(i)
-                    #     for num,char in enumerate(self.text):
-                    #         self.list_text_selected.append(num+1)
+                    # if event_dict["Mouse"]["ClickLeftDoubleClick"]: # HACER DOBLE CLICK EN EL OBJETO?
+                        
+                    #     #if not(self.list_text_selected):
+                    #     for i in range(1,len(self.text)+1):
+                    #         self.list_text_selected.append(i)
+                    #     # for num,char in enumerate(self.text):
+                    #     #     self.list_text_selected.append(num+1)
                     #     self.rect_text_selected.x = -self.displace_area_x
                     #     self.rect_text_selected.y = 0
                     #     self.rect_text_selected.width = self.text_surface.get_width()
                     #     self.rect_text_selected.height = self.rect.height
-                    #     print(self.rect_text_selected)
+                    #     # else:
+                    #     #     self.list_text_selected.clear()
+                    #     #     self.rect_text_selected = pg.Rect(0,0,0,0)
 
+                    
                     #-------------------------------------------------------------------------------------
+                    
                     if event_dict["Mouse"]["ClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
+                        
+                        double_click = False
+                        triple_click = False
+
+                        if pg.time.get_ticks() - self.double_click_timer < self.double_click_delay:
+
+                            double_click = True
+
+                            #print("Doble clic detectado " + str(self.double_click_timer))
+
+                            if pg.time.get_ticks() - self.double_click_timer2 < self.double_click_delay:
+                                triple_click = True
+                                print("triple clic detectado " + str(self.double_click_timer2))
+
+                            if triple_click == False: self.double_click_timer2 = pg.time.get_ticks()
+
+                        if double_click == False: self.double_click_timer = pg.time.get_ticks()
+
+                        
+
                         # Reset selected
                         #-------------------------------------------------------------------------------------
                         # if not(event_dict["Mouse"]["ClickLeftDoubleClick"]):
@@ -140,63 +174,87 @@ class BoxText:
                         self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
 
 
-                    if event_dict["Mouse"]["ClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
 
-                        cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - x)
-                        dis = self.cursor_surface.get_width() + cursor_displace
-                        selected_indices = []
-                        if self.cursor_position > 0 and cursor_displace < 0:
-                            # Calcular índices seleccionados hacia la izquierda
-                            for i in range(self.cursor_position - 1, -1, -1):
-                                text_until_i = self.text[:i]
-                                if self.text_font.size(text_until_i)[0] < dis: break
-                                selected_indices.append(self.cursor_position - (self.cursor_position - i) + 1)
-                        elif self.cursor_position < len(self.text) and cursor_displace > 0:
-                            # Calcular índices seleccionados hacia la derecha
-                            for i in range(self.cursor_position, len(self.text)):
-                                text_until_next = self.text[:i + 1]
-                                if self.text_font.size(text_until_next)[0] >= dis: break
-                                selected_indices.append(i + 1)
-                        # Calcula x1 y w1 en una sola iteración
+
+                    elif event_dict["Mouse"]["ClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
+
+                        # Reset selected
                         #-------------------------------------------------------------------------------------
-                        x1, w1 = 0, 0
-                        text_so_far = ""
-                        selection_started = False
-                        for num, char in enumerate(self.text):
-                            text_so_far += char
-                            char_width = self.text_font.size(char)[0]
-                            if num + 1 in selected_indices:
-                                if not selection_started:
-                                    x1 = self.text_font.size(text_so_far)[0] - char_width
-                                    selection_started = True
-                                w1 = self.text_font.size(text_so_far)[0] - x1
-
-                        self.rect_text_selected.x = x1 - self.displace_area_x
-                        self.rect_text_selected.y = 0#(self.rect.height - self.text_surface.get_height()) / 2
-                        self.rect_text_selected.width = w1
-                        self.rect_text_selected.height = self.rect.height#self.text_surface.get_height()
-
-                        if len(selected_indices)>1 and selected_indices[0] > selected_indices[-1]: selected_indices.reverse()
-
-                        self.list_text_selected = selected_indices.copy()
-
+                        self.list_text_selected.clear()
+                        self.rect_text_selected = pg.Rect(0,0,0,0)
                         #-------------------------------------------------------------------------------------
+                        
+                        # Determinar el ancho de los caracteres adyacentes al cursor
+                        left_char_w = right_char_w = None
+
+                        if self.text:
+                            if self.cursor_position == 0:
+                                right_char_w = self.text_font.size(self.text[self.cursor_position])[0]
+                            elif self.cursor_position == len(self.text):
+                                left_char_w = self.text_font.size(self.text[self.cursor_position - 1])[0]
+                            else:
+                                left_char_w = self.text_font.size(self.text[self.cursor_position - 1])[0]
+                                right_char_w = self.text_font.size(self.text[self.cursor_position])[0]
+                            
+                        # Verificar la posición del cursor en relación con los caracteres adyacentes
+                        if (left_char_w and (x + self.displace_area_x) < self.cursor_surface.get_width() - left_char_w) or \
+                        (right_char_w and (x + self.displace_area_x) > self.cursor_surface.get_width() + right_char_w):
+
+                            cursor_displace = -((-self.displace_area_x + self.cursor_surface.get_width()) - x)
+                            dis = self.cursor_surface.get_width() + cursor_displace
+                            selected_indices = []
+                            if self.cursor_position > 0 and cursor_displace < 0:
+                                # Calcular índices seleccionados hacia la izquierda
+                                for i in range(self.cursor_position - 1, -1, -1):
+                                    text_until_i = self.text[:i]
+                                    if self.text_font.size(text_until_i)[0] < dis: break
+                                    selected_indices.append(self.cursor_position - (self.cursor_position - i) + 1)
+                            elif self.cursor_position < len(self.text) and cursor_displace > 0:
+                                # Calcular índices seleccionados hacia la derecha
+                                for i in range(self.cursor_position, len(self.text)):
+                                    text_until_next = self.text[:i + 1]
+                                    if self.text_font.size(text_until_next)[0] >= dis: break
+                                    selected_indices.append(i + 1)
+                            # Calcula x1 y w1 en una sola iteración
+                            #-------------------------------------------------------------------------------------
+                            x1, w1 = 0, 0
+                            text_so_far = ""
+                            selection_started = False
+                            for num, char in enumerate(self.text):
+                                text_so_far += char
+                                char_width = self.text_font.size(char)[0]
+                                if num + 1 in selected_indices:
+                                    if not selection_started:
+                                        x1 = self.text_font.size(text_so_far)[0] - char_width
+                                        selection_started = True
+                                    w1 = self.text_font.size(text_so_far)[0] - x1
+
+                            self.rect_text_selected.x = x1 - self.displace_area_x
+                            self.rect_text_selected.y = 0#(self.rect.height - self.text_surface.get_height()) / 2
+                            self.rect_text_selected.width = w1
+                            self.rect_text_selected.height = self.rect.height#self.text_surface.get_height()
+
+                            if len(selected_indices)>1 and selected_indices[0] > selected_indices[-1]: selected_indices.reverse()
+
+                            self.list_text_selected = selected_indices.copy()
+
+                            #-------------------------------------------------------------------------------------
 
 
                         # # Desplazamiento en x
                         # #-------------------------------------------------------------------------------------
+                        vel = 2
                         if self.text_surface.get_width() > self.rect.width:
                             if x < 0:
                                 # Desplazar a la izquierda
-                                self.displace_area_x = max(self.displace_area_x - 1, 0)
+                                self.displace_area_x = max(self.displace_area_x - vel, 0)
                             elif x > self.rect.width:
                                 # Desplazar a la derecha
                                 max_displacement = self.text_surface.get_width() - self.rect.width
-                                self.displace_area_x = min(self.displace_area_x + 1, max_displacement)
+                                self.displace_area_x = min(self.displace_area_x + vel, max_displacement)
                         #-------------------------------------------------------------------------------------
 
                     #-------------------------------------------------------------------------------------
-                
                 def key_pressed(): # si preciono una tecla
                      
 
@@ -256,9 +314,7 @@ class BoxText:
                         Key_up()
                 
                 init2() # inicio2
-                
                 #-------------------------------------------------------------------------------------
-                    
             #-------------------------------------------------------------------------------------
             def Key_down(key):
 
@@ -322,13 +378,10 @@ class BoxText:
                     self.cursor_count = 0
                 
                 init()
-            #-------------------------------------------------------------------------------------
-            #-------------------------------------------------------------------------------------
             def Key_up():
                 self.key_count = 0
                 self.key_alarm = 0
             #-------------------------------------------------------------------------------------
-
             init() # inicio 
 
 
