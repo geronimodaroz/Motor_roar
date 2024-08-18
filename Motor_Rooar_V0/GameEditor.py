@@ -3,7 +3,7 @@ import pygame as pg
 import time
 import os # crear carpetas, archivos ect..
 
-from Folder_classes.font import Font # fuentes (string a surface)
+from Folder_classes.utility_classes import Font # fuentes (string a surface)
 import traceback
 
 

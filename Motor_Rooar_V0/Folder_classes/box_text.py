@@ -5,7 +5,8 @@ import time
 
 import os # crear carpetas, archivos ect..
 
-from Folder_classes.surface_reposition import SurfaceReposition
+from Folder_classes.surface_reposition import SurfaceReposition # reposicion de surface
+from Folder_classes.utility_classes import ClicksDetector # detector de clicks
 
 class BoxText:
     
@@ -41,9 +42,10 @@ class BoxText:
         self.cursor_show = True  # Mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
 
-        # selected
-        self.list_text_selected = []
-        self.rect_text_selected = pg.Rect(0,0,0,0)
+        # text selected
+        self.text_selected_list = []
+        self.text_selected_rect = pg.Rect(0,0,0,0)
+        self.text_selected_flag = "" # bandera para detectar si la seleccion se hace con doble click o con desplazamiento del mouse
 
 
         # Cálculo del desplazamiento del área de texto
@@ -58,13 +60,6 @@ class BoxText:
         self.key_alarm = 0  # Tiempo entre la primera impresión de un carácter y el segundo
         self.key_count = 0  # Contador para diferenciar la impresión del primer carácter del segundo
         self.key_save = None  # Guarda la última tecla presionada
-
-        # doble click 
-        # ----------------------------------------------------------------------------
-        self.double_click_timer = pg.time.get_ticks()
-        self.double_click_timer2 = pg.time.get_ticks()
-        self.double_click_delay = 500  # Tiempo máximo entre clics para ser considerado doble clic (en ms)
-        # ----------------------------------------------------------------------------
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
@@ -81,8 +76,8 @@ class BoxText:
     def pos_edit(self,event_dict, code = None):
         # Reset selected
         #-------------------------------------------------------------------------------------
-        self.list_text_selected.clear()
-        self.rect_text_selected = pg.Rect(0,0,0,0)
+        self.text_selected_list.clear()
+        self.text_selected_rect = pg.Rect(0,0,0,0)
         #-------------------------------------------------------------------------------------
         if code == "selected":
             self.rect_line_color = event_dict["Colors"]["LightGrey"]
@@ -112,76 +107,85 @@ class BoxText:
 
                     # if event_dict["Mouse"]["ClickLeftDoubleClick"]: # HACER DOBLE CLICK EN EL OBJETO?
                         
-                    #     #if not(self.list_text_selected):
+                    #     #if not(self.text_selected_list):
                     #     for i in range(1,len(self.text)+1):
-                    #         self.list_text_selected.append(i)
+                    #         self.text_selected_list.append(i)
                     #     # for num,char in enumerate(self.text):
-                    #     #     self.list_text_selected.append(num+1)
-                    #     self.rect_text_selected.x = -self.displace_area_x
-                    #     self.rect_text_selected.y = 0
-                    #     self.rect_text_selected.width = self.text_surface.get_width()
-                    #     self.rect_text_selected.height = self.rect.height
+                    #     #     self.text_selected_list.append(num+1)
+                    #     self.text_selected_rect.x = -self.displace_area_x
+                    #     self.text_selected_rect.y = 0
+                    #     self.text_selected_rect.width = self.text_surface.get_width()
+                    #     self.text_selected_rect.height = self.rect.height
                     #     # else:
-                    #     #     self.list_text_selected.clear()
-                    #     #     self.rect_text_selected = pg.Rect(0,0,0,0)
+                    #     #     self.text_selected_list.clear()
+                    #     #     self.text_selected_rect = pg.Rect(0,0,0,0)
 
                     
                     #-------------------------------------------------------------------------------------
                     
                     if event_dict["Mouse"]["ClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
                         
-                        double_click = False
-                        triple_click = False
-
-                        if pg.time.get_ticks() - self.double_click_timer < self.double_click_delay:
-
-                            double_click = True
-
-                            #print("Doble clic detectado " + str(self.double_click_timer))
-
-                            if pg.time.get_ticks() - self.double_click_timer2 < self.double_click_delay:
-                                triple_click = True
-                                print("triple clic detectado " + str(self.double_click_timer2))
-
-                            if triple_click == False: self.double_click_timer2 = pg.time.get_ticks()
-
-                        if double_click == False: self.double_click_timer = pg.time.get_ticks()
-
+                        # detecto cuantos clicks se han dado en un intervalo de tiempo (500 ms)
+                        clicks = ClicksDetector.detect_double_click()
                         
 
+                        if clicks == 1:
+                            print("Clic simple")
+                        elif clicks == 2:
+                            print("Doble clic")
+                        elif clicks == 3:
+                            print("Triple clic")
+                            
+                        #print(self.text_selected_flag)
+                        self.text_selected_flag = ""
+                        
+                        if clicks == 1:
+                            # Reset selected
+                            #-------------------------------------------------------------------------------------
+                            self.text_selected_list.clear()
+                            self.text_selected_rect = pg.Rect(0,0,0,0)
+                            self.cursor_show = True
+                            self.cursor_count = 0
+                            #-------------------------------------------------------------------------------------
+
+                            x_click_in_surface_text = self.displace_area_x + x 
+                            w_text_surface = self.text_surface.get_width()
+                            self.cursor_position = 0 # minima posicion del cursor
+                            if x_click_in_surface_text >= w_text_surface: # maxima posicion del cursor
+                                self.cursor_position = len(self.text)
+                            elif x_click_in_surface_text > 0: # posicion del cursor intermedia
+                                for i in range(len(self.text)):
+                                    t = self.text[:i + 1]
+                                    cursor_surface = self.text_font.render(t, True, (0, 0, 0))
+                                    if cursor_surface.get_width() >= x_click_in_surface_text:
+                                        self.cursor_position = i + 1
+                                        break
+                            t = self.text[:self.cursor_position]
+                            self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
+
+                        elif clicks == 2:
+                            
+                            self.text_selected_flag = "double_click"
+
+                            for i in range(1,len(self.text)+1):
+                                self.text_selected_list.append(i)
+                            # for num,char in enumerate(self.text):
+                            #     self.text_selected_list.append(num+1)
+                            self.text_selected_rect.x = -self.displace_area_x
+                            self.text_selected_rect.y = 0
+                            self.text_selected_rect.width = self.text_surface.get_width()
+                            self.text_selected_rect.height = self.rect.height
+
+
+
+
+                    elif event_dict["Mouse"]["ClickLeftPressed"] and self.text_selected_flag != "double_click": # si mantengo click dentro de box_text (coordenadas dentro de box_text)
+
                         # Reset selected
                         #-------------------------------------------------------------------------------------
-                        # if not(event_dict["Mouse"]["ClickLeftDoubleClick"]):
-                        self.list_text_selected.clear()
-                        self.rect_text_selected = pg.Rect(0,0,0,0)
-                        #-------------------------------------------------------------------------------------
-
-                        x_click_in_surface_text = self.displace_area_x + x 
-                        w_text_surface = self.text_surface.get_width()
-                        self.cursor_position = 0 # minima posicion del cursor
-                        self.cursor_show = True
-                        self.cursor_count = 0
-                        if x_click_in_surface_text >= w_text_surface: # maxima posicion del cursor
-                            self.cursor_position = len(self.text)
-                        elif x_click_in_surface_text > 0: # posicion del cursor intermedia
-                            for i in range(len(self.text)):
-                                t = self.text[:i + 1]
-                                cursor_surface = self.text_font.render(t, True, (0, 0, 0))
-                                if cursor_surface.get_width() >= x_click_in_surface_text:
-                                    self.cursor_position = i + 1
-                                    break
-                        t = self.text[:self.cursor_position]
-                        self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
-
-
-
-
-                    elif event_dict["Mouse"]["ClickLeftPressed"]: # si mantengo click dentro de box_text (coordenadas dentro de box_text)
-
-                        # Reset selected
-                        #-------------------------------------------------------------------------------------
-                        self.list_text_selected.clear()
-                        self.rect_text_selected = pg.Rect(0,0,0,0)
+                        self.text_selected_flag = "pressed_click"
+                        self.text_selected_list.clear()
+                        self.text_selected_rect = pg.Rect(0,0,0,0)
                         #-------------------------------------------------------------------------------------
                         
                         # Determinar el ancho de los caracteres adyacentes al cursor
@@ -229,21 +233,21 @@ class BoxText:
                                         selection_started = True
                                     w1 = self.text_font.size(text_so_far)[0] - x1
 
-                            self.rect_text_selected.x = x1 - self.displace_area_x
-                            self.rect_text_selected.y = 0#(self.rect.height - self.text_surface.get_height()) / 2
-                            self.rect_text_selected.width = w1
-                            self.rect_text_selected.height = self.rect.height#self.text_surface.get_height()
+                            self.text_selected_rect.x = x1 - self.displace_area_x
+                            self.text_selected_rect.y = 0#(self.rect.height - self.text_surface.get_height()) / 2
+                            self.text_selected_rect.width = w1
+                            self.text_selected_rect.height = self.rect.height#self.text_surface.get_height()
 
                             if len(selected_indices)>1 and selected_indices[0] > selected_indices[-1]: selected_indices.reverse()
 
-                            self.list_text_selected = selected_indices.copy()
+                            self.text_selected_list = selected_indices.copy()
 
                             #-------------------------------------------------------------------------------------
 
 
                         # # Desplazamiento en x
                         # #-------------------------------------------------------------------------------------
-                        vel = 2
+                        vel = 3
                         if self.text_surface.get_width() > self.rect.width:
                             if x < 0:
                                 # Desplazar a la izquierda
@@ -322,7 +326,7 @@ class BoxText:
                     # Manejar la tecla de retroceso (borrar)
                     if key["key"] == pg.K_BACKSPACE:
                         
-                        if not self.list_text_selected:  # Si no hay caracteres seleccionados 
+                        if not self.text_selected_list:  # Si no hay caracteres seleccionados 
                             if self.cursor_position > 0:  # Solo si hay texto para borrar
                                 self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
                                 self.cursor_position -= 1  # Mover el cursor hacia la izquierda
@@ -347,7 +351,7 @@ class BoxText:
                         key["unicode"].isnumeric() or
                         key["key"] in {pg.K_SPACE, pg.K_UNDERSCORE, pg.K_MINUS, pg.K_PERIOD}):
 
-                        if not self.list_text_selected:
+                        if not self.text_selected_list:
                             # Insertar el nuevo carácter
                             self.text = self.text[:self.cursor_position] + key["unicode"] + self.text[self.cursor_position:]
                             self.cursor_position += 1
@@ -358,7 +362,7 @@ class BoxText:
                     
                 def _edit_selected_text(replacement_char=None):
                     """Eliminar o reemplazar el texto seleccionado y ajustar el cursor."""
-                    selection_indices = self.list_text_selected
+                    selection_indices = self.text_selected_list
                     if selection_indices:
                         if replacement_char is None:
                             # Eliminar el texto seleccionado
@@ -372,10 +376,14 @@ class BoxText:
 
                 def _reset_selection():
                     """Resetear la selección de texto y reiniciar el cursor intermitente."""
-                    self.list_text_selected.clear()
-                    self.rect_text_selected = pg.Rect(0, 0, 0, 0)
+                    if self.text_selected_list:
+                        #self.cursor_position = self.text_selected_list[0]-1 # llevamos el cursor al inicio del cuadro seleccionado 
+                        self.text_selected_list.clear()
+                        self.text_selected_rect = pg.Rect(0, 0, 0, 0)
                     self.cursor_show = True
                     self.cursor_count = 0
+                    
+                    
                 
                 init()
             def Key_up():
@@ -393,7 +401,7 @@ class BoxText:
         #-------------------------------------------------------------------------------------
         # box_text
         pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
-        pg.draw.rect(self.surface,(70,70,70), self.rect_text_selected) #text_selected
+        pg.draw.rect(self.surface,(70,70,70), self.text_selected_rect) #text_selected
         pg.draw.rect(self.presurface,self.rect_line_color,self.rect,1)
 
         # if self.cursor_selected_rect:
@@ -419,7 +427,7 @@ class BoxText:
                 self.cursor_count = 0
                 
             # Dibuja el cursor intermitente
-            if self.cursor_show and not(self.list_text_selected): 
+            if self.cursor_show and not(self.text_selected_list): 
                 cursor_x = self.cursor_surface.get_width() - self.displace_area_x
                 cursor_y = 3#self.text_y
                 cursor_height = self.text_surface.get_height()
