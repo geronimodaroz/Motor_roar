@@ -79,7 +79,6 @@ event_dict = {
              "ClickLeftDown": False,
              "ClickLeftPressed": False,
              "ClickLeftUp": False,
-             #"ClickLeftDoubleClick": False,
              "Scroll": None,
              "Icon":pg.SYSTEM_CURSOR_ARROW},
     "EditableObjects": {"selected":[],
@@ -152,17 +151,6 @@ while True:
                 if event.button == 1:  # Botón izquierdo del ratón
                     event_dict["Mouse"]["ClickLeftDown"] = True
                     event_dict["Mouse"]["ClickLeftPressed"] = True
-
-                    # doble click
-                    # ----------------------------------------------------------------------------
-                    # # Guardar el tiempo del clic
-                    # current_time = time.time()
-                    # # Comparar el tiempo entre clics
-                    # if current_time - last_click_time <= double_click_interval:
-                    #     event_dict["Mouse"]["ClickLeftDoubleClick"] = True
-                    # # Actualizar el último tiempo de clic
-                    # last_click_time = current_time
-                    # ----------------------------------------------------------------------------
             
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:  # Botón izquierdo del ratón

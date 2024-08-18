@@ -553,9 +553,10 @@ class WindowBase():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def rects_repositions(self, x=0, y=0, w=0, h=0):
+    def rects_repositions(self, x=0, y=0, w=0, h=0 , force = False):
+        """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
 
-        if not any([x, y, w, h]):
+        if not any([x, y, w, h]) and force == False:
             return
 
         # Rect
@@ -570,7 +571,6 @@ class WindowBase():
         # ----------------------------------------------------------------------------
         self.scale_modifier_rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         # ----------------------------------------------------------------------------
-
 
         # view
         # ----------------------------------------------------------------------------
@@ -663,9 +663,11 @@ class WindowBase():
         # ----------------------------------------------------------------------------
 
     def load_objects(self,*objects_list):
+        """carga los objetos que estaran dentro de la ventana"""
         self.objects_list = objects_list # cargar objetos
         
     def collision_detector(self, event_dict):
+        """detecta colision con los "rects" del objeto "windows" y con los objetos que contenga dentro, y los agrega a la lista "clickable" """
 
         mouse_x, mouse_y = event_dict["Mouse"]["Position"] # Obtención de la posición del ratón
         
@@ -889,7 +891,7 @@ class WindowBase():
 
 
     def edit(self,event_dict, code = None):
-
+        """metodo  principal por donde pasa la logica de las interacciones con los objetos dentro de "view" """
         # clickeable
         if code == "clickable":
 
@@ -930,7 +932,7 @@ class WindowBase():
 
 
     def draw(self,event_dict):
-
+        """dibujo windows"""
 
         pg.draw.rect(self.presurface,self.rect_color,self.rect,0,10) # rect
 

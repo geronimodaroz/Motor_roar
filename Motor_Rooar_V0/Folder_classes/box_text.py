@@ -9,15 +9,17 @@ from Folder_classes.surface_reposition import SurfaceReposition # reposicion de 
 from Folder_classes.utility_classes import ClicksDetector # detector de clicks
 
 class BoxText:
+    casa= None
     
     # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
-    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (190,190,190), text_font = pg.font.Font(None, 16), text=""):    
+    
+    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (190,190,190), text_font = pg.font.Font(None, 16),text=""):  
+
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]+=1
         self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
-
         # presurface 
         self.presurface = surface
         # Rect
@@ -45,7 +47,7 @@ class BoxText:
         # text selected
         self.text_selected_list = []
         self.text_selected_rect = pg.Rect(0,0,0,0)
-        self.text_selected_flag = "" # bandera para detectar si la seleccion se hace con doble click o con desplazamiento del mouse
+        #self.text_selected_flag = "" # bandera para detectar si la seleccion se hace con doble click o con desplazamiento del mouse
 
 
         # Cálculo del desplazamiento del área de texto
@@ -65,6 +67,7 @@ class BoxText:
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
+
 
     def pre_edit(self,event_dict, code = None):
         if code == "selected":
@@ -105,41 +108,15 @@ class BoxText:
                     x = event_dict["Mouse"]["Position"][0] - self.rect.x 
                     #y = event_dict["Mouse"]["Position"][1] - self.rect.y
 
-                    # if event_dict["Mouse"]["ClickLeftDoubleClick"]: # HACER DOBLE CLICK EN EL OBJETO?
-                        
-                    #     #if not(self.text_selected_list):
-                    #     for i in range(1,len(self.text)+1):
-                    #         self.text_selected_list.append(i)
-                    #     # for num,char in enumerate(self.text):
-                    #     #     self.text_selected_list.append(num+1)
-                    #     self.text_selected_rect.x = -self.displace_area_x
-                    #     self.text_selected_rect.y = 0
-                    #     self.text_selected_rect.width = self.text_surface.get_width()
-                    #     self.text_selected_rect.height = self.rect.height
-                    #     # else:
-                    #     #     self.text_selected_list.clear()
-                    #     #     self.text_selected_rect = pg.Rect(0,0,0,0)
-
-                    
                     #-------------------------------------------------------------------------------------
                     
                     if event_dict["Mouse"]["ClickLeftDown"]: # si hago click dentro de box_text (coordenadas dentro de box_text)
                         
                         # detecto cuantos clicks se han dado en un intervalo de tiempo (500 ms)
-                        clicks = ClicksDetector.detect_double_click()
+                        clicks = ClicksDetector.detect_double_triple_click()
                         
+                        if clicks == 1:
 
-                        if clicks == 1:
-                            print("Clic simple")
-                        elif clicks == 2:
-                            print("Doble clic")
-                        elif clicks == 3:
-                            print("Triple clic")
-                            
-                        #print(self.text_selected_flag)
-                        self.text_selected_flag = ""
-                        
-                        if clicks == 1:
                             # Reset selected
                             #-------------------------------------------------------------------------------------
                             self.text_selected_list.clear()
@@ -164,26 +141,54 @@ class BoxText:
                             self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
 
                         elif clicks == 2:
-                            
-                            self.text_selected_flag = "double_click"
 
-                            for i in range(1,len(self.text)+1):
-                                self.text_selected_list.append(i)
-                            # for num,char in enumerate(self.text):
-                            #     self.text_selected_list.append(num+1)
+                            x1, w1 = 0, 0
+                            l1, l2 = 1, len(self.text)  # Inicializamos l2 al tamaño total del texto para capturar todo si está al extremo derecho
+
+                            # Buscar el límite izquierdo (hacia atrás desde la posición del cursor)
+                            if self.cursor_position > 0:
+                                for i in range(self.cursor_position - 1, -1, -1):  # Recorre hacia atrás
+                                    #print(i)
+                                    if self.text[i] in [" ", "-", ".", "_"]:  # Comparación correcta
+                                        text_width, _ = self.text_font.size(self.text[:i + 1])
+                                        x1 = text_width
+                                        l1 = i + 2  # Ajusta l1 al siguiente carácter después del delimitador
+                                        break
+
+                            # Buscar el límite derecho (hacia adelante desde la posición del cursor)
+                            for i in range(self.cursor_position, len(self.text)):  # Recorre hacia adelante
+                                if self.text[i] in [" ", "-", ".", "_"]:  # Comparación correcta
+                                    text_width, _ = self.text_font.size(self.text[:i])
+                                    w1 = text_width - x1
+                                    l2 = i   # Almacena la posición del delimitador
+                                    break
+                            else:
+                                # Si no se encontró un delimitador hacia adelante, seleccionamos hasta el final del texto
+                                text_width, _ = self.text_font.size(self.text)
+                                w1 = text_width - x1 # Selecciona hasta el final del texto
+
+                            # Seleccionar el texto entre l1 y l2
+                            self.text_selected_list = list(range(l1, l2+1)) # es necesario +1 para dar el ultimo recorrido al bucle
+                            # Configurar el rectángulo de selección
+                            self.text_selected_rect.x = -self.displace_area_x + x1
+                            self.text_selected_rect.y = 0
+                            self.text_selected_rect.width = w1  
+                            self.text_selected_rect.height = self.rect.height
+
+                        elif clicks == 3:
+                            
+                            #self.text_selected_list.clear()
+                            self.text_selected_list = list(range(1, len(self.text) + 1))
                             self.text_selected_rect.x = -self.displace_area_x
                             self.text_selected_rect.y = 0
                             self.text_selected_rect.width = self.text_surface.get_width()
                             self.text_selected_rect.height = self.rect.height
 
 
-
-
-                    elif event_dict["Mouse"]["ClickLeftPressed"] and self.text_selected_flag != "double_click": # si mantengo click dentro de box_text (coordenadas dentro de box_text)
+                    elif event_dict["Mouse"]["ClickLeftPressed"] and event_dict["Mouse"]["Motion"]:
 
                         # Reset selected
                         #-------------------------------------------------------------------------------------
-                        self.text_selected_flag = "pressed_click"
                         self.text_selected_list.clear()
                         self.text_selected_rect = pg.Rect(0,0,0,0)
                         #-------------------------------------------------------------------------------------
@@ -241,10 +246,10 @@ class BoxText:
                             if len(selected_indices)>1 and selected_indices[0] > selected_indices[-1]: selected_indices.reverse()
 
                             self.text_selected_list = selected_indices.copy()
-
                             #-------------------------------------------------------------------------------------
 
 
+                        # ERROR ACA!!!
                         # # Desplazamiento en x
                         # #-------------------------------------------------------------------------------------
                         vel = 3
@@ -331,8 +336,8 @@ class BoxText:
                                 self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
                                 self.cursor_position -= 1  # Mover el cursor hacia la izquierda
                         else:  # Si hay caracteres seleccionados
-                            #_delete_selected_text()
-                            _edit_selected_text()
+                            _delete_selected_text()
+                            #_edit_selected_text()
 
                     # Flecha izquierda
                     elif key["key"] == pg.K_LEFT:
@@ -357,22 +362,37 @@ class BoxText:
                             self.cursor_position += 1
                         else:
                             # Reemplazar el texto seleccionado con el nuevo carácter
-                            #_replace_selected_text(key["unicode"])
-                            _edit_selected_text(key["unicode"])
+                            _replace_selected_text(key["unicode"])
+                            #_edit_selected_text(key["unicode"])
                     
-                def _edit_selected_text(replacement_char=None):
-                    """Eliminar o reemplazar el texto seleccionado y ajustar el cursor."""
+                # def _edit_selected_text(replacement_char=None):
+                #     """Eliminar o reemplazar el texto seleccionado y ajustar el cursor."""
+                #     selection_indices = self.text_selected_list
+                #     if selection_indices:
+                #         if replacement_char is None:
+                #             # Eliminar el texto seleccionado
+                #             self.text = self.text[:(selection_indices[0] - 1)] + self.text[selection_indices[-1]:]
+                #             self.cursor_position = max(0, selection_indices[0] - 1)
+                #         else:
+                #             # Reemplazar el texto seleccionado con el nuevo carácter
+                #             self.text = self.text[:(selection_indices[0] - 1)] + replacement_char + self.text[selection_indices[-1]:]
+                #             self.cursor_position = max(0, selection_indices[0] - 1) + 1
+                #         _reset_selection()
+                def _delete_selected_text():
+                    """Eliminar el texto seleccionado y ajustar el cursor."""
                     selection_indices = self.text_selected_list
                     if selection_indices:
-                        if replacement_char is None:
-                            # Eliminar el texto seleccionado
-                            self.text = self.text[:(selection_indices[0] - 1)] + self.text[selection_indices[-1]:]
-                            self.cursor_position = max(0, selection_indices[0] - 1)
-                        else:
-                            # Reemplazar el texto seleccionado con el nuevo carácter
-                            self.text = self.text[:(selection_indices[0] - 1)] + replacement_char + self.text[selection_indices[-1]:]
-                            self.cursor_position = max(0, selection_indices[0] - 1) + 1
-                        _reset_selection()
+                        self.text = self.text[:(selection_indices[0] - 1 )] + self.text[selection_indices[-1]:]
+                        self.cursor_position = max(0, selection_indices[0] - 1)
+                    _reset_selection()
+
+                def _replace_selected_text(replacement_char):
+                    """Reemplazar el texto seleccionado con un nuevo carácter y ajustar el cursor."""
+                    selection_indices = self.text_selected_list
+                    if selection_indices:
+                        self.text = self.text[:(selection_indices[0] - 1)] + replacement_char + self.text[selection_indices[-1]:]
+                        self.cursor_position = max(0, selection_indices[0] - 1) + 1
+                    _reset_selection()
 
                 def _reset_selection():
                     """Resetear la selección de texto y reiniciar el cursor intermitente."""

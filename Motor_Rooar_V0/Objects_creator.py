@@ -27,7 +27,6 @@ class ObjectsCreator(WindowBase):
         save_x_y = event_dict["Mouse"]["Position"]
         event_dict["Mouse"]["Position"] = (x,y)
 
-
         # ejecuto objetos de lista selected
         #ESTO ESTA MAL!!
         # ----------------------------------------------------------------------------
