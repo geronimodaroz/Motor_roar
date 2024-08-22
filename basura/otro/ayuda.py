@@ -1,47 +1,70 @@
 import pygame as pg
+import pyperclip
 
-class ClickHandler:
-    def __init__(self, click_delay=300):  # Retardo entre clics en milisegundos
-        self.click_count = 0
-        self.last_click_time = 0
-        self.click_delay = click_delay
-
-    def handle_click(self):
-        current_time = pg.time.get_ticks()
-
-        # Si el tiempo desde el último clic es menor que el retardo permitido
-        if current_time - self.last_click_time <= self.click_delay:
-            self.click_count += 1
-        else:
-            # Reiniciar la cuenta de clics si se ha superado el intervalo
-            self.click_count = 1
-
-        self.last_click_time = current_time
-
-        # Detectar el tipo de clic
-        if self.click_count == 2:
-            print("Doble clic detectado")
-        elif self.click_count == 3:
-            print("Triple clic detectado")
-
-# Inicialización de Pygame
+# Inicializar Pygame
 pg.init()
-screen = pg.display.set_mode((800, 600))
-click_handler = ClickHandler()
 
+# Configuración de la pantalla
+screen = pg.display.set_mode((640, 480))
+pg.display.set_caption("Copiar y Pegar con Pygame")
+
+# Colores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Fuente
+font = pg.font.Font(None, 36)
+
+# Clase de gestión de texto
+class TextManager:
+    def __init__(self):
+        self.text = ""
+        self.cursor_position = 0
+
+    def handle_keys(self, event):
+        keys = pg.key.get_pressed()
+
+        # Copiar (Ctrl + C)
+        if keys[pg.K_LCTRL] or keys[pg.K_RCTRL]:
+            if event.key == pg.K_c:
+                self.copy()
+
+        # Pegar (Ctrl + V)
+        if keys[pg.K_LCTRL] or keys[pg.K_RCTRL]:
+            if event.key == pg.K_v:
+                self.paste()
+
+    def copy(self):
+        # Copiar texto al portapapeles del sistema
+        pyperclip.copy(self.text)
+
+    def paste(self):
+        # Pegar el texto del portapapeles del sistema
+        pasted_text = pyperclip.paste()
+        self.text = self.text[:self.cursor_position] + pasted_text + self.text[self.cursor_position:]
+        self.cursor_position += len(pasted_text)
+
+    def render(self, screen):
+        # Renderizar el texto en la pantalla
+        screen.fill(WHITE)
+        text_surface = font.render(self.text, True, BLACK)
+        screen.blit(text_surface, (50, 200))
+        pg.display.flip()
+
+# Instancia de la clase TextManager
+text_manager = TextManager()
+
+# Bucle principal
 running = True
 while running:
     for event in pg.event.get():
-        # Detección del evento de clic izquierdo
         if event.type == pg.QUIT:
             running = False
+        if event.type == pg.KEYDOWN:
+            text_manager.handle_keys(event)
 
-        # Verificación de si se hizo clic con el botón izquierdo del mouse
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # event.button == 1 indica clic izquierdo
-            click_handler.handle_click()
+    # Renderizar texto en la pantalla
+    text_manager.render(screen)
 
-    # Actualización de la pantalla y otros elementos del juego
-    screen.fill((0, 0, 0))
-    pg.display.flip()
-
+# Cerrar Pygame
 pg.quit()

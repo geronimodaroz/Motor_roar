@@ -529,7 +529,6 @@ class WindowBase():
         self.save_curtain_rect_y = 0
         self.curtain_color = (150, 100, 150)
 
-
         # Inicializar scroll_bar
         self.scroll_bar = scroll_bar
         if self.scroll_bar != 0:
@@ -543,10 +542,8 @@ class WindowBase():
         # Llamar a rects_repositions para inicializar rectángulos
         self.rects_repositions(x, y, w, h)
 
-
         # Cargar imagen
         #self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
-
 
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
