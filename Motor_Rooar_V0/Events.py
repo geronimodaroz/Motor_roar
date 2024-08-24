@@ -1,6 +1,142 @@
 import pygame as pg
 import sys
 
+# def modifiers_key_state():
+#     """Retorna una lista con las teclas modificadoras que están presionadas."""
+#     return [valores['key'] for valores in key_events_modifier_list 
+#             if pg.key.get_mods() & valores['mod'] == valores['mod']]
+
+# def control_key_state():
+#     """Devuelve una lista con los nombres de las teclas de control presionadas."""
+#     return [event['key'] for key, pressed in enumerate(pg.key.get_pressed())
+#             if pressed for event in key_events_control_list if event['scancode'] == key]
+
+# def char_key_state():
+#     """Devuelve una lista con los eventos de teclas de caracteres presionadas."""
+#     return [key_event for key, pressed in enumerate(pg.key.get_pressed()) 
+#             if pressed for key_event in key_events_lower_char_list if key_event['scancode'] == key]
+
+
+
+def modifiers_key_state(): # MODIFICADORES
+    """Retorna una lista con las teclas modificadoras que estan presionadas"""
+    list = []
+    for valores in key_events_modifier_list:
+        mod_valor = valores['mod']
+        if pg.key.get_mods() & mod_valor == mod_valor:
+            list.append(valores['key'])
+    return list
+
+def control_key_state():
+    """Devuelve una lista con los nombres de las teclas presionadas."""
+    pressed_keys = []
+    for key, pressed in enumerate(pg.key.get_pressed()): # los eventos de teclado también dependen de la capacidad del teclado (n-key rollover)
+        if pressed:
+            key_name = next((event['key'] for event in key_events_control_list if event['scancode'] == key), None)
+            if key_name:
+                pressed_keys.append(key_name)
+    return pressed_keys
+
+def char_key_state(): # CARACTERES
+    keys = pg.key.get_pressed()
+    pressed_keys = []
+    def get_key_name(key_code):
+        """Devuelve el nombre o carácter asociado con un código de tecla."""
+        for key_event in key_events_lower_char_list:
+            if key_event['scancode'] == key_code:
+                pressed_keys.append(key_event)
+    for key, pressed in enumerate(keys):
+        if pressed:
+            get_key_name(key)
+    return pressed_keys
+
+
+def event(event_dict):
+    #Eventos
+    # ----------------------------------------------------------------------------
+    event_dict["Mouse"]["Motion"] = None
+    event_dict["Mouse"]["ClickLeftDown"] = False
+    event_dict["Mouse"]["ClickLeftUp"] = False
+    event_dict["Mouse"]["Scroll"] = None
+
+    # Verificar si el mouse se mueve
+    current_mouse_pos = pg.mouse.get_pos()
+    if event_dict["Mouse"]["Position"] != current_mouse_pos:
+        event_dict["Mouse"]["Motion"] = (
+            current_mouse_pos[0] - event_dict["Mouse"]["Position"][0],
+            current_mouse_pos[1] - event_dict["Mouse"]["Position"][1]
+        )
+        event_dict["Mouse"]["Position"] = current_mouse_pos
+        event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW  # Reinicio icono del mouse
+
+    
+
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
+            
+        # Eventos de teclas
+        elif event.type == pg.KEYDOWN:  # Tecla hacia abajo
+
+            # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
+            event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers (key)
+            
+            event_dict["keyPressed"]["Control"] = control_key_state() # control (key)
+
+            event_dict["keyPressed"]["char"] = char_key_state() # char (unicode)
+            
+            # Obtener los modificadores activos
+            if event.key in MODIFIER_KEYS: # modificadores
+                pass
+                #event_dict["keyPressed"]["Modifiers"].append(event.key)
+            elif event.key in allowed_control_keys:
+                pass
+                #event_dict["keyPressed"]["Control"].append(event.key)
+            elif event.unicode in allowed_char["lower"]: 
+                pass
+                #event_dict["keyPressed"]["char"].append({"unicode": event.unicode})
+
+        elif event.type == pg.KEYUP:  # Tecla hacia arriba
+
+            # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
+            event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers
+
+            event_dict["keyPressed"]["Control"] = control_key_state() # control
+
+            event_dict["keyPressed"]["char"] = char_key_state() # char
+
+            if event.key in MODIFIER_KEYS: # modificadores
+                pass
+                #event_dict["keyPressed"]["Modifiers"].remove(event.key)
+            elif event.key in allowed_control_keys:
+                pass
+                #event_dict["keyPressed"]["Control"].remove(event.key)
+            elif event.unicode in allowed_char["lower"]: 
+                pass
+                # event_info = {"unicode": event.unicode}
+                # i = event_dict["keyPressed"]["char"].index(event_info)
+                # del event_dict["keyPressed"]["char"][i]
+        
+        
+
+
+        # Detectar eventos de clic del ratón
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Botón izquierdo del ratón
+                event_dict["Mouse"]["ClickLeftDown"] = True
+                event_dict["Mouse"]["ClickLeftPressed"] = True
+        
+        if event.type == pg.MOUSEBUTTONUP:
+            if event.button == 1:  # Botón izquierdo del ratón
+                event_dict["Mouse"]["ClickLeftUp"] = True
+                event_dict["Mouse"]["ClickLeftPressed"] = False
+
+        # scroll del mouse
+        if event.type == pg.MOUSEWHEEL:
+            event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
+    # ----------------------------------------------------------------------------
+
 MODIFIER_KEYS = {
     pg.K_LSHIFT, pg.K_RSHIFT, pg.K_LCTRL, pg.K_RCTRL,
     pg.K_LALT, pg.K_RALT, pg.K_LMETA, pg.K_RMETA,
@@ -164,123 +300,3 @@ key_events_control_list = [  # CONTROL - 'mod': 0
     {'unicode': '',     'key': 1073741906, 'scancode': 82},  # Up Arrow
     {'unicode': '',     'key': 1073741905, 'scancode': 81}   # Down Arrow
 ]
-
-
-def update_modifiers_key_state(): # MODIFICADORES
-    #event_dict["keyPressed"]["Modifiers"].clear()
-    list = []
-    for valores in key_events_modifier_list:
-        mod_valor = valores['mod']
-        if pg.key.get_mods() & mod_valor == mod_valor:
-            list.append(valores['key'])
-            #event_dict["keyPressed"]["Modifiers"].append(valores['key'])
-    #print(list)
-    return list
-
-def update_control_key_state(): # CONTROL
-    keys = pg.key.get_pressed()
-    def get_key_name(key_code):
-        """Devuelve el nombre o carácter asociado con un código de tecla."""
-        for key_event in key_events_control_list:
-            if key_event['scancode'] == key_code:
-                return key_event['key']
-        return 'Unknown Key'
-    pressed_keys = {key: get_key_name(key) for key, pressed in enumerate(keys) if pressed}
-    #print(pressed_keys)
-    return pressed_keys
-
-def update_char_key_state(): # CARACTERES
-    keys = pg.key.get_pressed()
-    def get_key_name(key_code):
-        """Devuelve el nombre o carácter asociado con un código de tecla."""
-        for key_event in key_events_lower_char_list:
-            if key_event['scancode'] == key_code:
-                return key_event['key']
-        return 'Unknown Key'
-    pressed_keys = {key: get_key_name(key) for key, pressed in enumerate(keys) if pressed}
-    return pressed_keys
-
-# def update_char_key_state():
-#    keys = pg.key.get_pressed()
-#    return {key: KEY_MAP.get(key, 'Unknown Key') for key, pressed in enumerate(keys) if pressed}
-
-class Events():
-
-    def __init__(event_dict):
-        #Eventos
-        # ----------------------------------------------------------------------------
-        event_dict["Mouse"]["Motion"] = None
-        event_dict["Mouse"]["ClickLeftDown"] = False
-        event_dict["Mouse"]["ClickLeftUp"] = False
-        event_dict["Mouse"]["Scroll"] = None
-
-        # Verificar si el mouse se mueve
-        current_mouse_pos = pg.mouse.get_pos()
-        if event_dict["Mouse"]["Position"] != current_mouse_pos:
-            event_dict["Mouse"]["Motion"] = (
-                current_mouse_pos[0] - event_dict["Mouse"]["Position"][0],
-                current_mouse_pos[1] - event_dict["Mouse"]["Position"][1]
-            )
-            event_dict["Mouse"]["Position"] = current_mouse_pos
-            event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW  # Reinicio icono del mouse
-
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                sys.exit()
-                
-            # Eventos de teclas
-            elif event.type == pg.KEYDOWN:  # Tecla hacia abajo
-
-                # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
-                event_dict["keyPressed"]["Modifiers"] = update_modifiers_key_state() # modifiers
-                
-                update_control_key_state() # control
-                
-                
-                # Obtener los modificadores activos
-                if event.key in MODIFIER_KEYS: # modificadores
-                    pass
-                    #event_dict["keyPressed"]["Modifiers"].append(event.key)
-                elif event.key in allowed_control_keys:
-                    pass
-                    #event_dict["keyPressed"]["Control"].append(event.key)
-                elif event.unicode in allowed_char["lower"]: 
-                    event_dict["keyPressed"]["char"].append({"unicode": event.unicode})
-
-            elif event.type == pg.KEYUP:  # Tecla hacia arriba
-
-                # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
-                event_dict["keyPressed"]["Modifiers"] = update_modifiers_key_state() # modifiers
-
-                update_control_key_state() # control
-
-                if event.key in MODIFIER_KEYS: # modificadores
-                    pass
-                    #event_dict["keyPressed"]["Modifiers"].remove(event.key)
-                elif event.key in allowed_control_keys:
-                    pass
-                    #event_dict["keyPressed"]["Control"].remove(event.key)
-                elif event.unicode in allowed_char["lower"]: 
-                    event_info = {"unicode": event.unicode}
-                    i = event_dict["keyPressed"]["char"].index(event_info)
-                    del event_dict["keyPressed"]["char"][i]
-            
-            
-
-
-            # Detectar eventos de clic del ratón
-            if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Botón izquierdo del ratón
-                    event_dict["Mouse"]["ClickLeftDown"] = True
-                    event_dict["Mouse"]["ClickLeftPressed"] = True
-            
-            if event.type == pg.MOUSEBUTTONUP:
-                if event.button == 1:  # Botón izquierdo del ratón
-                    event_dict["Mouse"]["ClickLeftUp"] = True
-                    event_dict["Mouse"]["ClickLeftPressed"] = False
-
-            # scroll del mouse
-            if event.type == pg.MOUSEWHEEL:
-                event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
-        # ----------------------------------------------------------------------------
