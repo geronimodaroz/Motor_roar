@@ -1,58 +1,45 @@
 import pygame as pg
 import sys
 
+
+
+
 # def modifiers_key_state():
 #     """Retorna una lista con las teclas modificadoras que están presionadas."""
-#     return [valores['key'] for valores in key_events_modifier_list 
-#             if pg.key.get_mods() & valores['mod'] == valores['mod']]
-
-# def control_key_state():
-#     """Devuelve una lista con los nombres de las teclas de control presionadas."""
-#     return [event['key'] for key, pressed in enumerate(pg.key.get_pressed())
-#             if pressed for event in key_events_control_list if event['scancode'] == key]
-
-# def char_key_state():
-#     """Devuelve una lista con los eventos de teclas de caracteres presionadas."""
-#     return [key_event for key, pressed in enumerate(pg.key.get_pressed()) 
-#             if pressed for key_event in key_events_lower_char_list if key_event['scancode'] == key]
+#     pressed_modifiers = []
+#     mods = pg.key.get_mods()
+#     for mod_event in key_events_modifier_list:
+#         mod_value = mod_event['mod']
+#         if mods & mod_value == mod_value:
+#             pressed_modifiers.append(mod_event)
+#     return pressed_modifiers
 
 
+# def key_state(keys, key_event_list):
+#     """Devuelve una lista con los nombres o caracteres de las teclas presionadas."""
+#     pressed_keys = []
+#     for key, pressed in enumerate(keys):  # Los eventos de teclado también dependen de la capacidad del teclado (n-key rollover)
+#         if pressed:
+#             for event in key_event_list:
+#                 if event['scancode'] == key:
+#                     pressed_keys.append(event)
+#                     break
+#     return pressed_keys
 
-def modifiers_key_state(): # MODIFICADORES
-    """Retorna una lista con las teclas modificadoras que estan presionadas"""
-    list = []
-    for valores in key_events_modifier_list:
-        mod_valor = valores['mod']
-        if pg.key.get_mods() & mod_valor == mod_valor:
-            list.append(valores['key'])
-    return list
 
-def control_key_state():
-    """Devuelve una lista con los nombres de las teclas presionadas."""
-    pressed_keys = []
-    for key, pressed in enumerate(pg.key.get_pressed()): # los eventos de teclado también dependen de la capacidad del teclado (n-key rollover)
-        if pressed:
-            key_name = next((event['key'] for event in key_events_control_list if event['scancode'] == key), None)
-            if key_name:
-                pressed_keys.append(key_name)
-    return pressed_keys
+def modifiers_key_state():
+    """Retorna una lista con las teclas modificadoras que están presionadas."""
+    mods = pg.key.get_mods()
+    return [mod_event for mod_event in key_events_modifier_list if mods & mod_event['mod']]
 
-def char_key_state(): # CARACTERES
-    keys = pg.key.get_pressed()
-    pressed_keys = []
-    def get_key_name(key_code):
-        """Devuelve el nombre o carácter asociado con un código de tecla."""
-        for key_event in key_events_lower_char_list:
-            if key_event['scancode'] == key_code:
-                pressed_keys.append(key_event)
-    for key, pressed in enumerate(keys):
-        if pressed:
-            get_key_name(key)
-    return pressed_keys
+def key_state(keys, key_event_list):
+    """Devuelve una lista con los nombres o caracteres de las teclas presionadas."""
+    return [event for key, pressed in enumerate(keys) if pressed for event in key_event_list if event['scancode'] == key]
 
 
 def event(event_dict):
-    #Eventos
+
+    # Reinicio variables
     # ----------------------------------------------------------------------------
     event_dict["Mouse"]["Motion"] = None
     event_dict["Mouse"]["ClickLeftDown"] = False
@@ -69,56 +56,54 @@ def event(event_dict):
         event_dict["Mouse"]["Position"] = current_mouse_pos
         event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW  # Reinicio icono del mouse
 
-    
 
+    # Bucle de eventos
+    # ----------------------------------------------------------------------------
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
             
         # Eventos de teclas
-        elif event.type == pg.KEYDOWN:  # Tecla hacia abajo
-
+        elif event.type == pg.KEYDOWN or event.type == pg.KEYUP:  # Tecla hacia abajo o arriba
+            
+            # Modifiers
+            # ----------------------------------------------------------------------------
             # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
             event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers (key)
-            
-            event_dict["keyPressed"]["Control"] = control_key_state() # control (key)
+            # ----------------------------------------------------------------------------
 
-            event_dict["keyPressed"]["char"] = char_key_state() # char (unicode)
-            
-            # Obtener los modificadores activos
-            if event.key in MODIFIER_KEYS: # modificadores
-                pass
-                #event_dict["keyPressed"]["Modifiers"].append(event.key)
-            elif event.key in allowed_control_keys:
-                pass
-                #event_dict["keyPressed"]["Control"].append(event.key)
-            elif event.unicode in allowed_char["lower"]: 
-                pass
-                #event_dict["keyPressed"]["char"].append({"unicode": event.unicode})
+            keys = pg.key.get_pressed()
 
-        elif event.type == pg.KEYUP:  # Tecla hacia arriba
-
-            # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
-            event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers
-
-            event_dict["keyPressed"]["Control"] = control_key_state() # control
-
-            event_dict["keyPressed"]["char"] = char_key_state() # char
-
-            if event.key in MODIFIER_KEYS: # modificadores
-                pass
-                #event_dict["keyPressed"]["Modifiers"].remove(event.key)
-            elif event.key in allowed_control_keys:
-                pass
-                #event_dict["keyPressed"]["Control"].remove(event.key)
-            elif event.unicode in allowed_char["lower"]: 
-                pass
-                # event_info = {"unicode": event.unicode}
-                # i = event_dict["keyPressed"]["char"].index(event_info)
-                # del event_dict["keyPressed"]["char"][i]
-        
-        
+            # Control
+            # ----------------------------------------------------------------------------
+            char_list = key_events_control_list.copy()
+            # if: Bloq_Num 
+            if any(key["key"] == 1073741907 for key in event_dict["keyPressed"]["Modifiers"]): # Bloq Num
+                char_list.extend([{'unicode': '\r','key': 1073741912, 'scancode': 88}]) # intro
+            event_dict["keyPressed"]["Control"] = key_state(keys,char_list) # control (key)
+            # ----------------------------------------------------------------------------
+            # Char
+            # ----------------------------------------------------------------------------
+            shift = any(key["key"] in (1073742049, 1073742053) for key in event_dict["keyPressed"]["Modifiers"])  # Left Shift, Right Shift
+            shift ^= any(key["key"] == 1073741881 for key in event_dict["keyPressed"]["Modifiers"])  # Bloq Mayus: shift != shift
+            if shift:  char_list = key_events_upper_char_list.copy()
+            else: char_list = key_events_lower_char_list.copy()
+            if any(key["key"] == pg.K_NUMLOCK for key in event_dict["keyPressed"]["Modifiers"]): # if: Bloq_Num 
+                char_list.extend(key_events_numeric_keypad_list)
+            # Verificar que caracteres estan en siendo presionados y lo agrego o quito en orden
+            char_list_pressed = key_state(keys,char_list) # char (unicode)
+            char = event.unicode
+            for dic_char in char_list_pressed:
+                if char == dic_char["unicode"]:
+                    event_dict["keyPressed"]["char"].append(dic_char)
+                    break
+            else:
+                for dic_char in event_dict["keyPressed"]["char"]:
+                    if char == dic_char["unicode"]:
+                        event_dict["keyPressed"]["char"].remove(dic_char)
+                        break
+            # ----------------------------------------------------------------------------
 
 
         # Detectar eventos de clic del ratón
@@ -135,38 +120,12 @@ def event(event_dict):
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
-    # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
-MODIFIER_KEYS = {
-    pg.K_LSHIFT, pg.K_RSHIFT, pg.K_LCTRL, pg.K_RCTRL,
-    pg.K_LALT, pg.K_RALT, pg.K_LMETA, pg.K_RMETA,
-    pg.K_CAPSLOCK, pg.K_NUMLOCK, pg.K_SCROLLOCK, pg.K_MODE}
-
-allowed_control_keys = {
-                        pg.K_SPACE,       # Espacio
-                        pg.K_BACKSPACE,   # Retroceso (Backspace)
-                        pg.K_RETURN,      # Enter
-                        pg.K_TAB,         # Tabulador
-                        pg.K_ESCAPE,      # Escape
-                        pg.K_LEFT,        # Flecha izquierda
-                        pg.K_RIGHT,       # Flecha derecha
-                        pg.K_UP,          # Flecha arriba
-                        pg.K_DOWN,        # Flecha abajo
-    }
-allowed_char = {"lower":['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
-
-                "upper":['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-
-                "number":['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',],
-
-                "signs":['_', '-', '.', ',', '!', '?', '@' , '#' , '$' , '%', '^', '&', '*', '(', ')',
-                         '[', ']', '{', '}', ';', ':', '\'', '\"', '\\', '/', '|', '<', '>', '=', '+']
-                }
 
 
 key_events_lower_char_list = [
+    {'unicode': ' ', 'key': 32,  'scancode': 44},  # Space
     {'unicode': 'a', 'key': 97,  'scancode': 4},
     {'unicode': 'b', 'key': 98,  'scancode': 5},
     {'unicode': 'c', 'key': 99,  'scancode': 6},
@@ -206,19 +165,19 @@ key_events_lower_char_list = [
     {'unicode': '9', 'key': 57,  'scancode': 38},
     {'unicode': "'", 'key': 39,  'scancode': 45},
     {'unicode': '-', 'key': 45,  'scancode': 56},
-    {'unicode': '´', 'key': 43,  'scancode': 48},
+    {'unicode': '+', 'key': 43,  'scancode': 48},
     {'unicode': ',', 'key': 44,  'scancode': 54},
     {'unicode': '.', 'key': 46,  'scancode': 55},
     {'unicode': '¿', 'key': 191, 'scancode': 46},
-    {'unicode': '',  'key': 180, 'scancode': 47},
+    {'unicode': '´',  'key': 180,'scancode': 47},
     {'unicode': '{', 'key': 123, 'scancode': 52},
     {'unicode': '|', 'key': 124, 'scancode': 53},
     {'unicode': '}', 'key': 125, 'scancode': 49},
-    {'unicode': '<', 'key': 60,  'scancode': 100},
+    {'unicode': '<', 'key': 60,  'scancode': 100}
 ]
 
-
 key_events_upper_char_list = [
+    {'unicode': ' ', 'key': 32,  'scancode': 44},  # Space
     {'unicode': 'A', 'key': 97,  'scancode': 4},
     {'unicode': 'B', 'key': 98,  'scancode': 5},
     {'unicode': 'C', 'key': 99,  'scancode': 6},
@@ -256,8 +215,8 @@ key_events_upper_char_list = [
     {'unicode': '(', 'key': 56,  'scancode': 37},
     {'unicode': ')', 'key': 57,  'scancode': 38},
     {'unicode': '=', 'key': 48,  'scancode': 39},
-    {'unicode': '¨', 'key': 43,  'scancode': 48},
-    {'unicode': '', 'key': 180,  'scancode': 47},
+    {'unicode': '*', 'key': 43,  'scancode': 48},
+    {'unicode': '¨', 'key': 180, 'scancode': 47},
     {'unicode': '>', 'key': 60,  'scancode': 100},
     {'unicode': '_', 'key': 45,  'scancode': 56},
     {'unicode': ':', 'key': 46,  'scancode': 55},
@@ -266,14 +225,26 @@ key_events_upper_char_list = [
     {'unicode': ']', 'key': 125, 'scancode': 49},
     {'unicode': '¡', 'key': 191, 'scancode': 46},
     {'unicode': '?', 'key': 39,  'scancode': 45},
-    {'unicode': '°', 'key': 124, 'scancode': 53},
+    {'unicode': '°', 'key': 124, 'scancode': 53},]
+
+key_events_numeric_keypad_list = [
+    {'unicode': '0', 'key': 1073741922, 'scancode': 98},
+    {'unicode': '1', 'key': 1073741913, 'scancode': 89},
+    {'unicode': '2', 'key': 1073741914, 'scancode': 90},
+    {'unicode': '3', 'key': 1073741915, 'scancode': 91},
+    {'unicode': '4', 'key': 1073741916, 'scancode': 92},
+    {'unicode': '5', 'key': 1073741917, 'scancode': 93},
+    {'unicode': '6', 'key': 1073741918, 'scancode': 94},
+    {'unicode': '7', 'key': 1073741919, 'scancode': 95},
+    {'unicode': '8', 'key': 1073741920, 'scancode': 96},
+    {'unicode': '9', 'key': 1073741921, 'scancode': 97},
+    {'unicode': '/', 'key': 1073741908, 'scancode': 84},
+    {'unicode': '*', 'key': 1073741909, 'scancode': 85},
+    {'unicode': '-', 'key': 1073741910, 'scancode': 86},
+    {'unicode': '+', 'key': 1073741911, 'scancode': 87},
+    {'unicode': '.', 'key': 1073741923, 'scancode': 99},
+    #{'unicode': '\r','key': 1073741912, 'scancode': 88},  # Intro
 ]
-
-
-# Mod: es el estado de las teclas modificadoras EJ: (Bloq Mayus)8192 + (Bloq Num)4096 = 12288
-
-
-
 
 key_events_modifier_list = [  # MODIFICADORES - ('unicode': '')
     {'key': 1073742049, 'mod': 1,   'scancode': 225},  # left Shift
@@ -292,11 +263,140 @@ key_events_control_list = [  # CONTROL - 'mod': 0
     {'unicode': '\x08', 'key': 8,          'scancode': 42},  # Backspace
     {'unicode': '\x1b', 'key': 27,         'scancode': 41},  # Escape
     {'unicode': '\r',   'key': 13,         'scancode': 40},  # Enter
-    {'unicode': '\r',   'key': 1073741912, 'scancode': 88},  # Intro
+    #{'unicode': '\r',   'key': 1073741912, 'scancode': 88},  # Intro
     {'unicode': '\t',   'key': 9,          'scancode': 43},  # Tab
-    {'unicode': ' ',    'key': 32,         'scancode': 44},  # Space
+    #{'unicode': ' ',    'key': 32,         'scancode': 44},  # Space
     {'unicode': '',     'key': 1073741904, 'scancode': 80},  # Left Arrow
     {'unicode': '',     'key': 1073741903, 'scancode': 79},  # Right Arrow
     {'unicode': '',     'key': 1073741906, 'scancode': 82},  # Up Arrow
-    {'unicode': '',     'key': 1073741905, 'scancode': 81}   # Down Arrow
+    {'unicode': '',     'key': 1073741905, 'scancode': 81},  # Down Arrow
+    {'unicode': '\x7f', 'key': 127,        'scancode': 76}   # suprimir
+]
+
+pg_key_list1 = [
+    pg.K_LSHIFT,    # 1073742049, left Shift
+    pg.K_RSHIFT,    # 1073742053, right Shift
+    pg.K_LCTRL,     # 1073742048, left Ctrl
+    pg.K_RCTRL,     # 1073742052, right Ctrl
+    pg.K_LMETA,     # 1073742050, left Meta
+    pg.K_RALT,      # 1073742054, right Alt (Alt Gr)
+    pg.K_LALT,      # 1073742051, left Alt
+    pg.K_NUMLOCK,   # 1073741907, Bloq Num
+    pg.K_CAPSLOCK,  # 1073741881, Bloq Mayus
+    pg.K_SCROLLLOCK # 1073741895, Bloq Despl
+]
+
+pg_key_control_list1 = [
+    pg.K_BACKSPACE,  # 8, Backspace
+    pg.K_ESCAPE,     # 27, Escape
+    pg.K_RETURN,     # 13, Enter
+    pg.K_KP_ENTER,   # 1073741912, Intro (teclado numérico)
+    pg.K_TAB,        # 9, Tab
+    pg.K_SPACE,      # 32, Space
+    pg.K_LEFT,       # 1073741904, Left Arrow
+    pg.K_RIGHT,      # 1073741903, Right Arrow
+    pg.K_UP,         # 1073741906, Up Arrow
+    pg.K_DOWN        # 1073741905, Down Arrow
+]
+
+pg_key_list1 = [
+    pg.K_a,    # 97
+    pg.K_b,    # 98
+    pg.K_c,    # 99
+    pg.K_d,    # 100
+    pg.K_e,    # 101
+    pg.K_f,    # 102
+    pg.K_g,    # 103
+    pg.K_h,    # 104
+    pg.K_i,    # 105
+    pg.K_j,    # 106
+    pg.K_k,    # 107
+    pg.K_l,    # 108
+    pg.K_m,    # 109
+    pg.K_n,    # 110
+    pg.K_o,    # 111
+    pg.K_p,    # 112
+    pg.K_q,    # 113
+    pg.K_r,    # 114
+    pg.K_s,    # 115
+    pg.K_t,    # 116
+    pg.K_u,    # 117
+    pg.K_v,    # 118
+    pg.K_w,    # 119
+    pg.K_x,    # 120
+    pg.K_y,    # 121
+    pg.K_z,    # 122
+    #pg.K_ñ,    # 241
+    pg.K_0,    # 48
+    pg.K_1,    # 49
+    pg.K_2,    # 50
+    pg.K_3,    # 51
+    pg.K_4,    # 52
+    pg.K_5,    # 53
+    pg.K_6,    # 54
+    pg.K_7,    # 55
+    pg.K_8,    # 56
+    pg.K_9,    # 57
+    pg.K_QUOTE,    # 39
+    pg.K_MINUS,    # 45
+    #pg.K_ACUTE,    # 43 (correspondiente a la tecla '´')
+    pg.K_COMMA,    # 44
+    pg.K_PERIOD,   # 46
+    pg.K_SLASH,    # 191 (correspondiente a la tecla '¿')
+    #pg.K_GRAVE,    # 180 (tecla sin unicode en la lista)
+    #pg.K_LEFTBRACE,    # 123 (correspondiente a la tecla '{')
+    pg.K_BACKSLASH,    # 124 (correspondiente a la tecla '|')
+    #pg.K_RIGHTBRACE,   # 125 (correspondiente a la tecla '}')
+    pg.K_LESS,    # 60 (correspondiente a la tecla '<')
+]
+
+pg_key_upper_char_list1 = [
+    pg.K_a,  # 97, A
+    pg.K_b,  # 98, B
+    pg.K_c,  # 99, C
+    pg.K_d,  # 100, D
+    pg.K_e,  # 101, E
+    pg.K_f,  # 102, F
+    pg.K_g,  # 103, G
+    pg.K_h,  # 104, H
+    pg.K_i,  # 105, I
+    pg.K_j,  # 106, J
+    pg.K_k,  # 107, K
+    pg.K_l,  # 108, L
+    pg.K_m,  # 109, M
+    pg.K_n,  # 110, N
+    # pg.K_UNKNOWN para Ñ (no existe pg.K_ñ)
+    pg.K_o,  # 111, O
+    pg.K_p,  # 112, P
+    pg.K_q,  # 113, Q
+    pg.K_r,  # 114, R
+    pg.K_s,  # 115, S
+    pg.K_t,  # 116, T
+    pg.K_u,  # 117, U
+    pg.K_v,  # 118, V
+    pg.K_w,  # 119, W
+    pg.K_x,  # 120, X
+    pg.K_y,  # 121, Y
+    pg.K_z,  # 122, Z
+    pg.K_1,  # 49, !
+    pg.K_2,  # 50, "
+    pg.K_3,  # 51, #
+    pg.K_4,  # 52, $
+    pg.K_5,  # 53, %
+    pg.K_6,  # 54, &
+    pg.K_7,  # 55, /
+    pg.K_8,  # 56, (
+    pg.K_9,  # 57, )
+    pg.K_0,  # 48, =
+    # pg.K_UNKNOWN para ¨ (no existe pg.K correspondiente)
+    # pg.K_UNKNOWN para ´ (no existe pg.K correspondiente)
+    # pg.K_UNKNOWN para > (no existe pg.K correspondiente)
+    # pg.K_MINUS para _ (generalmente - y _ están en la misma tecla)
+    pg.K_PERIOD,  # 46, :
+    pg.K_COMMA,  # 44, ;
+    # pg.K_UNKNOWN para [ (no existe pg.K correspondiente)
+    # pg.K_UNKNOWN para ] (no existe pg.K correspondiente)
+    pg.K_SLASH,  # 191, ¡
+    pg.K_QUOTE,  # 39, ?
+    # pg.K_UNKNOWN para ° (no existe pg.K correspondiente)
 ]

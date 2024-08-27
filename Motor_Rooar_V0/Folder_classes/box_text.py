@@ -331,7 +331,7 @@ class BoxText:
                 def init():
                     # Manejar la tecla de retroceso (borrar)
                     if control:
-                        if control == pg.K_BACKSPACE:
+                        if control['key'] == pg.K_BACKSPACE:
                             
                             if not self.text_selected_list:  # Si no hay caracteres seleccionados 
                                 if self.cursor_position > 0:  # Solo si hay texto para borrar
@@ -343,25 +343,25 @@ class BoxText:
                                 _delete_selected_text()
 
                         # Flecha izquierda
-                        elif control == pg.K_LEFT:
+                        elif control['key'] == pg.K_LEFT:
                             if self.cursor_position > 0:
                                 self.cursor_position -= 1
                             _reset_selection()
 
                         # Flecha derecha
-                        elif control == pg.K_RIGHT:
+                        elif control['key'] == pg.K_RIGHT:
                             if self.cursor_position < len(self.text):
                                 self.cursor_position += 1
                             _reset_selection()
 
-                        elif control == pg.K_SPACE: # espacio se trata como una tecla de control, pero podria ser un caracter
-                            if not self.text_selected_list:
-                                # Insertar espacio
-                                self.text = self.text[:self.cursor_position] + " " + self.text[self.cursor_position:]
-                                self.cursor_position += 1
-                            else:
-                                # Reemplazar el texto seleccionado con espacio
-                                _replace_selected_text(" ")
+                        # elif control == pg.K_SPACE: # espacio se trata como una tecla de control, pero podria ser un caracter
+                        #     if not self.text_selected_list:
+                        #         # Insertar espacio
+                        #         self.text = self.text[:self.cursor_position] + " " + self.text[self.cursor_position:]
+                        #         self.cursor_position += 1
+                        #     else:
+                        #         # Reemplazar el texto seleccionado con espacio
+                        #         _replace_selected_text(" ")
 
 
                     # Manejar la entrada de caracteres permitidos

@@ -72,17 +72,10 @@ def main():
                 "IntermediumGrey":(40, 40, 40),
                 "LightGrey":(90, 90, 90),
                 "GreenFluor":(204,255,0)},
-        #"keyPressed": [],
 
         "keyPressed":{"char": [], 
                     "Control": [], 
                     "Modifiers":[]},
-
-        # "keyPressed":{"chars": {"Char":[],
-        #                         "Number":[],
-        #                         "Signs":[]}, 
-        #               "Control": [], 
-        #               "Modifiers":[]},
 
         "Mouse":{"Motion":False,
                 "Position":(0,0),
@@ -125,13 +118,16 @@ def main():
         try: # capturo errores 
 
             #Bucle de Eventos
-            
             # ----------------------------------------------------------------------------
             event(event_dict)
             # ----------------------------------------------------------------------------
             
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
+            # f = []
+            # for i in event_dict["keyPressed"]["char"]:
+            #     f.append(i["unicode"])
+            # print(f)
 
             # Obtener posición del mouse
             # ----------------------------------------------------------------------------
