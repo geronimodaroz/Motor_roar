@@ -3,12 +3,12 @@ import pygame as pg
 import time
 import os # crear carpetas, archivos ect..
 
-sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0')
+sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0/src')
 
-from Folder_classes.utility_classes import Font # fuentes (string a surface)
+from scripts.utility_classes import Font # fuentes (string a surface)
 import traceback
 
-from src.Events import event # eventos
+from Events import event # eventos
 
 
 def main():
@@ -46,7 +46,7 @@ def main():
 
     # observer para la carpeta del juego "Videojuego_00"
     # --------------------------------------------------------------------------
-    from Folder_classes import detection_archive_delate
+    from scripts import detection_archive_delate
     detection_archive_delate.monitorear_carpeta(game_folder_path)
     # --------------------------------------------------------------------------
 
@@ -102,11 +102,11 @@ def main():
 
 
     # window2
-    from src.objects.windows import Window
+    from objects.windows import Window
     window = Window(event_dict,screen,350,80,300,450,500,500,1)
     objects_list.append(window) # agregamos el objeto window a la lista
 
-    from src.instances.Objects_creator import ObjectsCreator
+    from instances.Objects_creator import ObjectsCreator
     # # window2
     objects_creator_window = ObjectsCreator(event_dict,screen,0,80,300,450,500,500,1)
     objects_list.append(objects_creator_window) # agregamos el objeto window a la lista

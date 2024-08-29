@@ -1,7 +1,7 @@
 import pygame as pg
 #import sys
 #import pygame.gfxdraw
-from Folder_classes.surface_reposition import SurfaceReposition
+from scripts.surface_reposition import SurfaceReposition
 
 from typing import Literal
 

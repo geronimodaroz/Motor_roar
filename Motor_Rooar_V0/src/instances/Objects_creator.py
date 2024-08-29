@@ -1,6 +1,6 @@
 
 from typing import Literal
-from src.objects.windows import WindowBase
+from objects.windows import WindowBase
 
 class ObjectsCreator(WindowBase):
 
@@ -8,7 +8,7 @@ class ObjectsCreator(WindowBase):
         
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
-        from src.objects.box_text import BoxText
+        from objects.box_text import BoxText
         self.box_text = BoxText(event_dict,self.view_surface,20,150,200,20,text="Proyecto_01")
 
         #self.load_objects(self.box_text)
