@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import math
 import time
+import pyperclip # para hacer Ctrl + c, Ctrl + v
 
 import os # crear carpetas, archivos ect..
 
@@ -28,8 +29,13 @@ class BoxText:
         self.rect_line_color = event_dict["Colors"]["LightGrey"]
         
         # Características del cuadro de texto y la fuente
-        self.text = text
-        self.text_font = text_font
+        self.text = text 
+        #route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
+        #route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
+        route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf" 
+
+        self.text_font = pg.font.Font(route, 12)
+
         self.text_color = text_color
         self.text_surface = self.text_font.render(self.text, True, self.text_color)
 
@@ -263,14 +269,14 @@ class BoxText:
                      
 
                     # Si hay teclas presionadas, seleccionamos la última de la lista
-
                     #-------------------------------------------------------------------------------------
-                    #key = event_dict["keyPressed"]["char"][-1] if event_dict["keyPressed"]["char"] else None
-                    char = event_dict["keyPressed"]["char"][-1] if event_dict["keyPressed"]["char"] else None
+                    modifiers = event_dict["keyPressed"]["Modifiers"]#.copy()
+                    shorts = event_dict["keyPressed"]["shortcuts"][-1] if event_dict["keyPressed"]["shortcuts"] else None
                     control = event_dict["keyPressed"]["Control"][-1] if event_dict["keyPressed"]["Control"] else None
-                    modifiers = event_dict["keyPressed"]["Modifiers"][-1] if event_dict["keyPressed"]["Modifiers"] else None
+                    char = event_dict["keyPressed"]["char"][-1] if event_dict["keyPressed"]["char"] else None
 
-                    key = (char,control,modifiers)
+                    key = (char,control,modifiers,shorts)
+
                     #-------------------------------------------------------------------------------------
                     # guardando el evento de teclado al precionar tecla
                     #-------------------------------------------------------------------------------------
@@ -279,13 +285,13 @@ class BoxText:
                         self.key_alarm = 0 
                         self.key_save = key
                     #-------------------------------------------------------------------------------------
-                    if char or control or modifiers: # si preciono alguna tecla
+                    if char or control or modifiers or shorts: # si preciono alguna tecla
 
                         #posibilidad de editar texto
                         #-------------------------------------------------------------------------------------
                         t = max(self.key_alarm - round(time.time() - self.key_timer,2),0) # tiempo antes de imprimir otro caracter
                         if t<=0: # gestionar la repeticion de caracteres con la telcla presionada
-                            Key_down(char,control,modifiers) # edito el texto
+                            key_down(char,control,modifiers,shorts) # edito el texto
                             self.key_timer = time.time() # guarda hora actual
                             if self.key_count == 0: self.key_alarm = 0.5
                             else: self.key_alarm = 0.05
@@ -321,91 +327,91 @@ class BoxText:
                         self.displace_area_x = a_x
                         #-------------------------------------------------------------------------------------
                     else: # si dejo de presionar una tecla se reinicia
-                        Key_up()
+                        key_up()
                 init2() # inicio2
                 #-------------------------------------------------------------------------------------
             #-------------------------------------------------------------------------------------
-            #def Key_down(key):
-            def Key_down(char,control,modifiers):
-
+            def key_down(char, control, modifiers, shortcuts):
                 def init():
-                    # Manejar la tecla de retroceso (borrar)
-                    if control:
-                        if control['key'] == pg.K_BACKSPACE:
-                            
-                            if not self.text_selected_list:  # Si no hay caracteres seleccionados 
-                                if self.cursor_position > 0:  # Solo si hay texto para borrar
-                                    self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
-                                    self.cursor_position -= 1  # Mover el cursor hacia la izquierda
-                                    self.cursor_show = True
-                                    self.cursor_count = 0
-                            else:  # Si hay caracteres seleccionados
-                                _delete_selected_text()
 
-                        # Flecha izquierda
-                        elif control['key'] == pg.K_LEFT:
+                    # Handle keyboard shortcuts
+                    if shortcuts:
+                        handle_shortcuts(shortcuts)
+                    # Handle control keys
+                    elif control:
+                        handle_control(control)
+                    # Handle character input
+                    elif char:
+                        handle_character(char)
+
+                #-------------------------------------------------------------------------------------
+                def handle_shortcuts(shortcuts):
+                    if shortcuts["unicode"] == "\x03":  # Ctrl + C
+                        # Copy selected text to clipboard
+                        copied_text = ''.join([self.text[i-1] for i in self.text_selected_list])
+                        pyperclip.copy(copied_text)
+                    elif shortcuts["unicode"] == "\x16":  # Ctrl + V
+                        pasted_text = pyperclip.paste()
+                        if self.text_selected_list:
+                            _replace_selected_text(pasted_text)
+                        else:
+                            self.text = self.text[:self.cursor_position] + pasted_text + self.text[self.cursor_position:]
+                            self.cursor_position += len(pasted_text)
+
+                def handle_control(control):
+                    if control['key'] == pg.K_BACKSPACE:
+                        if not self.text_selected_list:
                             if self.cursor_position > 0:
+                                self.text = self.text[:self.cursor_position - 1] + self.text[self.cursor_position:]
                                 self.cursor_position -= 1
-                            _reset_selection()
+                        else:
+                            _delete_selected_text()
+                        _reset_selection()
+                    elif control['key'] == pg.K_LEFT:
+                        if self.cursor_position > 0:
+                            self.cursor_position -= 1
+                        _reset_selection()
+                    elif control['key'] == pg.K_RIGHT:
+                        if self.cursor_position < len(self.text):
+                            self.cursor_position += 1
+                        _reset_selection()
 
-                        # Flecha derecha
-                        elif control['key'] == pg.K_RIGHT:
-                            if self.cursor_position < len(self.text):
-                                self.cursor_position += 1
-                            _reset_selection()
-
-                        # elif control == pg.K_SPACE: # espacio se trata como una tecla de control, pero podria ser un caracter
-                        #     if not self.text_selected_list:
-                        #         # Insertar espacio
-                        #         self.text = self.text[:self.cursor_position] + " " + self.text[self.cursor_position:]
-                        #         self.cursor_position += 1
-                        #     else:
-                        #         # Reemplazar el texto seleccionado con espacio
-                        #         _replace_selected_text(" ")
-
-
-                    # Manejar la entrada de caracteres permitidos
-                    if char:
-                        #if (char["unicode"].isalnum() or char["unicode"] in self.allowed_signs):
+                def handle_character(char):
+                    if char["unicode"].isalnum() or char["unicode"] in (" ",*self.allowed_signs): # Filtro de caracteres
 
                         if not self.text_selected_list:
-                            # Insertar el nuevo carácter
                             self.text = self.text[:self.cursor_position] + char["unicode"] + self.text[self.cursor_position:]
                             self.cursor_position += 1
                         else:
-                            # Reemplazar el texto seleccionado con el nuevo carácter
                             _replace_selected_text(char["unicode"])
-                    
+                #-------------------------------------------------------------------------------------
 
-                    
                 def _delete_selected_text():
-                    """Eliminar el texto seleccionado y ajustar el cursor."""
                     selection_indices = self.text_selected_list
                     if selection_indices:
-                        self.text = self.text[:(selection_indices[0] - 1 )] + self.text[selection_indices[-1]:]
+                        self.text = self.text[:(selection_indices[0] - 1)] + self.text[selection_indices[-1]:]
                         self.cursor_position = max(0, selection_indices[0] - 1)
                     _reset_selection()
 
-                def _replace_selected_text(replacement_char):
-                    """Reemplazar el texto seleccionado con un nuevo carácter y ajustar el cursor."""
+                def _replace_selected_text(replacement_text):
                     selection_indices = self.text_selected_list
                     if selection_indices:
-                        self.text = self.text[:(selection_indices[0] - 1)] + replacement_char + self.text[selection_indices[-1]:]
-                        self.cursor_position = max(0, selection_indices[0] - 1) + 1
+                        self.text = self.text[:(selection_indices[0] - 1)] + replacement_text + self.text[selection_indices[-1]:]
+                        plus_position = len(replacement_text)
+                        self.cursor_position = max(0, selection_indices[0] - 1) + plus_position
                     _reset_selection()
 
                 def _reset_selection():
-                    """Resetear la selección de texto y reiniciar el cursor intermitente."""
                     if self.text_selected_list:
                         self.text_selected_list.clear()
                         self.text_selected_rect = pg.Rect(0, 0, 0, 0)
                     self.cursor_show = True
                     self.cursor_count = 0
-                    
-                    
-                
+
+                # Initialize key handling
                 init()
-            def Key_up():
+
+            def key_up():
                 self.key_count = 0
                 self.key_alarm = 0
             #-------------------------------------------------------------------------------------
@@ -414,17 +420,20 @@ class BoxText:
 
     def draw(self,event_dict): # cambiar a event_dict!
 
-        # coordenadas del box_text
-        #-------------------------------------------------------------------------------------
-        r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
-        #-------------------------------------------------------------------------------------
         # box_text
         pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
         pg.draw.rect(self.surface,(70,70,70), self.text_selected_rect) #text_selected
         pg.draw.rect(self.presurface,self.rect_line_color,self.rect,1)
 
+        # self.text
+        #-------------------------------------------------------------------------------------
+        # coordenadas del box_text
+        r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        #-------------------------------------------------------------------------------------
         rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
-        self.surface.blit(self.text_surface, (0,self.text_surface.get_height()/2),rect)
+        y = self.rect.height/2 - self.text_surface.get_height()/2
+        self.surface.blit(self.text_surface, (0,y),rect)
+
 
         # rectangulo de edicion de texto  (click izquierdo)
         if self.edit in event_dict["EditableObjects"]["selected"]:

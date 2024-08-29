@@ -27,6 +27,8 @@ import sys
 #     return pressed_keys
 
 
+
+
 def modifiers_key_state():
     """Retorna una lista con las teclas modificadoras que están presionadas."""
     mods = pg.key.get_mods()
@@ -66,16 +68,29 @@ def event(event_dict):
             
         # Eventos de teclas
         elif event.type == pg.KEYDOWN or event.type == pg.KEYUP:  # Tecla hacia abajo o arriba
+
+            #print(event)
             
-            # Modifiers
+            # Modifiers 
             # ----------------------------------------------------------------------------
             # ESTO ES SOLO PARA MODIFICADORES: por que mod: es la sumatoria de todas las teclas modificadoras
             event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers (key)
             # ----------------------------------------------------------------------------
 
+            
+
             keys = pg.key.get_pressed()
 
-            # Control
+
+            # shortcuts 
+            # ----------------------------------------------------------------------------
+            Ctrl = any(key["key"] in (pg.K_LCTRL, pg.K_RCTRL) for key in event_dict["keyPressed"]["Modifiers"])
+            if Ctrl:
+                event_dict["keyPressed"]["shortcuts"] = key_state(keys,key_events_shortcutsr_list)
+            # ----------------------------------------------------------------------------
+
+
+            # Control 
             # ----------------------------------------------------------------------------
             char_list = key_events_control_list.copy()
             # if: Bloq_Num 
@@ -83,7 +98,7 @@ def event(event_dict):
                 char_list.extend([{'unicode': '\r','key': 1073741912, 'scancode': 88}]) # intro
             event_dict["keyPressed"]["Control"] = key_state(keys,char_list) # control (key)
             # ----------------------------------------------------------------------------
-            # Char
+            # Char 
             # ----------------------------------------------------------------------------
             shift = any(key["key"] in (1073742049, 1073742053) for key in event_dict["keyPressed"]["Modifiers"])  # Left Shift, Right Shift
             shift ^= any(key["key"] == 1073741881 for key in event_dict["keyPressed"]["Modifiers"])  # Bloq Mayus: shift != shift
@@ -122,6 +137,10 @@ def event(event_dict):
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
 # ----------------------------------------------------------------------------
 
+key_events_shortcutsr_list = [ # ATAJOS DE TECLADO
+    {"unicode": '\x03', "key": 99, "scancode": 6},  # Ctrl + c
+    {"unicode": '\x16', "key": 118, "scancode": 25} # Ctrl + v
+]
 
 
 key_events_lower_char_list = [

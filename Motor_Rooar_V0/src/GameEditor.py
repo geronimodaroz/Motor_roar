@@ -3,10 +3,12 @@ import pygame as pg
 import time
 import os # crear carpetas, archivos ect..
 
+sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0')
+
 from Folder_classes.utility_classes import Font # fuentes (string a surface)
 import traceback
 
-from Events import event # eventos
+from src.Events import event # eventos
 
 
 def main():
@@ -73,9 +75,10 @@ def main():
                 "LightGrey":(90, 90, 90),
                 "GreenFluor":(204,255,0)},
 
-        "keyPressed":{"char": [], 
-                    "Control": [], 
-                    "Modifiers":[]},
+        "keyPressed":{"char":     [], 
+                      "Control":  [], 
+                      "Modifiers":[],
+                      "shortcuts":[]},
 
         "Mouse":{"Motion":False,
                 "Position":(0,0),
@@ -99,17 +102,19 @@ def main():
 
 
     # window2
-    from Folder_classes.windows import Window
+    from src.objects.windows import Window
     window = Window(event_dict,screen,350,80,300,450,500,500,1)
     objects_list.append(window) # agregamos el objeto window a la lista
 
-    from Objects_creator import ObjectsCreator
+    from src.instances.Objects_creator import ObjectsCreator
     # # window2
     objects_creator_window = ObjectsCreator(event_dict,screen,0,80,300,450,500,500,1)
     objects_list.append(objects_creator_window) # agregamos el objeto window a la lista
 
 
-
+    # FORZAR UN EVENTO DE TECLADO
+    key_event_down = pg.event.Event(pg.KEYDOWN, {"key": pg.K_a, "mod": 0, "unicode": "a", "scancode": 4})
+    pg.event.post(key_event_down)
 
 
     # Bucle principal
@@ -128,6 +133,7 @@ def main():
             # for i in event_dict["keyPressed"]["char"]:
             #     f.append(i["unicode"])
             # print(f)
+            #print(event_dict["keyPressed"]["shortcuts"])
 
             # Obtener posición del mouse
             # ----------------------------------------------------------------------------
