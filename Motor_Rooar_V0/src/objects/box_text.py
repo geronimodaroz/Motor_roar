@@ -7,7 +7,7 @@ import pyperclip # para hacer Ctrl + c, Ctrl + v
 import os # crear carpetas, archivos ect..
 
 from scripts.surface_reposition import SurfaceReposition # reposicion de surface
-from scripts.utility_classes import ClicksDetector # detector de clicks
+from scripts.clicks_detector import ClicksDetector # detector de clicks
 
 class BoxText:
     

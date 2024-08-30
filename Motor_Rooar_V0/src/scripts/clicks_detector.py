@@ -1,16 +1,5 @@
-import sys
 import pygame as pg
 
-# CONVIERTE STRING EN SURFACE CON ESTA FUENTE "self.font = pg.font.Font(None, 16)"
-class Font:
-    """Contiene las fuentes para el proyecto"""
-    def __init__(self):
-        self.font = pg.font.Font(None, 16)
-        #self.color = (180,180,180)
-
-    def surf_font(self,text,color = (180,180,180)):
-        surf_text = self.font.render(text, True, color)
-        return surf_text
     
 
  # Deteccion de doble y triple click
@@ -19,6 +8,7 @@ class ClicksDetector:
     click_count = 0
     last_click_time = 0
     click_delay = 500
+
 
     @classmethod
     def detect_double_triple_click(cls):
@@ -34,6 +24,7 @@ class ClicksDetector:
         cls.last_click_time = current_time
         return cls.click_count
     
+
     @classmethod
     def detect_double_click(cls):
         """Detecta el tipo de clic sin necesidad de instanciar la clase."""
