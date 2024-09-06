@@ -7,9 +7,10 @@ class Font:
 
         self.font = pg.font.Font(None, 16)
 
-        #self.route_Roboto-Black = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
-        #self.route_Roboto-Regular = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
-        self.route_OpenSans-Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf" 
+        #self.route_Roboto_Black = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
+        #self.route_Roboto_Regular = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
+        self.route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf"
+
 
 
     def surf_font(self,text,color = (180,180,180)):
