@@ -15,6 +15,11 @@ class ObjectsCreator(WindowBase):
 
         super().load_objects(self.box_text)
 
+    def rects_updates(self, x=0, y=0, w=0, h=0, force=False):
+        super().rects_updates(x, y, w, h, force)
+    
+        #self.box_text.rects_updates(force = True)
+
 
 
 

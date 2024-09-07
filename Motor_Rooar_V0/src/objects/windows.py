@@ -51,8 +51,8 @@ class Window:
             self.scroll_bar_margin_low = 1
             self.scroll_bar_margin_high = 10
 
-        # Llamar a rects_repositions para inicializar rectángulos
-        self.rects_repositions(x, y, w, h)
+        # Llamar a rects_updates para inicializar rectángulos
+        self.rects_updates(x, y, w, h)
 
 
         # Cargar imagen
@@ -64,10 +64,10 @@ class Window:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def rects_repositions(self, x=0, y=0, w=0, h=0):
+    def rects_updates(self, x=0, y=0, w=0, h=0, force = False):
 
         #if x == 0 and y == 0 and w == 0 and h == 0: return
-        if not any([x, y, w, h]):
+        if not any([x, y, w, h]) and force == False:
             return
 
         # Rect
@@ -126,15 +126,15 @@ class Window:
         #     y = 0 + self.view_decrement_y
         #     self.save_curtain_rect_y = 0
 
-        def adjust_curtain_position(save_pos, dim, view_dim, view_decrement):
+        def _adjust_curtain_position(save_pos, dim, view_dim, view_decrement):
             if save_pos + dim < view_dim and save_pos < 0:
                 return view_dim - dim + view_decrement, view_dim - dim
             elif save_pos > 0:
                 return 0 + view_decrement, 0
             return save_pos + view_decrement, save_pos
 
-        x, self.save_curtain_rect_x = adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width, self.view_decrement_x)
-        y, self.save_curtain_rect_y = adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height, self.view_decrement_y)
+        x, self.save_curtain_rect_x = _adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width, self.view_decrement_x)
+        y, self.save_curtain_rect_y = _adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height, self.view_decrement_y)
         w = self.curtain_w
         h = self.curtain_h
 
@@ -400,16 +400,16 @@ class Window:
                     return motion
                 
                 if self.scale_modifier_hit_top:  # TOP
-                    self.rects_repositions(x=Mouse_motion_x,y=Mouse_motion_y)
+                    self.rects_updates(x=Mouse_motion_x,y=Mouse_motion_y)
                 elif self.scale_modifier_hit_down:  # DOWN
                     Mouse_motion_y = limit_motion(Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_repositions(h=Mouse_motion_y)
+                    self.rects_updates(h=Mouse_motion_y)
                 if self.scale_modifier_hit_left:  # LEFT
                     Mouse_motion_x = limit_motion(-Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_repositions(x=-Mouse_motion_x, w=Mouse_motion_x)
+                    self.rects_updates(x=-Mouse_motion_x, w=Mouse_motion_x)
                 elif self.scale_modifier_hit_right:  # RIGHT
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_repositions(w=Mouse_motion_x)
+                    self.rects_updates(w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
             if event_dict["Mouse"]["ClickLeftUp"]:
@@ -539,8 +539,8 @@ class WindowBase():
             self.scroll_bar_margin_low = 1
             self.scroll_bar_margin_high = 10
 
-        # Llamar a rects_repositions para inicializar rectángulos
-        self.rects_repositions(x, y, w, h)
+        # Llamar a rects_updates para inicializar rectángulos
+        self.rects_updates(x, y, w, h)
 
         # Cargar imagen
         #self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
@@ -550,7 +550,7 @@ class WindowBase():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def rects_repositions(self, x=0, y=0, w=0, h=0 , force = False):
+    def rects_updates(self, x=0, y=0, w=0, h=0 , force = False):
         """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
 
         if not any([x, y, w, h]) and force == False:
@@ -588,7 +588,7 @@ class WindowBase():
         # curtain
         # ----------------------------------------------------------------------------
 
-        def adjust_curtain_position(save_pos, dim, view_dim, view_decrement):
+        def _adjust_curtain_position(save_pos, dim, view_dim, view_decrement):
 
             if save_pos + dim < view_dim and save_pos < 0:
                 return view_dim - dim + view_decrement, view_dim - dim
@@ -598,8 +598,8 @@ class WindowBase():
             
             return save_pos + view_decrement, save_pos
 
-        x, self.save_curtain_rect_x = adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width, self.view_decrement_x)
-        y, self.save_curtain_rect_y = adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height, self.view_decrement_y)
+        x, self.save_curtain_rect_x = _adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width, self.view_decrement_x)
+        y, self.save_curtain_rect_y = _adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height, self.view_decrement_y)
         w = self.curtain_w
         h = self.curtain_h
 
@@ -871,16 +871,16 @@ class WindowBase():
                 
                 if self.scale_modifier_hit_top:  # TOP
                     Mouse_motion_y = limit_motion(-Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_repositions(y=-Mouse_motion_y, h=Mouse_motion_y)
+                    self.rects_updates(y=-Mouse_motion_y, h=Mouse_motion_y)
                 elif self.scale_modifier_hit_down:  # DOWN
                     Mouse_motion_y = limit_motion(Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_repositions(h=Mouse_motion_y)
+                    self.rects_updates(h=Mouse_motion_y)
                 if self.scale_modifier_hit_left:  # LEFT
                     Mouse_motion_x = limit_motion(-Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_repositions(x=-Mouse_motion_x, w=Mouse_motion_x)
+                    self.rects_updates(x=-Mouse_motion_x, w=Mouse_motion_x)
                 elif self.scale_modifier_hit_right:  # RIGHT
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_repositions(w=Mouse_motion_x)
+                    self.rects_updates(w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
             if event_dict["Mouse"]["ClickLeftUp"]:

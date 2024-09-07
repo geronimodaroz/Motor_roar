@@ -1,125 +1,112 @@
-import sys
-import pygame as pg
-import time
 import os
+import sys
+import time
 import traceback
+
+import pygame as pg
+
+# Inicializar Pygame    
+pg.init()
 
 # Añadir la ruta al módulo de scripts
 sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0/src')
 
 from scripts.fonts import Font
+from Events import event  # eventos
 
-from Events import event # eventos
 
 
 
 def main():
 
-    # Inicializar Pygame    
-    pg.init()
-
-    # Configurar la pantalla
+    # Configuración de la pantalla
     width, height = 800, 600
     screen = pg.display.set_mode((width, height), pg.RESIZABLE)
     pg.display.set_caption("Roar!!")
 
-
-
-    # path to the Motor Roar
+    # Configuración de rutas
     #-----------------------------------------------------------------------------
     motor_game_folder_path = "C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar"
+
+    # Ruta al escritorio y creación de carpeta
     #-----------------------------------------------------------------------------
+    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+    os.chdir(desktop_path)  # Moverse a la ubicación de la ruta
 
+    if not os.path.exists("Videojuego_00"):  # Verificar existencia de carpeta
+        os.mkdir("Videojuego_00")  # Crear carpeta
 
+    game_folder_path = os.path.join(desktop_path, "Videojuego_00")  # Ruta a la carpeta del juego
 
-    # ruta al escritorio y creo carpeta
-    #C:\Users\Usuario\Desktop
+    # Monitor de archivos en la carpeta del juego
     #-----------------------------------------------------------------------------
-    desktop_path = os.path.join(os.path.expanduser('~'),'Desktop')
-
-    os.chdir(desktop_path) # nos mueve a la hubicacion de la ruta
-    if not(os.path.exists("Videojuego_00")): # existe carpeta
-        os.mkdir("Videojuego_00") # crea carpetas
-
-    game_folder_path = os.path.join(desktop_path,"Videojuego_00") # ruta a la carpeta del juego
-    #-----------------------------------------------------------------------------
-
-
-
-    # observer para la carpeta del juego "Videojuego_00"
-    # --------------------------------------------------------------------------
     from scripts import detection_archive_delate
     detection_archive_delate.monitorear_carpeta(game_folder_path)
-    # --------------------------------------------------------------------------
 
-
-    # FPS
-    # --------------------------------------------------------------------------
-    # Inicializar el reloj
-    clock = pg.time.Clock()
-    fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
-    # --------------------------------------------------------------------------
-
-
-
-    # diccionario de eventos
+    # Inicializar el reloj y configurar FPS
     #-----------------------------------------------------------------------------
+    clock = pg.time.Clock()
+    fps_text = Font().surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
+
     # Diccionario de eventos
+    #-----------------------------------------------------------------------------
     event_dict = {
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
         #"screen":{"width":width, "height":height},
-        "FPS":{"Fixed":60,
-            "Real":None,
-            "delta_time":None},
-        "Colors":{"DarkGrey":(5, 5, 5),
-                "IntermediumGrey":(40, 40, 40),
-                "LightGrey":(90, 90, 90),
-                "GreenFluor":(204,255,0)},
-
-        "keyPressed":{"char":     [], 
-                        "Control":  [], 
-                        "Modifiers":[],
-                        "shortcuts":[]},
-
-        "Mouse":{"Motion":False,
-                "Position":(0,0),
-                "ClickLeftDown": False,
-                "ClickLeftPressed": False,
-                "ClickLeftUp": False,
-                "Scroll": None,
-                "Icon":pg.SYSTEM_CURSOR_ARROW},
-        "EditableObjects": {"selected":[],
-                            "clickable":[]},
+        "FPS": {
+            "Fixed": 60,
+            "Real": None,
+            "delta_time": None
+        },
+        "Colors": {
+            "DarkGrey": (5, 5, 5),
+            "IntermediumGrey": (40, 40, 40),
+            "LightGrey": (90, 90, 90),
+            "GreenFluor": (204, 255, 0)
+        },
+        "keyPressed": {
+            "char": [],
+            "Control": [],
+            "Modifiers": [],
+            "shortcuts": []
+        },
+        "Mouse": {
+            "Motion": False,
+            "Position": (0, 0),
+            "ClickLeftDown": False,
+            "ClickLeftPressed": False,
+            "ClickLeftUp": False,
+            "Scroll": None,
+            "Icon": pg.SYSTEM_CURSOR_ARROW
+        },
+        "EditableObjects": {
+            "selected": [],
+            "clickable": []
+        },
         "depth_number": -1,
-        "Delate_List" : [],
+        "Delate_List": [],
     }
+
+    # Inicialización de objetos
     #-----------------------------------------------------------------------------
-
-
-
     depth_number = event_dict["depth_number"]
+    objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
 
-    objects_list = [] # lista de objetos en GameEditor(los objetos deben contener un "rect")
-
-
-    # window2
+    # Crear ventanas y objetos
     from objects.windows import Window
-    window = Window(event_dict,screen,350,80,300,450,500,500,1)
-    objects_list.append(window) # agregamos el objeto window a la lista
+    window = Window(event_dict, screen, 350, 80, 300, 450, 500, 500, 1)
+    objects_list.append(window)  # Agregar el objeto window a la lista
 
     from instances.Objects_creator import ObjectsCreator
-    # # window2
-    objects_creator_window = ObjectsCreator(event_dict,screen,0,80,300,450,500,500,1)
-    objects_list.append(objects_creator_window) # agregamos el objeto window a la lista
+    objects_creator_window = ObjectsCreator(event_dict, screen, 0, 80, 300, 450, 500, 500, 1)
+    objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
-
-
-    # FORZAR UN EVENTO DE TECLADO
-    # ----------------------------------------------------------------------------
+    # Forzar un evento de teclado
+    #-----------------------------------------------------------------------------
     key_event_down = pg.event.Event(pg.KEYDOWN, {"key": pg.K_a, "mod": 0, "unicode": "a", "scancode": 4})
     pg.event.post(key_event_down)
-    # ----------------------------------------------------------------------------
+
 
 
 
@@ -129,9 +116,8 @@ def main():
 
             #Bucle de Eventos
             # ----------------------------------------------------------------------------
-            event(event_dict)
-            # ----------------------------------------------------------------------------
-            
+            # GESTIONA LOS EVENTOS Y SU REINICIO
+            event(event_dict, objects_list)
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
             # f = []
@@ -139,6 +125,9 @@ def main():
             #     f.append(i["unicode"])
             # print(f)
             #print(event_dict["keyPressed"]["shortcuts"])
+            # ----------------------------------------------------------------------------
+            
+            
 
             # Obtener posición del mouse
             # ----------------------------------------------------------------------------
@@ -253,7 +242,7 @@ def main():
 
             # FPS
             # ----------------------------------------------------------------------------
-            fps_text = Font().surf_font(str(int(clock.get_fps())), (250, 250, 250))
+            fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
             screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
             # ----------------------------------------------------------------------------
             

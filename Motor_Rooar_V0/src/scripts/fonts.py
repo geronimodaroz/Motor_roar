@@ -1,18 +1,31 @@
 import pygame as pg
 
-# CONVIERTE STRING EN SURFACE CON ESTA FUENTE "self.font = pg.font.Font(None, 16)"
+
 class Font:
     """Contiene las fuentes para el proyecto"""
-    def __init__(self):
+    # def __init__(self):
 
-        self.font = pg.font.Font(None, 16)
+    #     # default
+    #     self.font_default = pg.font.Font(None, 16)
 
-        #self.route_Roboto_Black = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
-        #self.route_Roboto_Regular = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
-        self.route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf"
+    #     #self.route_Roboto_Black = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
+    #     #self.route_Roboto_Regular = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
+
+    #     # OpenSans_Medium
+    #     self.route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf"
+    #     self.font_OpenSans_Medium = pg.font.Font(self.route_OpenSans_Medium, 12)
+
+    # Inicialización de las fuentes como variables de clase
+    font_default = pg.font.Font(None, 16)
+
+    route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf"
+    font_OpenSans_Medium = pg.font.Font(route_OpenSans_Medium, 12)
 
 
+    @staticmethod
+    def surf_font_default(text, color =(180, 180, 180)):
+        return Font.font_default.render(text, True, color)
 
-    def surf_font(self,text,color = (180,180,180)):
-        surf_text = self.font.render(text, True, color)
-        return surf_text
+    @staticmethod
+    def surf_font_OpenSans_Medium(text, color =(180, 180, 180)):
+        return Font.font_OpenSans_Medium.render(text, True, color)

@@ -1,59 +1,47 @@
-import pygame as pg
-import sys
-import math
+import os  # Crear carpetas, archivos, etc.
 import time
-import pyperclip # para hacer Ctrl + c, Ctrl + v
+#import sys
+#import math
 
-import os # crear carpetas, archivos ect..
+import pygame as pg
+import pyperclip  # Para hacer Ctrl + C, Ctrl + V
 
-from scripts.surface_reposition import SurfaceReposition # reposicion de surface
-from scripts.clicks_detector import ClicksDetector # detector de clicks
+from scripts.surface_reposition import SurfaceReposition  # Reposicion de surface
+from scripts.clicks_detector import ClicksDetector  # Detector de clicks
+from scripts.fonts import Font  # Para las fuentes
+
 
 class BoxText:
-    
-    # ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE
-    def __init__(self,event_dict,surface,x,y,w,h,rect_color = (20,20,20),text_color = (190,190,190), text_font = pg.font.Font(None, 16),text=""):  
-
-        # prufundidad del objeto +1
+    """ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE"""
+    def __init__(self, event_dict, surface, x, y, w, h, rect_color=(20, 20, 20), text_color=(190, 190, 190), text=""):
+        # Profundidad del objeto +1
         # ----------------------------------------------------------------------------
-        event_dict["depth_number"]+=1
+        event_dict["depth_number"] += 1
         self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
-        # presurface 
+
+        # Superficie de referencia
         self.presurface = surface
-        # Rect
-        self.rect = pg.Rect(x,y,w,h)
-        self.surface_rect = self.rect
-        self.surface = SurfaceReposition.surface_reposition(surface, self.rect, self.surface_rect)
         self.rect_box_color = rect_color
-        self.rect_line_color = event_dict["Colors"]["LightGrey"]
-        
+
+        # Inicializa el rectángulo y sus atributos relacionados
+        self.rects_updates(x, y, w, h)
+
         # Características del cuadro de texto y la fuente
-        self.text = text 
-        #route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Black.ttf"
-        #route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assetsFonts\Roboto-Regular.ttf" 
-        route = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf" 
-
-        self.text_font = pg.font.Font(route, 12)
-
+        self.text = text
         self.text_color = text_color
-        self.text_surface = self.text_font.render(self.text, True, self.text_color)
+        self.text_surface = Font.surf_font_OpenSans_Medium(self.text, self.text_color)
 
-        self.allowed_signs = ["_","-",".",","] # signos permitidos
-        #{pg.K_SPACE, pg.K_UNDERSCORE, pg.K_MINUS, pg.K_PERIOD}
-        
-        # cursor
+        # Inicializa el color de la línea del rectángulo
+        self.rect_line_color = event_dict["Colors"]["LightGrey"]
+
+        # Configuración del cursor
         base_name, extension = os.path.splitext(self.text)
         self.cursor_position = len(base_name)
         cursor_text = self.text[:self.cursor_position]
-        self.cursor_surface = self.text_font.render(cursor_text, True, (0, 0, 0))
+        self.cursor_surface = Font.surf_font_OpenSans_Medium(cursor_text, (0, 0, 0))
         self.cursor_show = True  # Mostrar cursor o no
         self.cursor_count = 0  # Contador para controlar la visibilidad del cursor
-
-        # text selected
-        self.text_selected_list = []
-        self.text_selected_rect = pg.Rect(0,0,0,0)
-        self.save_displace = 0
 
         # Cálculo del desplazamiento del área de texto
         dis = self.text_surface.get_width() - self.cursor_surface.get_width()
@@ -62,20 +50,56 @@ class BoxText:
         else:
             self.displace_area_x = -self.rect.width / 2 + self.text_surface.get_width() / 2
 
+        # Signos permitidos
+        self.allowed_signs = ["_", "-", ".", ","]
+
+        self.is_editing = False
+
+        # Texto seleccionado
+        self.text_selected_list = []
+        self.text_selected_rect = pg.Rect(0, 0, 0, 0)
+        self.save_displace = 0
+
         # Configuración para la gestión de eventos de teclado
         self.key_timer = time.time()  # Temporizador para calcular el tiempo transcurrido
         self.key_alarm = 0  # Tiempo entre la primera impresión de un carácter y el segundo
         self.key_count = 0  # Contador para diferenciar la impresión del primer carácter del segundo
         self.key_save = None  # Guarda la última tecla presionada
 
-        # prufundidad del objeto -1
+        # Profundidad del objeto -1
         # ----------------------------------------------------------------------------
-        event_dict["depth_number"]-=1
+        event_dict["depth_number"] -= 1
         # ----------------------------------------------------------------------------
+
+
+
+    
+
+
+    def rects_updates(self, x=0, y=0, w=0, h=0 , force = False):
+        """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
+
+        if not any([x, y, w, h]) and force == False:
+            return
+        
+        """Inicializa el rectángulo y sus atributos relacionados."""
+        self.rect = pg.Rect(x, y, w, h)
+        self.surface_rect = self.rect
+        self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
+        # self.rect_box_color = self.rect_box_color
+        # self.rect_line_color = self.event_dict["Colors"]["LightGrey"]
+        # # Cálculo del desplazamiento del área de texto
+        # dis = self.text_surface.get_width() - self.cursor_surface.get_width()
+        # if self.text_surface.get_width() > self.rect.width:
+        #     self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width / 2, self.rect.width - dis)
+        # else:
+        #     self.displace_area_x = -self.rect.width / 2 + self.text_surface.get_width() / 2
+        
 
 
     def pre_edit(self,event_dict, code = None):
         if code == "selected":
+            self.is_editing = True # el objeto se esta editando
             self.rect_box_color = (20,20,20)
             self.rect_line_color = event_dict["Colors"]["GreenFluor"]
         if code == "clickable" :
@@ -87,7 +111,9 @@ class BoxText:
         self.text_selected_list.clear()
         self.text_selected_rect = pg.Rect(0,0,0,0)
         #-------------------------------------------------------------------------------------
+        
         if code == "selected":
+            self.is_editing = False # el objeto deja de editarse
             self.rect_line_color = event_dict["Colors"]["LightGrey"]
         if code == "clickable" :
             self.rect_box_color = (20,20,20)
@@ -139,12 +165,12 @@ class BoxText:
                             elif x_click_in_surface_text > 0: # posicion del cursor intermedia
                                 for i in range(len(self.text)):
                                     t = self.text[:i + 1]
-                                    cursor_surface = self.text_font.render(t, True, (0, 0, 0))
+                                    cursor_surface = Font.font_OpenSans_Medium.render(t, True, (0, 0, 0))
                                     if cursor_surface.get_width() >= x_click_in_surface_text:
                                         self.cursor_position = i + 1
                                         break
                             t = self.text[:self.cursor_position]
-                            self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
+                            self.cursor_surface = Font.font_OpenSans_Medium.render(t, True, (0, 0, 0))
 
                         elif clicks == 2:
 
@@ -155,7 +181,7 @@ class BoxText:
                             if self.cursor_position > 0:
                                 for i in range(self.cursor_position - 1, -1, -1):  # Recorre hacia atrás
                                     if self.text[i] in [" ", "-", ".", "_"]:  # Comparación correcta
-                                        text_width, _ = self.text_font.size(self.text[:i + 1])
+                                        text_width, _ = Font.font_OpenSans_Medium.size(self.text[:i + 1])
                                         x1 = text_width
                                         l1 = i + 2  # Ajusta l1 al siguiente carácter después del delimitador
                                         break
@@ -163,13 +189,13 @@ class BoxText:
                             # Buscar el límite derecho (hacia adelante desde la posición del cursor)
                             for i in range(self.cursor_position, len(self.text)):  # Recorre hacia adelante
                                 if self.text[i] in [" ", "-", ".", "_"]:  # Comparación correcta
-                                    text_width, _ = self.text_font.size(self.text[:i])
+                                    text_width, _ = Font.font_OpenSans_Medium.size(self.text[:i])
                                     w1 = text_width - x1
                                     l2 = i   # Almacena la posición del delimitador
                                     break
                             else:
                                 # Si no se encontró un delimitador hacia adelante, seleccionamos hasta el final del texto
-                                text_width, _ = self.text_font.size(self.text)
+                                text_width, _ = Font.font_OpenSans_Medium.size(self.text)
                                 w1 = text_width - x1 # Selecciona hasta el final del texto
 
                             # Seleccionar el texto entre l1 y l2
@@ -201,12 +227,12 @@ class BoxText:
                             # Determinar anchos de los caracteres alrededor del cursor
                             if self.text:
                                 if self.cursor_position == 0:
-                                    right_char_w = self.text_font.size(self.text[self.cursor_position])[0]
+                                    right_char_w = Font.font_OpenSans_Medium.size(self.text[self.cursor_position])[0]
                                 elif self.cursor_position == len(self.text):
-                                    left_char_w = self.text_font.size(self.text[self.cursor_position - 1])[0]
+                                    left_char_w = Font.font_OpenSans_Medium.size(self.text[self.cursor_position - 1])[0]
                                 else:
-                                    left_char_w = self.text_font.size(self.text[self.cursor_position - 1])[0]
-                                    right_char_w = self.text_font.size(self.text[self.cursor_position])[0]
+                                    left_char_w = Font.font_OpenSans_Medium.size(self.text[self.cursor_position - 1])[0]
+                                    right_char_w = Font.font_OpenSans_Medium.size(self.text[self.cursor_position])[0]
 
                             # Determinar si el cursor está dentro del área de los caracteres
                             if (left_char_w and (x + self.displace_area_x) < self.cursor_surface.get_width() - left_char_w) or \
@@ -219,13 +245,13 @@ class BoxText:
                                     # Seleccionar hacia la izquierda
                                     for i in range(self.cursor_position - 1, -1, -1):
                                         text_until_i = self.text[:i]
-                                        if self.text_font.size(text_until_i)[0] < dis: break
+                                        if Font.font_OpenSans_Medium.size(text_until_i)[0] < dis: break
                                         selected_indices.append(self.cursor_position - (self.cursor_position - i) + 1)
                                 elif self.cursor_position < len(self.text) and cursor_displace > 0:
                                     # Seleccionar hacia la derecha
                                     for i in range(self.cursor_position, len(self.text)):
                                         text_until_next = self.text[:i + 1]
-                                        if self.text_font.size(text_until_next)[0] >= dis: break
+                                        if Font.font_OpenSans_Medium.size(text_until_next)[0] >= dis: break
                                         selected_indices.append(i + 1)
 
                                 # Determinar x1 y w1 de una sola pasada
@@ -234,12 +260,12 @@ class BoxText:
                                 selection_started = False
                                 for num, char in enumerate(self.text):
                                     text_so_far += char
-                                    char_width = self.text_font.size(char)[0]
+                                    char_width = Font.font_OpenSans_Medium.size(char)[0]
                                     if num + 1 in selected_indices:
                                         if not selection_started:
-                                            x1 = self.text_font.size(text_so_far)[0] - char_width
+                                            x1 = Font.font_OpenSans_Medium.size(text_so_far)[0] - char_width
                                             selection_started = True
-                                        w1 = self.text_font.size(text_so_far)[0] - x1
+                                        w1 = Font.font_OpenSans_Medium.size(text_so_far)[0] - x1
 
                                 self.text_selected_rect.x = x1 - self.displace_area_x
                                 self.text_selected_rect.y = 0
@@ -301,10 +327,10 @@ class BoxText:
                         # actualizar superficies 
                         #-------------------------------------------------------------------------------------
                         # superficie del texto
-                        self.text_surface = self.text_font.render(self.text, True, self.text_color)
+                        self.text_surface = Font.surf_font_OpenSans_Medium(self.text, self.text_color)
                         # superficie hasta el cursor
                         t = self.text[:self.cursor_position]
-                        self.cursor_surface = self.text_font.render(t, True, (0, 0, 0))
+                        self.cursor_surface = Font.surf_font_OpenSans_Medium(t, (0, 0, 0))
                         #-------------------------------------------------------------------------------------
 
                         # desplazamiento del area en x
@@ -418,34 +444,33 @@ class BoxText:
             init() # inicio 
 
 
-    def draw(self,event_dict): # cambiar a event_dict!
+    def draw(self,event_dict): 
 
-        # box_text
-        pg.draw.rect(self.presurface,self.rect_box_color, self.rect)
-        pg.draw.rect(self.surface,(70,70,70), self.text_selected_rect) #text_selected
-        pg.draw.rect(self.presurface,self.rect_line_color,self.rect,1)
+        # Dibujar el rectángulo del cuadro de texto
+        pg.draw.rect(self.presurface, self.rect_box_color, self.rect)
+        pg.draw.rect(self.surface, (70, 70, 70), self.text_selected_rect)  # Resaltar texto seleccionado
+        pg.draw.rect(self.presurface, self.rect_line_color, self.rect, 1)
 
-        # self.text
-        #-------------------------------------------------------------------------------------
-        # coordenadas del box_text
+        # Coordenadas del cuadro de texto
+        # -------------------------------------------------------------------------------------
         r_x, r_y, r_w, r_h = self.rect.x, self.rect.y, self.rect.width, self.rect.height
-        #-------------------------------------------------------------------------------------
-        rect = pg.Rect(self.displace_area_x,0,r_w,r_h)
-        y = self.rect.height/2 - self.text_surface.get_height()/2
-        self.surface.blit(self.text_surface, (0,y),rect)
+        rect = pg.Rect(self.displace_area_x, 0, r_w, r_h)
+        y = self.rect.height / 2 - self.text_surface.get_height() / 2
+        self.surface.blit(self.text_surface, (0, y), rect)
+        # -------------------------------------------------------------------------------------
 
-
-        # rectangulo de edicion de texto  (click izquierdo)
-        if self.edit in event_dict["EditableObjects"]["selected"]:
-
+        # Dibujar el rectángulo de edición de texto (si está en modo de edición)
+        if self.is_editing:
             # Lógica para el cursor intermitente
             self.cursor_count += 1
-            if self.cursor_count >= event_dict["FPS"]["Real"]/2:#Cambia el valor según la velocidad deseada del cursor
+            if self.cursor_count >= event_dict["FPS"]["Real"] / 2:  # Cambia el valor según la velocidad deseada del cursor
                 self.cursor_show = not self.cursor_show
                 self.cursor_count = 0
-            # Dibuja el cursor intermitente
-            if self.cursor_show and not(self.text_selected_list): 
+
+            # Dibujar el cursor intermitente si no hay texto seleccionado
+            if self.cursor_show and not self.text_selected_list:
                 cursor_x = self.cursor_surface.get_width() - self.displace_area_x
-                cursor_y = 3#self.text_y
+                cursor_y = 3  # Posición vertical del cursor
                 cursor_height = self.text_surface.get_height()
-                pg.draw.line(self.surface, (220,220,220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
+                pg.draw.line(self.surface, (220, 220, 220), (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height))
+
