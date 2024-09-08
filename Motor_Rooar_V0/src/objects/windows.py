@@ -52,7 +52,7 @@ class Window:
             self.scroll_bar_margin_high = 10
 
         # Llamar a rects_updates para inicializar rectángulos
-        self.rects_updates(x, y, w, h)
+        self.rects_updates(presurface, x, y, w, h)
 
 
         # Cargar imagen
@@ -64,11 +64,16 @@ class Window:
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def rects_updates(self, x=0, y=0, w=0, h=0, force = False):
+    def rects_updates(self, presurface, x=0, y=0, w=0, h=0, force = False):
 
         #if x == 0 and y == 0 and w == 0 and h == 0: return
         if not any([x, y, w, h]) and force == False:
             return
+        
+        # presurface - AQUI PRESURFACE NO ES NECESARIA PERO LA PONGO POR COHERENCIA
+        # ----------------------------------------------------------------------------
+        self.presurface = presurface
+        # ----------------------------------------------------------------------------
 
         # Rect
         # ----------------------------------------------------------------------------
@@ -400,16 +405,16 @@ class Window:
                     return motion
                 
                 if self.scale_modifier_hit_top:  # TOP
-                    self.rects_updates(x=Mouse_motion_x,y=Mouse_motion_y)
+                    self.rects_updates(self.presurface, x=Mouse_motion_x,y=Mouse_motion_y)
                 elif self.scale_modifier_hit_down:  # DOWN
                     Mouse_motion_y = limit_motion(Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_updates(h=Mouse_motion_y)
+                    self.rects_updates(self.presurface, h=Mouse_motion_y)
                 if self.scale_modifier_hit_left:  # LEFT
                     Mouse_motion_x = limit_motion(-Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_updates(x=-Mouse_motion_x, w=Mouse_motion_x)
+                    self.rects_updates(self.presurface, x=-Mouse_motion_x, w=Mouse_motion_x)
                 elif self.scale_modifier_hit_right:  # RIGHT
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_updates(w=Mouse_motion_x)
+                    self.rects_updates(self.presurface, w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
             if event_dict["Mouse"]["ClickLeftUp"]:
@@ -427,7 +432,7 @@ class Window:
                 elif event_dict["Mouse"]["Scroll"] == -1:
                     mouse_scroll_motion_y = -20
 
-                def update_vertical(bar, bar_limit, motion, curtain, view_height):
+                def _update_vertical(bar, bar_limit, motion, curtain, view_height):
                     bar.y += motion
                     proportion = view_height / bar.height # ERROR!!!! no div por 0
                     curtain.y = -(bar.y - bar_limit.y) * proportion 
@@ -441,7 +446,7 @@ class Window:
                     curtain.y += self.view_decrement_y
 
                 if self.curtain_rect.height > self.view_rect.height:
-                    update_vertical(
+                    _update_vertical(
                         self.scroll_bar_side_inside_rect,
                         self.scroll_bar_side_rect,
                         mouse_scroll_motion_y,
@@ -469,7 +474,7 @@ class Window:
         # Dibuja la imagen en la pantalla
         x = self.curtain_rect.x 
         y = self.curtain_rect.y 
-        self.view_surface.blit(self.image,(x,y))
+        #self.view_surface.blit(self.image,(x,y))
 
         x = self.view_rect.x - 4
         y = self.view_rect.y - 4
@@ -497,7 +502,7 @@ class Window:
 
 class WindowBase():
 
-    def __init__(self,event_dict,surface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
+    def __init__(self,event_dict,presurface,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
 
         if w < 200: w = 200 
         if h < 200: h = 200
@@ -511,7 +516,7 @@ class WindowBase():
         # ----------------------------------------------------------------------------
 
         # Inicializar propiedades
-        self.presurface = surface
+        self.presurface = presurface
         self.rect = pg.rect.Rect(0,0,0,0)
         self.rect_color = event_dict["Colors"]["LightGrey"]
 
@@ -545,7 +550,7 @@ class WindowBase():
         # ----------------------------------------------------------------------------
 
         # Llamar a rects_updates para inicializar rectángulos
-        self.rects_updates(x, y, w, h)
+        self.rects_updates(presurface, x, y, w, h)
 
         
         # Cargar imagen
@@ -556,11 +561,16 @@ class WindowBase():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
-    def rects_updates(self, x=0, y=0, w=0, h=0 , force = False):
+    def rects_updates(self, presurface, x=0, y=0, w=0, h=0 , force = False):
         """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
 
         if not any([x, y, w, h]) and force == False:
             return
+        
+        # presurface - AQUI PRESURFACE NO ES NECESARIA PERO LA PONGO POR COHERENCIA
+        # ----------------------------------------------------------------------------
+        self.presurface = presurface
+        # ----------------------------------------------------------------------------
 
         # Rect
         # ----------------------------------------------------------------------------
@@ -747,7 +757,7 @@ class WindowBase():
 
     def curtain_displace(self,event_dict, code = None):
 
-        def update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
+        def _update_vertical(bar, bar_limit, motion, curtain, view_height, is_click):
             if is_click:
                 motion = motion - bar.y - (bar.height / 2)
             bar.y += motion
@@ -762,7 +772,7 @@ class WindowBase():
             self.save_curtain_rect_y = curtain.y # save
             curtain.y += self.view_decrement_y
 
-        def update_horizontal(bar, bar_limit, motion, curtain, view_width, is_click):
+        def _update_horizontal(bar, bar_limit, motion, curtain, view_width, is_click):
             if is_click:
                 motion = motion - bar.x - (bar.width / 2)
             bar.x += motion
@@ -789,7 +799,7 @@ class WindowBase():
                     mouse_scroll_motion_y = -10
 
                 if self.scroll_bar_side_hit or self.scroll_bar_side_inside_hit:
-                    update_vertical(
+                    _update_vertical(
                         self.scroll_bar_side_inside_rect,
                         self.scroll_bar_side_rect,
                         mouse_scroll_motion_y,
@@ -798,7 +808,7 @@ class WindowBase():
                         is_click=False
                     )
                 elif self.scroll_bar_down_hit or self.scroll_bar_down_inside_hit:
-                    update_horizontal(
+                    _update_horizontal(
                         self.scroll_bar_down_inside_rect,
                         self.scroll_bar_down_rect,
                         mouse_scroll_motion_x,
@@ -814,7 +824,7 @@ class WindowBase():
             if event_dict["Mouse"]["ClickLeftDown"]:
                 mouse_x, mouse_y = event_dict["Mouse"]["Position"]
                 if self.scroll_bar_side_hit:
-                    update_vertical(
+                    _update_vertical(
                         self.scroll_bar_side_inside_rect,
                         self.scroll_bar_side_rect,
                         mouse_y,
@@ -823,7 +833,7 @@ class WindowBase():
                         is_click=True
                     )
                 elif self.scroll_bar_down_hit:
-                    update_horizontal(
+                    _update_horizontal(
                         self.scroll_bar_down_inside_rect,
                         self.scroll_bar_down_rect,
                         mouse_x,
@@ -835,7 +845,7 @@ class WindowBase():
             if event_dict["Mouse"]["Motion"]:
                 mouse_motion_x, mouse_motion_y = event_dict["Mouse"]["Motion"]
                 if self.scroll_bar_side_inside_hit:
-                    update_vertical(
+                    _update_vertical(
                         self.scroll_bar_side_inside_rect,
                         self.scroll_bar_side_rect,
                         mouse_motion_y,
@@ -844,7 +854,7 @@ class WindowBase():
                         is_click=False
                     )
                 elif self.scroll_bar_down_inside_hit:
-                    update_horizontal(
+                    _update_horizontal(
                         self.scroll_bar_down_inside_rect,
                         self.scroll_bar_down_rect,
                         mouse_motion_x,
@@ -869,7 +879,7 @@ class WindowBase():
                 limit_max_w = self.curtain_w
                 limit_max_h = self.curtain_h
 
-                def limit_motion(motion, current, limit_min, limit_max):
+                def _limit_motion(motion, current, limit_min, limit_max):
                     if current + motion < limit_min:
                         return limit_min - current
                     if current + motion > limit_max:
@@ -877,17 +887,17 @@ class WindowBase():
                     return motion
                 
                 if self.scale_modifier_hit_top:  # TOP
-                    Mouse_motion_y = limit_motion(-Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_updates(y=-Mouse_motion_y, h=Mouse_motion_y)
+                    Mouse_motion_y = _limit_motion(-Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
+                    self.rects_updates(self.presurface, y=-Mouse_motion_y, h=Mouse_motion_y)
                 elif self.scale_modifier_hit_down:  # DOWN
-                    Mouse_motion_y = limit_motion(Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
-                    self.rects_updates(h=Mouse_motion_y)
+                    Mouse_motion_y = _limit_motion(Mouse_motion_y, self.view_rect.height, limit_min, limit_max_h)
+                    self.rects_updates(self.presurface, h=Mouse_motion_y)
                 if self.scale_modifier_hit_left:  # LEFT
-                    Mouse_motion_x = limit_motion(-Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_updates(x=-Mouse_motion_x, w=Mouse_motion_x)
+                    Mouse_motion_x = _limit_motion(-Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
+                    self.rects_updates(self.presurface, x=-Mouse_motion_x, w=Mouse_motion_x)
                 elif self.scale_modifier_hit_right:  # RIGHT
-                    Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
-                    self.rects_updates(w=Mouse_motion_x)
+                    Mouse_motion_x = _limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
+                    self.rects_updates(self.presurface, w=Mouse_motion_x)
 
             # Reset hit flags on mouse button release
             if event_dict["Mouse"]["ClickLeftUp"]:

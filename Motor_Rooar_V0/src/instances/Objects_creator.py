@@ -22,9 +22,9 @@ class ObjectsCreator(WindowBase):
         # if self.objects_list:
         #     for obj in self.objects_list:
         #         obj.rects_updates(force = True)
-        print(self.objects_list)
+        #print(self.objects_list)
         if self.objects_list:
-            self.box_text.rects_updates(force = True)
+            self.box_text.rects_updates( self.view_surface, force = True)
 
 
 

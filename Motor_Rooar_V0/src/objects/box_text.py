@@ -13,7 +13,7 @@ from scripts.fonts import Font  # Para las fuentes
 
 class BoxText:
     """ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE"""
-    def __init__(self, event_dict, surface, x, y, w, h, rect_color=(20, 20, 20), text_color=(190, 190, 190), text=""):
+    def __init__(self, event_dict, surface, x, y, w, h, rect_color=(150, 20, 20), text_color=(190, 190, 190), text=""):
         # Profundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"] += 1
@@ -25,8 +25,11 @@ class BoxText:
         self.rect_box_color = rect_color
 
         # Inicializa el rectángulo y sus atributos relacionados
-        self.rect = pg.rect.Rect(0,0,0,0)
-        self.rects_updates(x, y, w, h)
+        #self.rect = pg.rect.Rect(0,0,0,0)
+        self.rect = pg.rect.Rect(x,y,w,h)
+        self.surface_rect = self.rect
+        self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
+        #self.rects_updates(x, y, w, h)
 
         # Características del cuadro de texto y la fuente
         self.text = text
@@ -77,21 +80,37 @@ class BoxText:
     
 
 
-    def rects_updates(self, x=0, y=0, w=0, h=0 , force = False):
+    
+    #def rects_updates(self, presurface , force = False):
+    def rects_updates(self, presurface, x=0, y=0, w=0, h=0 , force = False):
         """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
 
         if not any([x, y, w, h]) and force == False:
             return
         
         """Inicializa el rectángulo y sus atributos relacionados."""
+
+        # presurface
+        # ----------------------------------------------------------------------------
+        self.presurface =  presurface
+        # ----------------------------------------------------------------------------
+
         # Rect
         # ----------------------------------------------------------------------------
+
+        # x = self.rect.x
+        # y = self.rect.y
+        # w = self.rect.width
+        # h = self.rect.height
+
         self.rect.x += x
         self.rect.y += y
         self.rect.width += w
         self.rect.height += h
+
         # ----------------------------------------------------------------------------
-        self.rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
+        self.scale_modifier_rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
+        #self.rect = pg.rect.Rect(x,y,w,h)
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
         

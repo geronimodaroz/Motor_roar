@@ -117,7 +117,7 @@ def main():
             #Bucle de Eventos
             # ----------------------------------------------------------------------------
             # GESTIONA LOS EVENTOS Y SU REINICIO
-            event(event_dict, objects_list)
+            event(event_dict, screen, objects_list)
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
             # f = []
