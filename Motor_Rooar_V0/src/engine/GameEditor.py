@@ -22,6 +22,7 @@ def main():
     # Configuración de la pantalla
     width, height = 800, 600
     screen = pg.display.set_mode((width, height), pg.RESIZABLE)
+    #screen = pg.display.set_mode((width, height),  pg.NOFRAME)
     pg.display.set_caption("Roar!!")
 
     # Configuración de rutas
@@ -53,7 +54,7 @@ def main():
     event_dict = {
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
-        #"screen":{"width":width, "height":height},
+        "screen":{"width":width, "height":height},
         "FPS": {
             "Fixed": 60,
             "Real": None,
@@ -243,6 +244,8 @@ def main():
             # FPS
             # ----------------------------------------------------------------------------
             fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
+            width  = event_dict["screen"]["width"]
+            height = event_dict["screen"]["height"]
             screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
             # ----------------------------------------------------------------------------
             

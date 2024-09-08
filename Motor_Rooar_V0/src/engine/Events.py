@@ -43,7 +43,10 @@ def event(event_dict, screen, objects_list):
 
         # Detectar redimensionamiento de la ventana
         elif event.type == pg.VIDEORESIZE:
-            #width, height = event.w, event.h
+            width, height = event.w, event.h
+
+            event_dict["screen"]["width"]  = width
+            event_dict["screen"]["height"] = height
             #screen = pg.display.set_mode((width, height), pg.RESIZABLE)
             #print(f"Nuevo tamaño de la ventana: {width}x{height}")    
 

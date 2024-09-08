@@ -16,15 +16,21 @@ class ObjectsCreator(WindowBase):
 
         super().load_objects(self.box_text)
 
-    def rects_updates(self, x=0, y=0, w=0, h=0, force=False):
-        super().rects_updates(x, y, w, h, force)
+    def rects_updates(self, presurface, x=0, y=0, w=0, h=0, force=False):
+        super().rects_updates(presurface, x, y, w, h, force)
 
-        # if self.objects_list:
-        #     for obj in self.objects_list:
-        #         obj.rects_updates(force = True)
-        #print(self.objects_list)
         if self.objects_list:
             self.box_text.rects_updates( self.view_surface, force = True)
+
+    # def rects_updates(self, x=0, y=0, w=0, h=0, force=False):
+    #     super().rects_updates(x, y, w, h, force)
+
+    #     # if self.objects_list:
+    #     #     for obj in self.objects_list:
+    #     #         obj.rects_updates(force = True)
+    #     #print(self.objects_list)
+    #     if self.objects_list:
+    #         self.box_text.rects_updates( self.view_surface, force = True)
 
 
 
