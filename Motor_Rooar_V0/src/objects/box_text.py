@@ -25,6 +25,7 @@ class BoxText:
         self.rect_box_color = rect_color
 
         # Inicializa el rectángulo y sus atributos relacionados
+        self.rect = pg.rect.Rect(0,0,0,0)
         self.rects_updates(x, y, w, h)
 
         # Características del cuadro de texto y la fuente
@@ -83,17 +84,16 @@ class BoxText:
             return
         
         """Inicializa el rectángulo y sus atributos relacionados."""
-        self.rect = pg.Rect(x, y, w, h)
+        # Rect
+        # ----------------------------------------------------------------------------
+        self.rect.x += x
+        self.rect.y += y
+        self.rect.width += w
+        self.rect.height += h
+        # ----------------------------------------------------------------------------
+        self.rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
-        # self.rect_box_color = self.rect_box_color
-        # self.rect_line_color = self.event_dict["Colors"]["LightGrey"]
-        # # Cálculo del desplazamiento del área de texto
-        # dis = self.text_surface.get_width() - self.cursor_surface.get_width()
-        # if self.text_surface.get_width() > self.rect.width:
-        #     self.displace_area_x = self.cursor_surface.get_width() - max(self.rect.width / 2, self.rect.width - dis)
-        # else:
-        #     self.displace_area_x = -self.rect.width / 2 + self.text_surface.get_width() / 2
         
 
 

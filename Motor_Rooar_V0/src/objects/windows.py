@@ -539,9 +539,15 @@ class WindowBase():
             self.scroll_bar_margin_low = 1
             self.scroll_bar_margin_high = 10
 
+        # objects list
+        # ----------------------------------------------------------------------------
+        self.objects_list = []
+        # ----------------------------------------------------------------------------
+
         # Llamar a rects_updates para inicializar rectángulos
         self.rects_updates(x, y, w, h)
 
+        
         # Cargar imagen
         #self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
 
@@ -582,7 +588,7 @@ class WindowBase():
 
         # objects list
         # ----------------------------------------------------------------------------
-        self.objects_list = None
+        #self.objects_list = None
         # ----------------------------------------------------------------------------
 
         # curtain
@@ -661,7 +667,8 @@ class WindowBase():
 
     def load_objects(self,*objects_list):
         """carga los objetos que estaran dentro de la ventana"""
-        self.objects_list = objects_list # cargar objetos
+        #self.objects_list = objects_list # cargar objetos
+        self.objects_list.extend(objects_list)
         
     def collision_detector(self, event_dict):
         """detecta colision con los "rects" del objeto "windows" y con los objetos que contenga dentro, y los agrega a la lista "clickable" """

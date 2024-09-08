@@ -5,6 +5,7 @@ from objects.windows import WindowBase
 class ObjectsCreator(WindowBase):
 
     def __init__(self,event_dict,screen,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
+
         
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
@@ -17,8 +18,13 @@ class ObjectsCreator(WindowBase):
 
     def rects_updates(self, x=0, y=0, w=0, h=0, force=False):
         super().rects_updates(x, y, w, h, force)
-    
-        #self.box_text.rects_updates(force = True)
+
+        # if self.objects_list:
+        #     for obj in self.objects_list:
+        #         obj.rects_updates(force = True)
+        print(self.objects_list)
+        if self.objects_list:
+            self.box_text.rects_updates(force = True)
 
 
 
