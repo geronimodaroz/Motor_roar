@@ -1,117 +1,38 @@
+import win32api
+import win32con
+import win32gui
+import ctypes
 
+def wnd_proc(hwnd, msg, wparam, lparam):
+    if msg == win32con.WM_DESTROY:
+        win32gui.PostQuitMessage(0)
+    elif msg == win32con.WM_PAINT:
+        # Aquí se dibuja el fondo de la ventana
+        hdc, ps = win32gui.BeginPaint(hwnd)
+        rect = win32gui.GetClientRect(hwnd)
+        hbrush = win32gui.CreateSolidBrush(0x0000FF)  # Azul
+        win32gui.FillRect(hdc, rect, hbrush)
+        win32gui.DeleteObject(hbrush)
+        win32gui.EndPaint(hwnd, ps)
+    return win32gui.DefWindowProc(hwnd, msg, wparam, lparam)
 
-import sys
-import os #acceso a funciones que te permiten interactuar con el sistema operativo
+def create_window():
+    wc = win32gui.WNDCLASS()
+    wc.lpfnWndProc = wnd_proc
+    wc.lpszClassName = 'MyWindowClass'
+    wc.hInstance = win32api.GetModuleHandle(None)
+    wc.hCursor = win32gui.LoadCursor(0, win32con.IDC_ARROW)
 
-from tkinter import filedialog # seleccionar archivos por el
-import tkinter as tk
+    class_atom = win32gui.RegisterClass(wc)
+    hwnd = win32gui.CreateWindow(class_atom, 'My Window', win32con.WS_OVERLAPPEDWINDOW,
+                                 win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT,
+                                 800, 600, 0, 0, wc.hInstance, None)
 
-#from pygame import *
-import pygame
-import pygame as pg
+    # Mostrar la ventana
+    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+    win32gui.UpdateWindow(hwnd)
 
+    win32gui.PumpMessages()
 
-# Inicializa Pygame
-pygame.init()
-pygame.display.set_caption("videogame") # Establecer el título de la ventana
-
-# Configurar la pantalla
-window_width, window_height = 800, 600
-screen = pygame.display.set_mode((window_width, window_height))
-
-
-
-
-# Configurar Tkinter
-root = tk.Tk()
-root.withdraw()  # Ocultar la ventana principal de Tkinter
-
-
-
-
-
-
-def image_load():
-    # Solicitar al usuario que seleccione un archivo de imagen
-    file_paths = filedialog.askopenfilenames(filetypes=[("Imágenes", "*.png;*.jpg;*.jpeg")])
-    images = []
-    for i in file_paths:
-        images.append(pg.image.load(i))
-
-
-# esta clase agrega sprites
-class gameObject():
-
-    def __init__(self,name = "undefined", position=(0, 0),image_path = "undefined.png"):
-
-        self.name = name
-        self.position = position
-        self.image = pg.image.load(image_path)
-
-
-    def image_load(self):
-        # Solicitar al usuario que seleccione un archivo de imagen
-        file_paths = filedialog.askopenfilenames(filetypes=[("Imágenes", "*.png;*.jpg;*.jpeg")])
-
-        self.images = []
-        for i in file_paths:
-            self.images.append(pg.image.load(i))
-        
-        #rect
-        img = self.images[0]
-        self.rect = img.get_rect(topleft= self.position)
-
-object_1 = gameObject("player",(100,100))
-object_1.image_load()
-
-"""# esta clase agrega sprites
-class gameObject():
-    def __init__(self, position=(0, 0),image_path = "undefined.png"):
-        #self.name = name
-        #self.image_path = image_path
-        self.name_spt = os.listdir(image_path)
-        self.image_spr=[]
-        #print(image_path)
-        #self.image = pg.image.load(self.spt)#.convert_alpha() # convert_alpha identifica la trasparencia
-        #self.rect = self.image.get_rect(topleft=position)
-        for filename in self.name_spt:
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-                image_path_spt = os.path.join(image_path, filename) # une la ruta y el nombre
-                image = pg.image.load(image_path_spt)#.convert_alpha()
-                self.image_spr.append(image)
-        #rect
-        image1 = self.image_spr[0]
-        self.rect = image1.get_rect(topleft=position)"""
-
-
-
-
-
-
-#spt_animation_run = gameObject((0,0),"animation_run/")
-
-
-# Bucle principal del juego
-while True:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-
-    # Aquí puedes agregar la lógica de tu juego y dibujar en la ventana
-    
-
-
-
-    # Limpia la ventana
-    screen.fill((100, 100, 100))
-
-
-    #screen.blit(spt_animation_run.image_spr[0],(200,200)) # dibujo la imagen
-
-    screen.blit(object_1.images[0],object_1.position)
-
-    # Actualizar la ventana
-    pg.display.update()
+if __name__ == "__main__":
+    create_window()

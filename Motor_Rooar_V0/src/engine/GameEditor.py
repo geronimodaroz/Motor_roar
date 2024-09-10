@@ -21,24 +21,34 @@ def main():
 
     # Configuración de la pantalla
     width, height = 800, 600
-    screen = pg.display.set_mode((width, height), pg.RESIZABLE)
+    default_screen_surface = pg.display.set_mode((width, height), pg.RESIZABLE)
     #screen = pg.display.set_mode((width, height),  pg.NOFRAME)
     pg.display.set_caption("Roar!!")
+
+
+    # Screen Editor
+    #-----------------------------------------------------------------------------
+    from objects.engine_screen import EngineScreen
+    engine_screen = EngineScreen(default_screen_surface)
+    width, height = engine_screen.rect.width ,engine_screen.rect.height
+
+    screen = engine_screen.surface
+    engine_screen_surface = engine_screen.surface
+    # NO SE AGREGA A OBJECTS_LIST?
+    #-----------------------------------------------------------------------------
+
+
 
     # Configuración de rutas
     #-----------------------------------------------------------------------------
     motor_game_folder_path = "C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar"
-
     # Ruta al escritorio y creación de carpeta
     #-----------------------------------------------------------------------------
     desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
     os.chdir(desktop_path)  # Moverse a la ubicación de la ruta
-
     if not os.path.exists("Videojuego_00"):  # Verificar existencia de carpeta
         os.mkdir("Videojuego_00")  # Crear carpeta
-
     game_folder_path = os.path.join(desktop_path, "Videojuego_00")  # Ruta a la carpeta del juego
-
     # Monitor de archivos en la carpeta del juego
     #-----------------------------------------------------------------------------
     from scripts import detection_archive_delate
@@ -94,13 +104,15 @@ def main():
     depth_number = event_dict["depth_number"]
     objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
 
+    
+
     # Crear ventanas y objetos
     from objects.windows import Window
     window = Window(event_dict, screen, 350, 80, 300, 450, 500, 500, 1)
     objects_list.append(window)  # Agregar el objeto window a la lista
 
     from instances.Objects_creator import ObjectsCreator
-    objects_creator_window = ObjectsCreator(event_dict, screen, 0, 80, 300, 450, 500, 500, 1)
+    objects_creator_window = ObjectsCreator(event_dict, screen, 20, 80, 300, 450, 500, 500, 1)
     objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
     # Forzar un evento de teclado
@@ -239,7 +251,10 @@ def main():
             # ----------------------------------------------------------------------------
             
             # Dibuja el fondo
-            screen.fill((50,50,50)) # limpia escena 
+            default_screen_surface.fill((50,50,50)) # limpia escena 
+
+
+            engine_screen.draw(event_dict) # engine_screen
 
             # FPS
             # ----------------------------------------------------------------------------
@@ -248,6 +263,7 @@ def main():
             height = event_dict["screen"]["height"]
             screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
             # ----------------------------------------------------------------------------
+
             
             #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
             if objects_list:
@@ -255,6 +271,7 @@ def main():
                     obj.draw(event_dict)
 
 
+            
             # Actualiza la pantalla
             pg.display.flip()
             # ----------------------------------------------------------------------------
