@@ -45,7 +45,7 @@ class ObjectsCreator(WindowBase):
         event_dict["Mouse"]["Position"] = (x,y)
 
         # ejecuto objetos de lista selected
-        #ESTO ESTA MAL!!
+        #ESTO ESTA MAL!! -- por?
         # ----------------------------------------------------------------------------
         if code == "clickable":
             exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= self.depth_number+1 
@@ -59,6 +59,8 @@ class ObjectsCreator(WindowBase):
         # ----------------------------------------------------------------------------
 
         event_dict["Mouse"]["Position"] = save_x_y
+
+
 
     
     def draw(self, event_dict):

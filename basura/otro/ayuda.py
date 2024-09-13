@@ -1,12 +1,6 @@
 import pygame as pg
 import ctypes
-
-# Definir la estructura RECT
-class RECT(ctypes.Structure):
-    _fields_ = [("left", ctypes.c_long),
-                ("top", ctypes.c_long),
-                ("right", ctypes.c_long),
-                ("bottom", ctypes.c_long)]
+from ctypes import wintypes  # Importar wintypes correctamente
 
 # Inicialización de Pygame
 pg.init()
@@ -18,7 +12,7 @@ width, height = 800, 600
 screen = pg.display.set_mode((width, height), pg.NOFRAME)
 
 # Establecer el título y el icono de la ventana (si lo deseas)
-pg.display.set_caption("Ventana Personalizada")
+pg.display.set_caption("Ventana Movible")
 
 # Obtener el identificador de la ventana de Pygame (solo en Windows)
 window_id = pg.display.get_wm_info()["window"]
@@ -31,34 +25,37 @@ running = True
 
 # Control de movimiento de ventana
 moving = False
-start_x, start_y = 0, 0
-
-# Obtener la posición inicial de la ventana
-rect = RECT()
-ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
-window_x, window_y = rect.left, rect.top
+mouse_start_x, mouse_start_y = 0, 0
 
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
         elif event.type == pg.MOUSEBUTTONDOWN:
-            # Detectar si el ratón se ha presionado dentro del área de la "barra superior" simulada
-            if event.button == 1:
-                mx, my = event.pos
-                if my <= 30:  # Supongamos que 30 píxeles es el alto de la "barra superior"
+
+            if event.button == 1:  # Click izquierdo del ratón
+                mouse_start_x, mouse_start_y = event.pos
+                if mouse_start_y <= 30:  # Área superior de la ventana (simulación de barra de título)
                     moving = True
-                    start_x, start_y = mx, my
+
+                    
         elif event.type == pg.MOUSEBUTTONUP:
-            # Detectar si el ratón se ha soltado
-            if event.button == 1:
+            if event.button == 1:  # Soltar el click izquierdo
                 moving = False
         elif event.type == pg.MOUSEMOTION and moving:
-            # Mover la ventana mientras el ratón se arrastra
-            mx, my = pg.mouse.get_pos()
-            new_x = window_x + (mx - start_x)
-            new_y = window_y + (my - start_y)
-            ctypes.windll.user32.MoveWindow(window_id, new_x, new_y, width, height, True)
+            # Obtener la posición actual del ratón
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            
+            # Calcular la nueva posición de la ventana
+            delta_x = mouse_x - mouse_start_x
+            delta_y = mouse_y - mouse_start_y
+            
+            # Obtener la posición actual de la ventana
+            rect = wintypes.RECT()
+            ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+
+            # Mover la ventana a la nueva posición
+            ctypes.windll.user32.MoveWindow(window_id, rect.left + delta_x, rect.top + delta_y, width, height, True)
 
     # Dibujar la "barra superior" personalizada
     screen.fill((30, 30, 30))  # Fondo de la ventana

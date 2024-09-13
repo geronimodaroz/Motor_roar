@@ -26,16 +26,7 @@ def main():
     pg.display.set_caption("Roar!!")
 
 
-    # Screen Editor
-    #-----------------------------------------------------------------------------
-    from objects.engine_screen import EngineScreen
-    engine_screen = EngineScreen(default_screen_surface)
-    width, height = engine_screen.rect.width ,engine_screen.rect.height
-
-    screen = engine_screen.surface
-    engine_screen_surface = engine_screen.surface
-    # NO SE AGREGA A OBJECTS_LIST?
-    #-----------------------------------------------------------------------------
+   
 
 
 
@@ -54,8 +45,8 @@ def main():
     from scripts import detection_archive_delate
     detection_archive_delate.monitorear_carpeta(game_folder_path)
 
-    # Inicializar el reloj y configurar FPS
-    #-----------------------------------------------------------------------------
+    # # Inicializar el reloj y configurar FPS
+    # #-----------------------------------------------------------------------------
     clock = pg.time.Clock()
     fps_text = Font().surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
 
@@ -102,18 +93,28 @@ def main():
     # Inicialización de objetos
     #-----------------------------------------------------------------------------
     depth_number = event_dict["depth_number"]
-    objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
+    #objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
 
-    
+     # engine screen
+    #-----------------------------------------------------------------------------
+    from objects.engine_window import EngineWindow
+    engine_window = EngineWindow(event_dict,default_screen_surface)
+    #width, height = engine_screen.rect.width ,engine_screen.rect.height
 
-    # Crear ventanas y objetos
-    from objects.windows import Window
-    window = Window(event_dict, screen, 350, 80, 300, 450, 500, 500, 1)
-    objects_list.append(window)  # Agregar el objeto window a la lista
+    #screen = engine_screen.surface
+    #engine_screen_surface = engine_screen.view_surface
+    # NO SE AGREGA A OBJECTS_LIST?
+    #-----------------------------------------------------------------------------
 
-    from instances.Objects_creator import ObjectsCreator
-    objects_creator_window = ObjectsCreator(event_dict, screen, 20, 80, 300, 450, 500, 500, 1)
-    objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
+
+    # # Crear ventanas y objetos
+    # from objects.windows import Window
+    # window = Window(event_dict, engine_screen_surface, 350, 80, 300, 450, 500, 500, 1)
+    # objects_list.append(window)  # Agregar el objeto window a la lista
+
+    # from instances.Objects_creator import ObjectsCreator
+    # objects_creator_window = ObjectsCreator(event_dict, engine_screen_surface, 20, 80, 300, 450, 500, 500, 1)
+    # objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
     # Forzar un evento de teclado
     #-----------------------------------------------------------------------------
@@ -130,7 +131,8 @@ def main():
             #Bucle de Eventos
             # ----------------------------------------------------------------------------
             # GESTIONA LOS EVENTOS Y SU REINICIO
-            event(event_dict, screen, objects_list)
+            #event(event_dict, engine_screen_surface, objects_list)
+            event(event_dict)
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
             # f = []
@@ -145,11 +147,15 @@ def main():
             # Obtener posición del mouse
             # ----------------------------------------------------------------------------
             x,y = event_dict["Mouse"]["Position"]
+
+            #if engine_window.rect.collidepoint(x, y):
+            #    engine_window.collision_detector(event_dict)
+            #engine_window.edit(event_dict)
             # ----------------------------------------------------------------------------
             
 
-            # Detectar colisión con objetos dentro de la lista objects_list
-            # ----------------------------------------------------------------------------
+            # # Detectar colisión con objetos dentro de la lista objects_list
+            # # ----------------------------------------------------------------------------
             if (event_dict["Mouse"]["Motion"] and not event_dict["Mouse"]["ClickLeftPressed"]) or event_dict["Mouse"]["ClickLeftUp"]:
                 # Limpiar la lista de clickeables a partir del índice depth_number+1
                 #event_dict["EditableObjects"]["clickable"] = event_dict["EditableObjects"]["clickable"][:depth_number + 1]
@@ -157,11 +163,15 @@ def main():
                 # ----------------------------------------------------------------------------
                 save_clickable_list = event_dict["EditableObjects"]["clickable"].copy()
                 del event_dict["EditableObjects"]["clickable"][depth_number+1:]
-                # Detectar colisión con objetos
-                for obj in objects_list:
-                    if obj.rect.collidepoint(x, y):
-                        obj.collision_detector(event_dict)
-                        if event_dict["EditableObjects"]["clickable"]: break
+
+                if engine_window.rect.collidepoint(x, y):
+                     engine_window.collision_detector(event_dict)
+            #     # Detectar colisión con objetos
+            #     for obj in objects_list:
+            #         if obj.rect.collidepoint(x, y):
+            #             obj.collision_detector(event_dict)
+            #             if event_dict["EditableObjects"]["clickable"]: break
+
                 # ----------------------------------------------------------------------------
                 # si el mouse cambio de objetos ejecuto cambios pre o pos de los objetos en las listas 
                 # ----------------------------------------------------------------------------
@@ -180,7 +190,6 @@ def main():
                                         method_to_call(event_dict, code)
                                 except Exception as e:
                                     print(e)
-
                     # Ejecutar métodos pos_ para objetos clickados
                     pre_pos_methods(save_clickable_list,"pos_", event_dict, code = "clickable")
                     # Ejecutar métodos pre_ para objetos clickados
@@ -214,10 +223,11 @@ def main():
                     pre_pos_methods(event_dict["EditableObjects"]["selected"],"pre_", event_dict, code = "selected")
             # ----------------------------------------------------------------------------
 
+            
                 
-            # ----------------------------------------------------------------------------
-            # ejecuto objetos de lista selected
-            # ----------------------------------------------------------------------------
+            # # ----------------------------------------------------------------------------
+            # # ejecuto objetos de lista selected
+            # # ----------------------------------------------------------------------------
             exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
             if exists_next_clickable_list:
                 event_dict["EditableObjects"]["clickable"][depth_number+1](event_dict, code = "clickable") 
@@ -228,6 +238,7 @@ def main():
 
             # ----------------------------------------------------------------------------
 
+            #event_dict["Mouse"]["Position"] = save
 
             #print(event_dict["EditableObjects"]["clickable"])
             #print(event_dict["EditableObjects"]["selected"])
@@ -235,12 +246,12 @@ def main():
             #print(object_list)
 
 
-            # Delate objects from object_list
-            if event_dict["Delate_List"]:
-                for obj in event_dict["Delate_List"]:
-                    if obj in objects_list:
-                        objects_list.remove(obj)
-                event_dict["Delate_List"].clear()
+            # # Delate objects from object_list
+            # if event_dict["Delate_List"]:
+            #     for obj in event_dict["Delate_List"]:
+            #         if obj in objects_list:
+            #             objects_list.remove(obj)
+            #     event_dict["Delate_List"].clear()
             #Draw
             # ----------------------------------------------------------------------------
 
@@ -254,21 +265,21 @@ def main():
             default_screen_surface.fill((50,50,50)) # limpia escena 
 
 
-            engine_screen.draw(event_dict) # engine_screen
+            engine_window.draw(event_dict) # engine_screen
 
-            # FPS
+            # # FPS
             # ----------------------------------------------------------------------------
             fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
             width  = event_dict["screen"]["width"]
             height = event_dict["screen"]["height"]
-            screen.blit(fps_text, (width - fps_text.get_width() - 15,height - fps_text.get_height() -10)) # fps
+            default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
             # ----------------------------------------------------------------------------
 
             
-            #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
-            if objects_list:
-                for obj in objects_list:
-                    obj.draw(event_dict)
+            # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
+            # if objects_list:
+            #     for obj in objects_list:
+            #         obj.draw(event_dict)
 
 
             

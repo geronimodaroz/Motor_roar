@@ -76,11 +76,6 @@ class BoxText:
         # ----------------------------------------------------------------------------
 
 
-
-    
-
-
-    
     #def rects_updates(self, presurface , force = False):
     def rects_updates(self, presurface, x=0, y=0, w=0, h=0 , force = False):
         """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """

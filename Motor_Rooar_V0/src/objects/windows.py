@@ -689,24 +689,34 @@ class WindowBase():
 
             if (self.scroll_bar != 0 and (self.scroll_bar_side_rect.collidepoint(mouse_x, mouse_y) or 
                                           self.scroll_bar_down_rect.collidepoint(mouse_x, mouse_y))): # curtain_displace
-                comprobation_section_curtain_displace()
+                _comprobation_section_curtain_displace()
             elif self.view_rect.collidepoint(mouse_x, mouse_y): # edit
-                comprobation_section_view_edit()
+                _comprobation_section_view_edit()
             # elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y): # scale_modifier
             #     comprobation_section_scale_modifier()
 
-        def comprobation_section_view_edit():
+        def _comprobation_section_view_edit():
             event_dict["EditableObjects"]["clickable"].append(self.edit)
-            event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
+            #event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
             if self.objects_list: # objs
-                x = event_dict["Mouse"]["Position"][0] - self.view_rect.x # mouse x con respecto a view_rect
-                y = event_dict["Mouse"]["Position"][1] - self.view_rect.y # mouse y con respecto a view_rect
+
+                #x = event_dict["Mouse"]["Position"][0] - self.view_rect.x # mouse x con respecto a view_rect
+                #y = event_dict["Mouse"]["Position"][1] - self.view_rect.y # mouse y con respecto a view_rect
+
+                # mouse x,y con respecto a view_rect
+                x = event_dict["Mouse"]["Position"][0] - self.view_rect.x 
+                y = event_dict["Mouse"]["Position"][1] - self.view_rect.y
+                save_x_y = event_dict["Mouse"]["Position"]
+                event_dict["Mouse"]["Position"] = (x,y)
+
                 for obj in self.objects_list:
                     if obj.rect.collidepoint(x,y): 
                         event_dict["EditableObjects"]["clickable"].append(obj.edit)
 
+                event_dict["Mouse"]["Position"] = save_x_y
 
-        def comprobation_section_curtain_displace():
+
+        def _comprobation_section_curtain_displace():
             event_dict["EditableObjects"]["clickable"].append(self.curtain_displace)
             self.scroll_bar_side_hit = self.scroll_bar_side_inside_hit = False
             self.scroll_bar_down_hit = self.scroll_bar_down_inside_hit = False
@@ -903,7 +913,6 @@ class WindowBase():
             if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
-
     def edit(self,event_dict, code = None):
         """metodo  principal por donde pasa la logica de las interacciones con los objetos dentro de "view" """
         # clickeable
@@ -942,8 +951,6 @@ class WindowBase():
         # if code == "selected":
         #     if event_dict["Mouse"]["ClickLeftUp"]:
         #         del event_dict["EditableObjects"]["selected"][self.depth_number:]
-
-
 
     def draw(self,event_dict):
         """dibujo windows"""

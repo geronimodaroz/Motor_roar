@@ -13,7 +13,8 @@ def key_state(keys, key_event_list):
     return [event for key, pressed in enumerate(keys) if pressed for event in key_event_list if event['scancode'] == key]
 
 
-def event(event_dict, screen, objects_list):
+#def event(event_dict, screen, objects_list):
+def event(event_dict):
     """Gestiona y reinicia los eventos"""
 
     # Reinicio variables
@@ -50,8 +51,8 @@ def event(event_dict, screen, objects_list):
             #screen = pg.display.set_mode((width, height), pg.RESIZABLE)
             #print(f"Nuevo tamaño de la ventana: {width}x{height}")    
 
-            for obj in objects_list:
-                obj.rects_updates(screen, force = True) # DEBERIAMOS PASAR AQUI LA SUPERFICIE DE LA PANTALLA? (COMO PRESURFACE)
+            #for obj in objects_list:
+            #    obj.rects_updates(screen, force = True) # DEBERIAMOS PASAR AQUI LA SUPERFICIE DE LA PANTALLA? (COMO PRESURFACE)
             
         # Eventos de teclas
         if event.type == pg.KEYDOWN or event.type == pg.KEYUP:  # Tecla hacia abajo o arriba
