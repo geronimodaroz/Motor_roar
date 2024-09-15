@@ -21,8 +21,9 @@ def main():
 
     # Configuración de la pantalla
     width, height = 800, 600
-    default_screen_surface = pg.display.set_mode((width, height), pg.RESIZABLE)
-    #screen = pg.display.set_mode((width, height),  pg.NOFRAME)
+    #default_screen_surface = pg.display.set_mode((width, height), pg.RESIZABLE)
+
+    default_screen_surface = pg.display.set_mode((width, height),  pg.NOFRAME)
     pg.display.set_caption("Roar!!")
 
 
@@ -55,7 +56,7 @@ def main():
     event_dict = {
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
-        "screen":{"width":width, "height":height},
+        "Screen":{"Width":width, "Height":height},
         "FPS": {
             "Fixed": 60,
             "Real": None,
@@ -132,7 +133,7 @@ def main():
             # ----------------------------------------------------------------------------
             # GESTIONA LOS EVENTOS Y SU REINICIO
             #event(event_dict, engine_screen_surface, objects_list)
-            event(event_dict)
+            event(event_dict,engine_window,default_screen_surface) # AGREGAR engine_window,default_screen_surface A OBJECT_LIST?
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
             # f = []
@@ -270,8 +271,8 @@ def main():
             # # FPS
             # ----------------------------------------------------------------------------
             fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
-            width  = event_dict["screen"]["width"]
-            height = event_dict["screen"]["height"]
+            width  = event_dict["Screen"]["Width"]
+            height = event_dict["Screen"]["Height"]
             default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
             # ----------------------------------------------------------------------------
 

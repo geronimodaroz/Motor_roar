@@ -1,6 +1,7 @@
 import pygame as pg
 import ctypes
 from ctypes import wintypes  # Importar wintypes correctamente
+#from ctypes import wintypes, byref, windll
 
 from scripts.surface_reposition import SurfaceReposition
 #from scripts.fonts import Font
@@ -24,8 +25,15 @@ class EngineWindow():
         y = 0 #20
         w = presurface.get_width() #- 40
         h = presurface.get_height() #- 40
-        self.rects_updates(presurface,x,y,w,h)
+        #self.rects_updates(presurface,x,y,w,h)
         self.color = (120,120,120)
+        # ----------------------------------------------------------------------------
+
+        # Inicializar scale_modifier
+        # ----------------------------------------------------------------------------
+        self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
+        self.scale_modifier_bar = 30
+        self.scale_modifier_margin = 5
         # ----------------------------------------------------------------------------
 
 
@@ -33,9 +41,22 @@ class EngineWindow():
         # ----------------------------------------------------------------------------
         # ESTO TAL CEZ NO SEA NECESARIO!
         # Obtener el identificador de la ventana de Pygame (solo en Windows)
-        window_id = pg.display.get_wm_info()["window"]
+        self.window_id = pg.display.get_wm_info()["window"]
         # Habilitar que la ventana sea movible (solo en Windows)
-        ctypes.windll.user32.SetWindowLongW(window_id, -16, ctypes.windll.user32.GetWindowLongW(window_id, -16) | 0x00080000)
+        ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
+        self.moving = False
+        self.initial_mouse_x = 0
+        self.initial_mouse_y = 0
+        self.initial_window_left = 0
+        self.initial_window_top = 0
+        # ----------------------------------------------------------------------------
+
+        self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
+
+
+        # Llamar a rects_updates para inicializar rectángulos
+        # ----------------------------------------------------------------------------
+        self.rects_updates(presurface,x,y,w,h)
         # ----------------------------------------------------------------------------
 
         
@@ -47,7 +68,7 @@ class EngineWindow():
         #fps_text = Font().surf_font_default(str(int(self.clock.get_fps())), (250, 250, 250))
 
 
-        self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
+        
 
 
         # Crear ventanas y objetos
@@ -92,32 +113,71 @@ class EngineWindow():
 
         # view_rect 
         # ----------------------------------------------------------------------------
-        margin = 20
+        bar = self.scale_modifier_bar
+        margin = self.scale_modifier_margin
         x = margin
-        y = margin
+        y = bar #margin
         w = self.rect.width - (margin*2)
-        h = self.rect.height - (margin*2)
+        h = self.rect.height - (bar) - (margin)
         self.view_rect = pg.rect.Rect(x,y,w,h)
         self.view_surface_rect = self.view_rect.copy()
         self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
         # ----------------------------------------------------------------------------
 
+        # recreo los rects de los objetos dentro de engine window
+        # ----------------------------------------------------------------------------
+        if self.objects_list:
+            for obj in self.objects_list:
+                obj.rects_updates(self.view_surface, force = True)
+        # ----------------------------------------------------------------------------
     
 
     def collision_detector(self,event_dict):
 
+        # ----------------------------------------------------------------------------
+        mouse_x, mouse_y = event_dict["Mouse"]["Position"] # Obtención de la posición del ratón
+        # ----------------------------------------------------------------------------
+
         def init():
-        
-            # ----------------------------------------------------------------------------
-            x,y = event_dict["Mouse"]["Position"] # Obtención de la posición del ratón
-            # ----------------------------------------------------------------------------
 
-            if self.view_rect.collidepoint(x, y):
-
+            if self.view_rect.collidepoint(mouse_x, mouse_y):
                 _comprobation_section_view_edit()
+            elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y):
+                _comprobation_section_scale_modifier()
 
-            elif self.scale_modifier_rect.collidepoint(x, y):
-                pass
+
+        def _comprobation_section_scale_modifier():
+
+            event_dict["EditableObjects"]["clickable"].append(self.scale_modifier)
+
+            margin = self.scale_modifier_margin
+            bar = self.scale_modifier_bar
+            x, y, w, h = self.scale_modifier_rect
+            hit_top = mouse_y <= y + bar
+            hit_down = mouse_y >= y + h - margin
+            hit_left = mouse_x <= x + margin
+            hit_right = mouse_x >= x + w - margin
+            self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
+
+
+            if hit_down and hit_left:
+                self.scale_modifier_hit_down = self.scale_modifier_hit_left = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENESW
+            elif hit_down and hit_right:
+                self.scale_modifier_hit_down = self.scale_modifier_hit_right = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENWSE
+            elif hit_top:
+                self.scale_modifier_hit_top = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_ARROW
+            elif hit_down:
+                self.scale_modifier_hit_down = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZENS
+            elif hit_left:
+                self.scale_modifier_hit_left = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
+            elif hit_right:
+                self.scale_modifier_hit_right = True
+                event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
 
 
 
@@ -213,7 +273,63 @@ class EngineWindow():
             #         pre_pos_methods(event_dict["EditableObjects"]["selected"],"pre_", event_dict, code = "selected")
             
         init()
-       
+    
+    def scale_modifier(self,event_dict,code = None):
+
+        if code == "clickable":
+            pass
+
+        if code == "selected":
+
+            #print(self.scale_modifier_hit_top,self.scale_modifier_hit_down,self.scale_modifier_hit_right,self.scale_modifier_hit_left)
+
+
+            if self.scale_modifier_hit_top:
+
+                # arreglas event_dict["Mouse"]["ClickLeftDown"] y event_dict["Mouse"]["ClickLeftUp"]
+                class POINT(ctypes.Structure):
+                    _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+
+                def get_global_mouse_position():
+                    point = POINT()
+                    ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
+                    return point.x, point.y
+                
+                # Detectar el clic izquierdo y activar el movimiento
+                if event_dict["Mouse"]["ClickLeftDown"]:
+                    self.moving = True
+                    # Guardar la posición inicial del ratón en coordenadas globales
+                    self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
+                    # Capturar la posición inicial de la ventana
+                    rect = wintypes.RECT()
+                    ctypes.windll.user32.GetWindowRect(self.window_id, ctypes.byref(rect))
+                    self.initial_window_left = rect.left
+                    self.initial_window_top = rect.top
+
+                elif event_dict["Mouse"]["ClickLeftUp"]:
+                    self.moving = False
+
+                if self.moving:
+                    # Obtener la posición actual del ratón en coordenadas globales
+                    current_mouse_x, current_mouse_y = get_global_mouse_position()
+                    # Calcular el desplazamiento del ratón
+                    delta_x = current_mouse_x - self.initial_mouse_x
+                    delta_y = current_mouse_y - self.initial_mouse_y
+                    # Mover la ventana basándonos en el desplazamiento
+
+                    width = event_dict["Screen"]["Width"] 
+                    height = event_dict["Screen"]["Height"]
+                    ctypes.windll.user32.MoveWindow(self.window_id, self.initial_window_left + delta_x, self.initial_window_top + delta_y, width, height, True)
+            
+            elif self.scale_modifier_hit_down:
+                pass
+            if self.scale_modifier_hit_right:
+                pass
+            elif self.scale_modifier_hit_left:
+                pass
+
+
+
 
     def edit(self,event_dict,code = None):
 
