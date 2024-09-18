@@ -14,7 +14,8 @@ def key_state(keys, key_event_list):
 
 
 #def event(event_dict, screen, objects_list):
-def event(event_dict,engine_window,default_screen_surface):
+#def event(event_dict,engine_window,default_screen_surface):
+def event(event_dict):
     """Gestiona y reinicia los eventos"""
 
     # Reinicio variables
@@ -45,19 +46,14 @@ def event(event_dict,engine_window,default_screen_surface):
         # Detectar redimensionamiento de la ventana
         elif event.type == pg.VIDEORESIZE:
             width, height = event.w, event.h
+            print("hola")
+            # event_dict["Screen"]["Width"]  = width
+            # event_dict["Screen"]["Height"] = height
 
-            event_dict["Screen"]["Width"]  = width
-            event_dict["Screen"]["Height"] = height
+            # engine_window.rect.w = 0
+            # engine_window.rect.h = 0
+            # engine_window.rects_updates(default_screen_surface,w=width,h=height,force = True)
 
-            engine_window.rect.w = 0
-            engine_window.rect.h = 0
-            engine_window.rects_updates(default_screen_surface,w=width,h=height,force = True)
-
-            #screen = pg.display.set_mode((width, height), pg.RESIZABLE)
-            #print(f"Nuevo tamaño de la ventana: {width}x{height}")    
-
-            #for obj in objects_list:
-            #    obj.rects_updates(screen, force = True) # DEBERIAMOS PASAR AQUI LA SUPERFICIE DE LA PANTALLA? (COMO PRESURFACE)
             
         # Eventos de teclas
         if event.type == pg.KEYDOWN or event.type == pg.KEYUP:  # Tecla hacia abajo o arriba

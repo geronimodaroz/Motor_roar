@@ -2,6 +2,8 @@ import os
 import sys
 import time
 import traceback
+import ctypes
+from ctypes import wintypes
 
 import pygame as pg
 
@@ -23,9 +25,15 @@ def main():
     width, height = 800, 600
     #default_screen_surface = pg.display.set_mode((width, height), pg.RESIZABLE)
 
-    default_screen_surface = pg.display.set_mode((width, height),  pg.NOFRAME)
-    pg.display.set_caption("Roar!!")
+    default_screen_surface = pg.display.set_mode((width, height), pg.DOUBLEBUF | pg.NOFRAME)
+    window_id = pg.display.get_wm_info()["window"]
+    # Habilitar que la ventana sea movible (solo en Windows)
+    #ctypes.windll.user32.SetWindowLongW(window_id, -16, ctypes.windll.user32.GetWindowLongW(window_id, -16) | 0x00080000)
 
+    
+
+
+    pg.display.set_caption("Roar!!")
 
    
 
@@ -129,11 +137,15 @@ def main():
 
         try: # capturo errores 
 
+            
+
             #Bucle de Eventos
             # ----------------------------------------------------------------------------
             # GESTIONA LOS EVENTOS Y SU REINICIO
             #event(event_dict, engine_screen_surface, objects_list)
-            event(event_dict,engine_window,default_screen_surface) # AGREGAR engine_window,default_screen_surface A OBJECT_LIST?
+            #event(event_dict,engine_window,default_screen_surface) # AGREGAR engine_window,default_screen_surface A OBJECT_LIST?
+            event(event_dict)
+
             #print(event_dict["keyPressed"]["Modifiers"])
             #print(event_dict["keyPressed"]["Control"])
             # f = []
@@ -142,7 +154,9 @@ def main():
             # print(f)
             #print(event_dict["keyPressed"]["shortcuts"])
             # ----------------------------------------------------------------------------
-            
+
+            save_width = event_dict["Screen"]["Width"] 
+            save_height = event_dict["Screen"]["Height"]
             
 
             # Obtener posición del mouse
@@ -164,6 +178,8 @@ def main():
                 # ----------------------------------------------------------------------------
                 save_clickable_list = event_dict["EditableObjects"]["clickable"].copy()
                 del event_dict["EditableObjects"]["clickable"][depth_number+1:]
+
+                
 
                 if engine_window.rect.collidepoint(x, y):
                      engine_window.collision_detector(event_dict)
@@ -262,7 +278,7 @@ def main():
                 pg.mouse.set_cursor(event_dict["Mouse"]["Icon"])
             # ----------------------------------------------------------------------------
             
-            # Dibuja el fondo
+
             default_screen_surface.fill((50,50,50)) # limpia escena 
 
 
@@ -273,15 +289,8 @@ def main():
             fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
             width  = event_dict["Screen"]["Width"]
             height = event_dict["Screen"]["Height"]
-            default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
+            #default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
             # ----------------------------------------------------------------------------
-
-            
-            # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
-            # if objects_list:
-            #     for obj in objects_list:
-            #         obj.draw(event_dict)
-
 
             
             # Actualiza la pantalla

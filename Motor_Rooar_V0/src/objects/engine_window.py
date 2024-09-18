@@ -44,11 +44,28 @@ class EngineWindow():
         self.window_id = pg.display.get_wm_info()["window"]
         # Habilitar que la ventana sea movible (solo en Windows)
         ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
-        self.moving = False
+        #self.moving = False
         self.initial_mouse_x = 0
         self.initial_mouse_y = 0
         self.initial_window_left = 0
         self.initial_window_top = 0
+        self.initial_window_width = 0
+        self.initial_window_height = 0
+
+        self.window_left = 0
+        self.window_top = 0
+        self.window_width = 0
+        self.window_height = 0
+
+        self.window_right = 0
+
+        self.save_global_mouse_x = 0
+        self.save_global_mouse_y = 0
+
+        # Obtener el "device context" (DC) de la pantalla principal
+        self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
+
+
         # ----------------------------------------------------------------------------
 
         self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
@@ -56,17 +73,8 @@ class EngineWindow():
 
         # Llamar a rects_updates para inicializar rectángulos
         # ----------------------------------------------------------------------------
-        self.rects_updates(presurface,x,y,w,h)
+        self.rects_updates(presurface,w,h)
         # ----------------------------------------------------------------------------
-
-        
-        # ----------------------------------------------------------------------------
-
-        # Inicializar el reloj y configurar FPS
-        #-----------------------------------------------------------------------------
-        #self.clock = pg.time.Clock()
-        #fps_text = Font().surf_font_default(str(int(self.clock.get_fps())), (250, 250, 250))
-
 
         
 
@@ -86,25 +94,44 @@ class EngineWindow():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
+    def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
+        """
+        Actualiza las propiedades del rectángulo del objeto.
 
-    def rects_updates(self, presurface, x=0, y=0, w=0, h=0 , force = False):
+        Parámetros:
+            presurface: Superficie previa (no utilizada directamente en este código).
+            x (int): Nueva posición en el eje X (opcional). ES 0, NO DEBE CAMBIARSE!
+            y (int): Nueva posición en el eje Y (opcional). ES 0, NO DEBE CAMBIARSE!
+            w (int): Nuevo ancho (opcional).
+            h (int): Nueva altura (opcional).
+            resize (bool): Indica si se debe redimensionar el rectángulo con los valores proporcionados.
+            force (bool): Si es True, fuerza la actualización aunque no se cambien x, y, w, h.
+        """
 
-        if not any([x, y, w, h]) and force == False:
+        # Si no hay valores para x, y, w, h y no se fuerza la actualización, salir
+        if not any([w, h]) and not force:
             return
         
-        # presurface - AQUI PRESURFACE NO ES NECESARIA PERO LA PONGO POR COHERENCIA
+        # presurface 
         # ----------------------------------------------------------------------------
         self.presurface = presurface
         # ----------------------------------------------------------------------------
-        # Rect
-        # ----------------------------------------------------------------------------
-        self.rect.x += x
-        self.rect.y += y
-        self.rect.width += w
-        self.rect.height += h
-        # ----------------------------------------------------------------------------
         
-        #self.rect = pg.rect.Rect(x,y,w,h)
+        # Si hay valores de x, y, w, h y resize es True, actualizar las dimensiones del rectángulo
+        if resize:
+            if w != 0:
+                self.rect.w = w
+            if h != 0:
+                self.rect.h = h
+        else:
+            # Rect
+            # ----------------------------------------------------------------------------
+            self.rect.x = 0
+            self.rect.y = 0
+            self.rect.width += w
+            self.rect.height += h
+            # ----------------------------------------------------------------------------
+        
 
         # scale_modifier_rect 
         # ----------------------------------------------------------------------------
@@ -115,12 +142,15 @@ class EngineWindow():
         # ----------------------------------------------------------------------------
         bar = self.scale_modifier_bar
         margin = self.scale_modifier_margin
+
         x = margin
         y = bar #margin
         w = self.rect.width - (margin*2)
         h = self.rect.height - (bar) - (margin)
+
         self.view_rect = pg.rect.Rect(x,y,w,h)
         self.view_surface_rect = self.view_rect.copy()
+        
         self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
         # ----------------------------------------------------------------------------
 
@@ -130,7 +160,6 @@ class EngineWindow():
             for obj in self.objects_list:
                 obj.rects_updates(self.view_surface, force = True)
         # ----------------------------------------------------------------------------
-    
 
     def collision_detector(self,event_dict):
 
@@ -145,7 +174,6 @@ class EngineWindow():
             elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y):
                 _comprobation_section_scale_modifier()
 
-
         def _comprobation_section_scale_modifier():
 
             event_dict["EditableObjects"]["clickable"].append(self.scale_modifier)
@@ -158,6 +186,19 @@ class EngineWindow():
             hit_left = mouse_x <= x + margin
             hit_right = mouse_x >= x + w - margin
             self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
+
+
+
+            # ENTREGA POSICION ACTUAL DEL MOUSE
+            # ----------------------------------------------------------------------------
+            class POINT(ctypes.Structure):
+                _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+            def get_global_mouse_position():
+                point = POINT()
+                ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
+                return point.x, point.y
+            self.save_global_mouse_x,self.save_global_mouse_y = get_global_mouse_position()
+            # ----------------------------------------------------------------------------
 
 
             if hit_down and hit_left:
@@ -178,8 +219,6 @@ class EngineWindow():
             elif hit_right:
                 self.scale_modifier_hit_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
-
-
 
         def _comprobation_section_view_edit():
 
@@ -278,56 +317,248 @@ class EngineWindow():
 
         if code == "clickable":
             pass
-
+        
         if code == "selected":
 
-            #print(self.scale_modifier_hit_top,self.scale_modifier_hit_down,self.scale_modifier_hit_right,self.scale_modifier_hit_left)
+            class POINT(ctypes.Structure):
+                _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+
+            def get_global_mouse_position():
+                point = POINT()
+                ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
+                return point.x, point.y
+            
+            # Detectar el clic izquierdo y activar el movimiento
+            if event_dict["Mouse"]["ClickLeftDown"]:
+                self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
+                rect = wintypes.RECT()
+                ctypes.windll.user32.GetWindowRect(self.window_id, ctypes.byref(rect))
+                # self.initial_window_left = rect.left
+                # self.initial_window_top = rect.top
+                # self.initial_window_width = rect.right - rect.left
+                # self.initial_window_height = rect.bottom - rect.top
+
+                # self.window_right = rect.right
+
+                self.window_left = rect.left
+                self.window_top = rect.top
+                self.window_width = rect.right - rect.left
+                self.window_height = rect.bottom - rect.top
+
+            displacement_x,displacement_y = 0,0
+
+            if (self.save_global_mouse_x,self.save_global_mouse_y) != get_global_mouse_position():
+                x,y = get_global_mouse_position()
+                displacement_x = x - self.save_global_mouse_x
+                displacement_y = y - self.save_global_mouse_y
+                self.save_global_mouse_x,self.save_global_mouse_y = get_global_mouse_position()
 
 
             if self.scale_modifier_hit_top:
 
-                # arreglas event_dict["Mouse"]["ClickLeftDown"] y event_dict["Mouse"]["ClickLeftUp"]
-                class POINT(ctypes.Structure):
-                    _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+                self.window_left += displacement_x
+                self.window_top += displacement_y
 
-                def get_global_mouse_position():
-                    point = POINT()
-                    ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
-                    return point.x, point.y
-                
-                # Detectar el clic izquierdo y activar el movimiento
-                if event_dict["Mouse"]["ClickLeftDown"]:
-                    self.moving = True
-                    # Guardar la posición inicial del ratón en coordenadas globales
-                    self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
-                    # Capturar la posición inicial de la ventana
-                    rect = wintypes.RECT()
-                    ctypes.windll.user32.GetWindowRect(self.window_id, ctypes.byref(rect))
-                    self.initial_window_left = rect.left
-                    self.initial_window_top = rect.top
+                x = self.window_left
+                y = self.window_top
+                w = self.window_width
+                h = self.window_height
 
-                elif event_dict["Mouse"]["ClickLeftUp"]:
-                    self.moving = False
+                ctypes.windll.user32.MoveWindow(self.window_id,x,y,w,h, True)
 
-                if self.moving:
-                    # Obtener la posición actual del ratón en coordenadas globales
-                    current_mouse_x, current_mouse_y = get_global_mouse_position()
-                    # Calcular el desplazamiento del ratón
-                    delta_x = current_mouse_x - self.initial_mouse_x
-                    delta_y = current_mouse_y - self.initial_mouse_y
-                    # Mover la ventana basándonos en el desplazamiento
 
-                    width = event_dict["Screen"]["Width"] 
-                    height = event_dict["Screen"]["Height"]
-                    ctypes.windll.user32.MoveWindow(self.window_id, self.initial_window_left + delta_x, self.initial_window_top + delta_y, width, height, True)
-            
             elif self.scale_modifier_hit_down:
-                pass
-            if self.scale_modifier_hit_right:
-                pass
-            elif self.scale_modifier_hit_left:
-                pass
 
+
+                # Validar displacement_y
+                if displacement_y is None:
+                    raise ValueError("displacement_y no puede ser None")
+                
+                # Cambiar las dimensiones de la ventana
+                self.window_height += displacement_y
+
+                x = self.window_left
+                y = self.window_top
+                w = self.window_width
+                h = max(100, self.window_height)
+
+                # Obtener el contexto de dispositivo (DC) de la pantalla
+                self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
+
+                # Crear un contexto de memoria (buffer)
+                mem_dc = ctypes.windll.gdi32.CreateCompatibleDC(self.hdc)
+                mem_bitmap = ctypes.windll.gdi32.CreateCompatibleBitmap(self.hdc, w, h)
+                ctypes.windll.gdi32.SelectObject(mem_dc, mem_bitmap)
+
+                # Ancho de las líneas del contorno
+                LINE_WIDTH = 3
+                COLOR = 0x00FF0000  # Rojo para mayor visibilidad
+
+                # Usar "LockWindowUpdate" para bloquear la ventana antes de dibujar
+                #ctypes.windll.user32.LockWindowUpdate(0)
+                ctypes.windll.user32.LockWindowUpdate(self.window_id)
+
+                try:
+                    # Dibujar las líneas del contorno en el contexto de memoria
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, w, LINE_WIDTH, COLOR)  # Línea superior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, h - LINE_WIDTH, w, LINE_WIDTH, COLOR)  # Línea inferior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, LINE_WIDTH, h, COLOR)  # Línea izquierda
+                    ctypes.windll.gdi32.PatBlt(mem_dc, w - LINE_WIDTH, 0, LINE_WIDTH, h, COLOR)  # Línea derecha
+
+                    # Copiar solo las líneas del buffer a la pantalla
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, w, LINE_WIDTH, mem_dc, 0, 0, 0x00CC0020)  # Línea superior
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y + h - LINE_WIDTH, w, LINE_WIDTH, mem_dc, 0, h - LINE_WIDTH, 0x00CC0020)  # Línea inferior
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, LINE_WIDTH, h, mem_dc, 0, 0, 0x00CC0020)  # Línea izquierda
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x + w - LINE_WIDTH, y, LINE_WIDTH, h, mem_dc, w - LINE_WIDTH, 0, 0x00CC0020)  # Línea derecha
+
+                    # Invalidar las áreas donde se dibujaron las líneas para forzar la actualización
+                    if displacement_y != 0:
+                        #rect = wintypes.RECT(x, y, x + w, y + h)
+                        #ctypes.windll.user32.InvalidateRect(0, ctypes.byref(rect), True)
+                        ctypes.windll.user32.InvalidateRect(0, None, True)
+
+                finally:
+                    # Liberar la ventana para que vuelva a actualizarse
+                    ctypes.windll.user32.LockWindowUpdate(0)
+                    # Liberar el DC de la pantalla después de dibujar
+                    #ctypes.windll.user32.ReleaseDC(self.window_id, self.hdc)
+                    ctypes.windll.user32.ReleaseDC(0, self.hdc)
+                    # Liberar el contexto de memoria
+                    ctypes.windll.gdi32.DeleteObject(mem_bitmap)
+                    ctypes.windll.gdi32.DeleteDC(mem_dc)
+
+                event_dict["Screen"]["Height"] = h
+
+            
+            # Modificar el ancho de la ventana hacia la derecha y dibujar líneas
+            if self.scale_modifier_hit_right:
+
+                if displacement_x is None:
+                    raise ValueError("displacement_x no puede ser None")
+                
+                # Definir las constantes
+                LINE_WIDTH = 3
+                COLOR = 0x00FF0000  # Rojo para mayor visibilidad
+
+                # Actualizar el ancho de la ventana
+                self.window_width += displacement_x
+
+                x = self.window_left
+                y = self.window_top
+                w = max(100, self.window_width)
+                h = self.window_height
+
+                # Obtener el contexto de dispositivo (DC) de la pantalla
+                self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
+
+                # Crear un contexto de memoria (buffer)
+                mem_dc = ctypes.windll.gdi32.CreateCompatibleDC(self.hdc)
+                mem_bitmap = ctypes.windll.gdi32.CreateCompatibleBitmap(self.hdc, w, h)
+                ctypes.windll.gdi32.SelectObject(mem_dc, mem_bitmap)
+
+                # Usar "LockWindowUpdate" para bloquear la ventana antes de dibujar
+                #ctypes.windll.user32.LockWindowUpdate(0)
+                ctypes.windll.user32.LockWindowUpdate(self.window_id)
+
+                try:
+                    # Dibujar las líneas del contorno en el contexto de memoria
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, w, LINE_WIDTH, COLOR)  # Línea superior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, h - LINE_WIDTH, w, LINE_WIDTH, COLOR)  # Línea inferior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, LINE_WIDTH, h, COLOR)  # Línea izquierda
+                    ctypes.windll.gdi32.PatBlt(mem_dc, w - LINE_WIDTH, 0, LINE_WIDTH, h, COLOR)  # Línea derecha
+
+                    # Copiar las líneas al contexto de pantalla
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, w, LINE_WIDTH, mem_dc, 0, 0, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y + h - LINE_WIDTH, w, LINE_WIDTH, mem_dc, 0, h - LINE_WIDTH, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, LINE_WIDTH, h, mem_dc, 0, 0, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x + w - LINE_WIDTH, y, LINE_WIDTH, h, mem_dc, w - LINE_WIDTH, 0, 0x00CC0020)
+
+                    # Invalidar las áreas para forzar la actualización
+                    if displacement_x!=0 and displacement_y==0:
+                        ctypes.windll.user32.InvalidateRect(0, None, True)
+
+                finally:
+                    ctypes.windll.user32.LockWindowUpdate(0)
+                    ctypes.windll.user32.ReleaseDC(0, self.hdc)
+                    ctypes.windll.gdi32.DeleteObject(mem_bitmap)
+                    ctypes.windll.gdi32.DeleteDC(mem_dc)
+
+                # Actualizar el diccionario de eventos
+                event_dict["Screen"]["Width"] = w
+
+            # Modificar el ancho de la ventana hacia la izquierda y dibujar líneas
+            elif self.scale_modifier_hit_left:
+
+                if displacement_x is None:
+                    raise ValueError("displacement_x no puede ser None")
+
+                # Definir las constantes
+                LINE_WIDTH = 3
+                COLOR = 0x00FF0000  # Rojo para mayor visibilidad
+
+                # Actualizar la posición y el ancho de la ventana
+                self.window_left += displacement_x
+                self.window_width -= displacement_x
+
+                x = self.window_left
+                y = self.window_top
+                w = max(100, self.window_width)
+                h = self.window_height
+
+                # Obtener el contexto de dispositivo (DC) de la pantalla
+                self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
+
+                # Crear un contexto de memoria (buffer)
+                mem_dc = ctypes.windll.gdi32.CreateCompatibleDC(self.hdc)
+                mem_bitmap = ctypes.windll.gdi32.CreateCompatibleBitmap(self.hdc, w, h)
+                ctypes.windll.gdi32.SelectObject(mem_dc, mem_bitmap)
+
+                # Usar "LockWindowUpdate" para bloquear la ventana antes de dibujar
+                #ctypes.windll.user32.LockWindowUpdate(0)
+                ctypes.windll.user32.LockWindowUpdate(self.window_id)
+
+                try:
+                    # Dibujar las líneas del contorno en el contexto de memoria
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, w, LINE_WIDTH, COLOR)  # Línea superior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, h - LINE_WIDTH, w, LINE_WIDTH, COLOR)  # Línea inferior
+                    ctypes.windll.gdi32.PatBlt(mem_dc, 0, 0, LINE_WIDTH, h, COLOR)  # Línea izquierda
+                    ctypes.windll.gdi32.PatBlt(mem_dc, w - LINE_WIDTH, 0, LINE_WIDTH, h, COLOR)  # Línea derecha
+
+                    # Copiar las líneas al contexto de pantalla
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, w, LINE_WIDTH, mem_dc, 0, 0, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y + h - LINE_WIDTH, w, LINE_WIDTH, mem_dc, 0, h - LINE_WIDTH, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x, y, LINE_WIDTH, h, mem_dc, 0, 0, 0x00CC0020)
+                    ctypes.windll.gdi32.BitBlt(self.hdc, x + w - LINE_WIDTH, y, LINE_WIDTH, h, mem_dc, w - LINE_WIDTH, 0, 0x00CC0020)
+
+                    # Invalidar las áreas para forzar la actualización
+                    if displacement_x!=0 and displacement_y==0:
+                        ctypes.windll.user32.InvalidateRect(0, None, True)
+
+                finally:
+                    ctypes.windll.user32.LockWindowUpdate(0)
+                    ctypes.windll.user32.ReleaseDC(0, self.hdc)
+                    ctypes.windll.gdi32.DeleteObject(mem_bitmap)
+                    ctypes.windll.gdi32.DeleteDC(mem_dc)
+
+                # Actualizar el diccionario de eventos
+                event_dict["Screen"]["Width"] = w
+
+
+
+
+
+
+            if event_dict["Mouse"]["ClickLeftUp"]:
+                #self.window_id = pg.display.get_wm_info()["window"] # esto no es necesario?
+
+                #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
+                ctypes.windll.user32.MoveWindow(self.window_id, x, y, w, h, True)
+                w  = event_dict["Screen"]["Width"]
+                h = event_dict["Screen"]["Height"]
+                pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
+                self.window_id = pg.display.get_wm_info()["window"]
+                self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]    
 
 
 
@@ -369,24 +600,23 @@ class EngineWindow():
 
     def draw(self,event_dict):
 
-        self.view_surface.fill((50,50,50)) # limpia escena 
+        #self.view_surface.fill((50,50,50)) # limpia escena 
 
 
         pg.draw.rect(self.presurface,self.color,self.view_rect)
 
+        #pg.draw.rect(self.presurface,(255,0,0),self.rect,1)
 
-        # FPS
-        # ----------------------------------------------------------------------------
-        # fps_text = Font.surf_font_default(str(int(self.clock.get_fps())), (250, 250, 250))
-        # width  = event_dict["screen"]["width"]
-        # height = event_dict["screen"]["height"]
-        # self.view_surface.blit(fps_text, (width - fps_text.get_width() - 50,height - fps_text.get_height() -50)) # fps
-        # # ----------------------------------------------------------------------------
+        #pg.draw.rect(self.presurface,(255,0,0),self.view_rect,1)
+
+
 
         #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
         if self.objects_list:
             for obj in self.objects_list:
                 obj.draw(event_dict)
+
+        
 
 
 
