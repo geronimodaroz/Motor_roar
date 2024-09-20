@@ -15,7 +15,7 @@ def key_state(keys, key_event_list):
 
 #def event(event_dict, screen, objects_list):
 #def event(event_dict,engine_window,default_screen_surface):
-def event(event_dict):
+def event(events,event_dict):
     """Gestiona y reinicia los eventos"""
 
     # Reinicio variables
@@ -38,7 +38,7 @@ def event(event_dict):
 
     # Bucle de eventos
     # ----------------------------------------------------------------------------
-    for event in pg.event.get():
+    for event in events:
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()

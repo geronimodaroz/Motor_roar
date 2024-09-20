@@ -81,7 +81,7 @@ class EngineWindow():
 
         # Crear ventanas y objetos
         from objects.windows import Window
-        window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 500, 500, 1)
+        window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
         self.objects_list.append(window)  # Agregar el objeto window a la lista
 
         from instances.Objects_creator import ObjectsCreator
@@ -333,12 +333,6 @@ class EngineWindow():
                 self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
                 rect = wintypes.RECT()
                 ctypes.windll.user32.GetWindowRect(self.window_id, ctypes.byref(rect))
-                # self.initial_window_left = rect.left
-                # self.initial_window_top = rect.top
-                # self.initial_window_width = rect.right - rect.left
-                # self.initial_window_height = rect.bottom - rect.top
-
-                # self.window_right = rect.right
 
                 self.window_left = rect.left
                 self.window_top = rect.top
@@ -364,15 +358,12 @@ class EngineWindow():
                 w = self.window_width
                 h = self.window_height
 
-                ctypes.windll.user32.MoveWindow(self.window_id,x,y,w,h, True)
+                #ctypes.windll.user32.MoveWindow(self.window_id,x,y,w,h, True)
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE para no cambiar el tamaño
+
 
 
             elif self.scale_modifier_hit_down:
-
-
-                # Validar displacement_y
-                if displacement_y is None:
-                    raise ValueError("displacement_y no puede ser None")
                 
                 # Cambiar las dimensiones de la ventana
                 self.window_height += displacement_y
@@ -432,9 +423,6 @@ class EngineWindow():
             
             # Modificar el ancho de la ventana hacia la derecha y dibujar líneas
             if self.scale_modifier_hit_right:
-
-                if displacement_x is None:
-                    raise ValueError("displacement_x no puede ser None")
                 
                 # Definir las constantes
                 LINE_WIDTH = 3
@@ -489,12 +477,15 @@ class EngineWindow():
             # Modificar el ancho de la ventana hacia la izquierda y dibujar líneas
             elif self.scale_modifier_hit_left:
 
-                if displacement_x is None:
-                    raise ValueError("displacement_x no puede ser None")
-
                 # Definir las constantes
                 LINE_WIDTH = 3
                 COLOR = 0x00FF0000  # Rojo para mayor visibilidad
+
+                # Calculate the new width and ensure it doesn't go below 100
+                new_width = self.window_width - displacement_x
+                if new_width < 100:
+                    # Adjust the displacement to ensure the width is not less than 100
+                    displacement_x = self.window_width - 100
 
                 # Actualizar la posición y el ancho de la ventana
                 self.window_left += displacement_x
@@ -504,8 +495,9 @@ class EngineWindow():
                 y = self.window_top
                 w = max(100, self.window_width)
                 h = self.window_height
+                
 
-                # Obtener el contexto de dispositivo (DC) de la pantalla
+                #Obtener el contexto de dispositivo (DC) de la pantalla
                 self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
 
                 # Crear un contexto de memoria (buffer)
@@ -532,6 +524,7 @@ class EngineWindow():
 
                     # Invalidar las áreas para forzar la actualización
                     if displacement_x!=0 and displacement_y==0:
+                        #ctypes.windll.user32.InvalidateRect(0, self.window_id, True)
                         ctypes.windll.user32.InvalidateRect(0, None, True)
 
                 finally:

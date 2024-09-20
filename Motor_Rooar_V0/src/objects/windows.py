@@ -56,7 +56,7 @@ class Window:
 
 
         # Cargar imagen
-        self.image = pg.image.load('C:/Users/Usuario/Desktop/med.png')
+        self.image = pg.image.load('C:/Users/Usuario/Desktop/pygame.jpg')
 
 
         # prufundidad del objeto -1
@@ -474,7 +474,7 @@ class Window:
         # Dibuja la imagen en la pantalla
         x = self.curtain_rect.x 
         y = self.curtain_rect.y 
-        #self.view_surface.blit(self.image,(x,y))
+        self.view_surface.blit(self.image,(x,y))
 
         x = self.view_rect.x - 4
         y = self.view_rect.y - 4
@@ -963,9 +963,9 @@ class WindowBase():
 
 
         # Dibuja la imagen en la pantalla
-        # x = self.curtain_rect.x 
-        # y = self.curtain_rect.y 
-        # self.view_surface.blit(self.image,(x,y))
+        #x = self.curtain_rect.x 
+        #y = self.curtain_rect.y 
+        #self.view_surface.blit(self.image,(x,y))
 
         x = self.view_rect.x - 4
         y = self.view_rect.y - 4
