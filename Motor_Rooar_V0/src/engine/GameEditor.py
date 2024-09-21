@@ -7,7 +7,11 @@ from ctypes import wintypes
 
 import pygame as pg
 
+
+
+
 # Inicializar Pygame    
+"""Esta version funciona con Pygame 2.5.2"""
 pg.init()
 
 # Añadir la ruta al módulo de scripts
@@ -25,7 +29,8 @@ def main():
     width, height = 800, 600
     #default_screen_surface = pg.display.set_mode((width, height), pg.RESIZABLE)
 
-    default_screen_surface = pg.display.set_mode((width, height), pg.DOUBLEBUF | pg.NOFRAME)
+    #default_screen_surface = pg.display.set_mode((width, height), pg.DOUBLEBUF | pg.NOFRAME)
+    default_screen_surface = pg.display.set_mode((width, height), pg.NOFRAME)
     window_id = pg.display.get_wm_info()["window"]
     # Habilitar que la ventana sea movible (solo en Windows)
     #ctypes.windll.user32.SetWindowLongW(window_id, -16, ctypes.windll.user32.GetWindowLongW(window_id, -16) | 0x00080000)
@@ -137,9 +142,17 @@ def main():
 
         try: # capturo errores 
 
+            
+
             # Solo procesar eventos si hay alguno
             events = pg.event.get()
             if events:
+
+                # keys = pg.key.get_pressed()
+
+                # if any(keys[i] for i in range(len(keys))):
+                #     print("existe true")
+
 
                 #Bucle de Eventos
                 # ----------------------------------------------------------------------------
@@ -157,8 +170,6 @@ def main():
                 #print(event_dict["keyPressed"]["shortcuts"])
                 # ----------------------------------------------------------------------------
 
-                save_width = event_dict["Screen"]["Width"] 
-                save_height = event_dict["Screen"]["Height"]
                 
 
                 # Obtener posición del mouse
@@ -291,7 +302,7 @@ def main():
                 fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
                 width  = event_dict["Screen"]["Width"]
                 height = event_dict["Screen"]["Height"]
-                #default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
+                default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
                 # ----------------------------------------------------------------------------
 
                 

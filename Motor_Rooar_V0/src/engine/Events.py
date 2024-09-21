@@ -11,6 +11,8 @@ def modifiers_key_state():
 def key_state(keys, key_event_list):
     """Devuelve una lista con los nombres o caracteres de las teclas presionadas."""
     return [event for key, pressed in enumerate(keys) if pressed for event in key_event_list if event['scancode'] == key]
+    #return [event for event in key_event_list if event['scancode'] in range(len(keys)) and keys[event['scancode']]]
+
 
 
 #def event(event_dict, screen, objects_list):
@@ -60,6 +62,8 @@ def event(events,event_dict):
             # ----------------------------------------------------------------------------
             #TENER EN CUENTA LAS CARACTERÍSTICAS DEL TECLADO AL MOMENTO DE DETECTAR EVENTOS DE TECLAS
             # ----------------------------------------------------------------------------
+
+            #print(event)
             
             # Modifiers 
             # ----------------------------------------------------------------------------
@@ -67,6 +71,24 @@ def event(events,event_dict):
             event_dict["keyPressed"]["Modifiers"] = modifiers_key_state() # modifiers (key)
             # ----------------------------------------------------------------------------
             keys = pg.key.get_pressed()
+
+            
+            # list_key = []
+            # for i in range(len(keys)):
+            #     if keys[i]:
+            #         print("existe true")
+            #     else:
+            #         print("existe false")
+                #list_key.append(keys[i]) 
+
+            #print(list_key)
+            #keys = list_key.copy()
+
+            
+
+            #pg.key.ScancodeWrapper
+            # if any(keys[i] for i in range(len(keys))):  # Iterar sobre los índices
+            #    print("existe true")
             # shortcuts 
             # ----------------------------------------------------------------------------
             Ctrl = any(key["key"] in (pg.K_LCTRL, pg.K_RCTRL) for key in event_dict["keyPressed"]["Modifiers"])
@@ -91,6 +113,7 @@ def event(events,event_dict):
                 char_list.extend(key_events_numeric_keypad_list)
             # Verificar que caracteres estan en siendo presionados y lo agrego o quito en orden
             char_list_pressed = key_state(keys,char_list) # char (unicode)
+
             char = event.unicode
             for dic_char in char_list_pressed:
                 if char == dic_char["unicode"]:
