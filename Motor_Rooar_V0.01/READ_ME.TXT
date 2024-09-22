@@ -1,0 +1,6 @@
+
+# ESTA VERSION FUNCIONA CON PYGAME 2.5.2 !!
+
+# Lista de pendientes o cosas a recordar:
+
+* la variable self.is_editing en box_text (objeto) es necesaria?
