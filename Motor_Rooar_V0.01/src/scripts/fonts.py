@@ -18,7 +18,7 @@ class Font:
     # Inicialización de las fuentes como variables de clase
     font_default = pg.font.Font(None, 16)
 
-    route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0\assets\Fonts\OpenSans-Medium.ttf"
+    route_OpenSans_Medium = r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\Fonts\OpenSans-Medium.ttf"
     font_OpenSans_Medium = pg.font.Font(route_OpenSans_Medium, 12)
 
 

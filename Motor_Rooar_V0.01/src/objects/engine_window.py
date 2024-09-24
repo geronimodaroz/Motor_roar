@@ -6,6 +6,10 @@ from ctypes import wintypes  # Importar wintypes correctamente
 from scripts.surface_reposition import SurfaceReposition
 #from scripts.fonts import Font
 
+
+import tkinter as tk
+
+
 class EngineWindow():
 
     def __init__(self,event_dict,presurface):
@@ -23,9 +27,8 @@ class EngineWindow():
         self.rect = pg.rect.Rect(0,0,0,0)
         x = 0 #20
         y = 0 #20
-        w = presurface.get_width() #- 40
-        h = presurface.get_height() #- 40
-        #self.rects_updates(presurface,x,y,w,h)
+        w = presurface.get_width() 
+        h = presurface.get_height() 
         self.color = (120,120,120)
         # ----------------------------------------------------------------------------
 
@@ -36,7 +39,6 @@ class EngineWindow():
         self.scale_modifier_margin = 5
         # ----------------------------------------------------------------------------
 
-
         # variables de engine_window 
         # ----------------------------------------------------------------------------
         # ESTO TAL CEZ NO SEA NECESARIO!
@@ -44,27 +46,16 @@ class EngineWindow():
         self.window_id = pg.display.get_wm_info()["window"]
         # Habilitar que la ventana sea movible (solo en Windows)
         ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
-        #self.moving = False
         self.initial_mouse_x = 0
         self.initial_mouse_y = 0
-        self.initial_window_left = 0
-        self.initial_window_top = 0
-        self.initial_window_width = 0
-        self.initial_window_height = 0
 
         self.window_left = 0
         self.window_top = 0
         self.window_width = 0
         self.window_height = 0
 
-        self.window_right = 0
-
         self.save_global_mouse_x = 0
         self.save_global_mouse_y = 0
-
-        # Obtener el "device context" (DC) de la pantalla principal
-        self.hdc = ctypes.windll.user32.GetDC(0)  # 0 representa toda la pantalla
-
 
         # ----------------------------------------------------------------------------
 
@@ -237,79 +228,6 @@ class EngineWindow():
                     if event_dict["EditableObjects"]["clickable"]: break
 
             event_dict["Mouse"]["Position"] = save_x_y
-
-            # Detectar colisión con objetos dentro de la lista objects_list
-            # ----------------------------------------------------------------------------
-            # if (event_dict["Mouse"]["Motion"] and not event_dict["Mouse"]["ClickLeftPressed"]) or event_dict["Mouse"]["ClickLeftUp"]:
-            #     # Limpiar la lista de clickeables a partir del índice depth_number+1
-            #     #event_dict["EditableObjects"]["clickable"] = event_dict["EditableObjects"]["clickable"][:depth_number + 1]
-            #     # verifica donde esta el mouse y los objetos que colisionan con el 
-            #     # ----------------------------------------------------------------------------
-            #     save_clickable_list = event_dict["EditableObjects"]["clickable"].copy()
-            #     del event_dict["EditableObjects"]["clickable"][self.depth_number+1:]
-
-            #     # mouse x,y con respecto a view_rect
-            #     x = event_dict["Mouse"]["Position"][0] - self.view_rect.x 
-            #     y = event_dict["Mouse"]["Position"][1] - self.view_rect.y
-            #     save_x_y = event_dict["Mouse"]["Position"]
-            #     event_dict["Mouse"]["Position"] = (x,y)
-
-            #     # Detectar colisión con objetos
-            #     for obj in self.objects_list:
-            #         if obj.rect.collidepoint(x, y):
-            #             obj.collision_detector(event_dict)
-            #             if event_dict["EditableObjects"]["clickable"]: break
-
-            #     event_dict["Mouse"]["Position"] = save_x_y
-                
-            #     # ----------------------------------------------------------------------------
-            #     # si el mouse cambio de objetos ejecuto cambios pre o pos de los objetos en las listas 
-            #     # ----------------------------------------------------------------------------
-            #     if save_clickable_list != event_dict["EditableObjects"]["clickable"]:
-            #         def pre_pos_methods(list, prefix, event_dict, code):
-            #             """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
-            #             for obj_func in list:
-            #                 if not(obj_func in event_dict["EditableObjects"]["selected"]): # si es "selected" no entrar a "clickable"
-            #                     try:
-            #                         obj = obj_func.__self__  # desvincula el objeto 
-            #                         func = obj_func.__func__  # desvincula el método
-            #                         method_name = f"{prefix}{func.__name__}"
-            #                         method_to_call = getattr(obj, method_name, None)
-            #                         if callable(method_to_call):
-            #                             method_to_call(event_dict, code)
-            #                     except Exception as e:
-            #                         print(e)
-            #         # Ejecutar métodos pos_ para objetos clickados
-            #         pre_pos_methods(save_clickable_list,"pos_", event_dict, code = "clickable")
-            #         # Ejecutar métodos pre_ para objetos clickados
-            #         pre_pos_methods(event_dict["EditableObjects"]["clickable"],"pre_", event_dict, code = "clickable")
-            #     # ----------------------------------------------------------------------------
-
-            # # ----------------------------------------------------------------------------
-            # # Si se hace clic izquierdo, copiar lista clickeable a lista seleccionada
-            # # ----------------------------------------------------------------------------
-            # elif event_dict["Mouse"]["ClickLeftDown"] :
-            #     if event_dict["EditableObjects"]["selected"] != event_dict["EditableObjects"]["clickable"]:
-            #         def pre_pos_methods(list, prefix, event_dict, code):
-
-            #             """Ejecuta métodos con el prefijo dado para cada objeto en la lista."""
-            #             for obj_func in list:
-            #                 try:
-            #                     obj = obj_func.__self__  # desvincula el objeto 
-            #                     func = obj_func.__func__  # desvincula el método
-            #                     method_name = f"{prefix}{func.__name__}"
-            #                     method_to_call = getattr(obj, method_name, None)
-            #                     if callable(method_to_call):
-            #                         method_to_call(event_dict, code)
-            #                 except Exception as e:
-            #                     print(e)
-            #         # Ejecutar métodos pos_ para objetos seleccionados
-            #         pre_pos_methods(event_dict["EditableObjects"]["selected"],"pos_", event_dict, code = "selected")
-            #         # Actualizar listas de seleccionados y clickeables
-            #         event_dict["EditableObjects"]["selected"] = event_dict["EditableObjects"]["clickable"].copy()
-            #         event_dict["EditableObjects"]["clickable"].clear()
-            #         # Ejecutar métodos pre_ para objetos seleccionados
-            #         pre_pos_methods(event_dict["EditableObjects"]["selected"],"pre_", event_dict, code = "selected")
             
         init()
     
@@ -327,7 +245,7 @@ class EngineWindow():
                 point = POINT()
                 ctypes.windll.user32.GetCursorPos(ctypes.byref(point))
                 return point.x, point.y
-            
+
             # Detectar el clic izquierdo y activar el movimiento
             if event_dict["Mouse"]["ClickLeftDown"]:
                 self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
@@ -339,16 +257,69 @@ class EngineWindow():
                 self.window_width = rect.right - rect.left
                 self.window_height = rect.bottom - rect.top
 
-            displacement_x,displacement_y = 0,0
+            displacement_x, displacement_y = 0, 0
 
-            if (self.save_global_mouse_x,self.save_global_mouse_y) != get_global_mouse_position():
-                x,y = get_global_mouse_position()
+            if (self.save_global_mouse_x, self.save_global_mouse_y) != get_global_mouse_position():
+                x, y = get_global_mouse_position()
                 displacement_x = x - self.save_global_mouse_x
                 displacement_y = y - self.save_global_mouse_y
-                self.save_global_mouse_x,self.save_global_mouse_y = get_global_mouse_position()
+                self.save_global_mouse_x, self.save_global_mouse_y = get_global_mouse_position()
 
-
+            # Mover la ventana hacia arriba
             if self.scale_modifier_hit_top:
+
+                self.window_left += displacement_x
+                self.window_top += displacement_y
+                x = self.window_left
+                y = self.window_top
+                w = self.window_width
+                h = self.window_height
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+
+            elif self.scale_modifier_hit_down:
+
+                self.window_height += displacement_y
+                x = self.window_left
+                y = self.window_top
+                w = self.window_width
+                h = max(100, self.window_height)
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
+                #event_dict["Screen"]["Height"] = h
+
+            # Redimensionar la ventana hacia la derecha
+            if self.scale_modifier_hit_right:
+
+                self.window_width += displacement_x
+                x = self.window_left
+                y = self.window_top
+                w = max(100, self.window_width)
+                h = self.window_height
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
+                #event_dict["Screen"]["Width"] = w
+
+            # Redimensionar la ventana hacia la izquierda
+            elif self.scale_modifier_hit_left:
+
+                self.window_width -= displacement_x
+                x = self.window_left
+                y = self.window_top
+                w = max(100, self.window_width)
+                h = self.window_height
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
+                #event_dict["Screen"]["Width"] = w
+            
+            
+
+            if event_dict["Mouse"]["ClickLeftUp"]:
+                #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
+                pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
+                self.window_id = pg.display.get_wm_info()["window"]
+                self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
+                event_dict["Screen"]["Width"] = w
+                event_dict["Screen"]["Height"] = h
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]  
+
+            """if self.scale_modifier_hit_top:
 
                 self.window_left += displacement_x
                 self.window_top += displacement_y
@@ -360,8 +331,6 @@ class EngineWindow():
 
                 #ctypes.windll.user32.MoveWindow(self.window_id,x,y,w,h, True)
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE para no cambiar el tamaño
-
-
 
             elif self.scale_modifier_hit_down:
                 
@@ -536,14 +505,9 @@ class EngineWindow():
                 # Actualizar el diccionario de eventos
                 event_dict["Screen"]["Width"] = w
 
-
-
-
-
-
+                
             if event_dict["Mouse"]["ClickLeftUp"]:
-                #self.window_id = pg.display.get_wm_info()["window"] # esto no es necesario?
-
+                
                 #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                 ctypes.windll.user32.MoveWindow(self.window_id, x, y, w, h, True)
                 w  = event_dict["Screen"]["Width"]
@@ -551,8 +515,11 @@ class EngineWindow():
                 pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
-                del event_dict["EditableObjects"]["selected"][self.depth_number:]    
+                del event_dict["EditableObjects"]["selected"][self.depth_number:]     
+            """
 
+
+              
 
 
     def edit(self,event_dict,code = None):
@@ -594,9 +561,12 @@ class EngineWindow():
     def draw(self,event_dict):
 
         #self.view_surface.fill((50,50,50)) # limpia escena 
-
+        
 
         pg.draw.rect(self.presurface,self.color,self.view_rect)
+        #pg.draw.rect(self.presurface,(0,255,0),self.view_rect)
+
+        #pg.draw.rect(self.presurface,(0,255,0),(200,200,100,100))
 
         #pg.draw.rect(self.presurface,(255,0,0),self.rect,1)
 

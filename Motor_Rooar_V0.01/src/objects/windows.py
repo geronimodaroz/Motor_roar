@@ -56,7 +56,7 @@ class Window:
 
 
         # Cargar imagen
-        self.image = pg.image.load('C:/Users/Usuario/Desktop/pygame.jpg')
+        self.image = pg.image.load('C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01/assets/images/pygame.jpg')
 
 
         # prufundidad del objeto -1
@@ -111,26 +111,6 @@ class Window:
 
         # curtain
         # ----------------------------------------------------------------------------
-        # x = self.save_curtain_rect_x + self.view_decrement_x
-        # y = self.save_curtain_rect_y + self.view_decrement_y
-        # w = self.curtain_w
-        # h = self.curtain_h
-
-        # # if curtain is outside of view, si la cortina se sale de vista
-        # if self.save_curtain_rect_x + w < self.view_rect.width and self.save_curtain_rect_x < 0:
-        #     x = self.view_rect.width - w + self.view_decrement_x
-        #     self.save_curtain_rect_x = self.view_rect.width - w
-        # elif self.save_curtain_rect_x > 0:
-        #     x = 0 + self.view_decrement_x
-        #     self.save_curtain_rect_x = 0
-            
-        # if self.save_curtain_rect_y + h < self.view_rect.height and self.save_curtain_rect_y < 0:
-        #     y = self.view_rect.height - h + self.view_decrement_y
-        #     self.save_curtain_rect_y = self.view_rect.height - h
-        # elif self.save_curtain_rect_y > 0:
-        #     y = 0 + self.view_decrement_y
-        #     self.save_curtain_rect_y = 0
-
         def _adjust_curtain_position(save_pos, dim, view_dim, view_decrement):
             if save_pos + dim < view_dim and save_pos < 0:
                 return view_dim - dim + view_decrement, view_dim - dim

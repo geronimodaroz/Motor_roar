@@ -42,13 +42,13 @@ def event(events,event_dict):
     # ----------------------------------------------------------------------------
     for event in events:
         if event.type == pg.QUIT:
+            #self.running = False
             pg.quit()
             sys.exit()
 
         # Detectar redimensionamiento de la ventana
         elif event.type == pg.VIDEORESIZE:
             width, height = event.w, event.h
-            print("hola")
             # event_dict["Screen"]["Width"]  = width
             # event_dict["Screen"]["Height"] = height
 
@@ -72,23 +72,6 @@ def event(events,event_dict):
             # ----------------------------------------------------------------------------
             keys = pg.key.get_pressed()
 
-            
-            # list_key = []
-            # for i in range(len(keys)):
-            #     if keys[i]:
-            #         print("existe true")
-            #     else:
-            #         print("existe false")
-                #list_key.append(keys[i]) 
-
-            #print(list_key)
-            #keys = list_key.copy()
-
-            
-
-            #pg.key.ScancodeWrapper
-            # if any(keys[i] for i in range(len(keys))):  # Iterar sobre los índices
-            #    print("existe true")
             # shortcuts 
             # ----------------------------------------------------------------------------
             Ctrl = any(key["key"] in (pg.K_LCTRL, pg.K_RCTRL) for key in event_dict["keyPressed"]["Modifiers"])
