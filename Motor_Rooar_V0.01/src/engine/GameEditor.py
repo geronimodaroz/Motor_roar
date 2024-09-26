@@ -52,6 +52,9 @@ def main():
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
         "Screen":{"Width":width, "Height":height},
+
+        "ForceLoop":False,
+
         "FPS": {
             "Fixed": 60,
             "Real": None,
@@ -93,19 +96,15 @@ def main():
 
      # engine screen
     #-----------------------------------------------------------------------------
-    from objects.engine_window import EngineWindow
-    engine_window = EngineWindow(event_dict,default_screen_surface)
+    from objects.engine_window import EngineWindowInstance
+    engine_window = EngineWindowInstance(event_dict,default_screen_surface)
+
     #-----------------------------------------------------------------------------
-
-
 
     # Forzar un evento de teclado
     #-----------------------------------------------------------------------------
     key_event_down = pg.event.Event(pg.KEYDOWN, {"key": pg.K_a, "mod": 0, "unicode": "a", "scancode": 4})
     pg.event.post(key_event_down)
-
-
-
 
     while True: # Bucle principal
 
@@ -113,7 +112,9 @@ def main():
 
             # Solo procesar eventos si hay alguno
             events = pg.event.get()
-            if events:
+
+            # hay bucle si hay evento y si algun objeto activa el forzador de bucle "event_dict["ForceLoop"]""
+            if events or event_dict["ForceLoop"]:
 
                 #Bucle de Eventos
                 # ----------------------------------------------------------------------------
@@ -202,6 +203,8 @@ def main():
                     event_dict["EditableObjects"]["selected"][depth_number+1](event_dict, code = "selected") 
                 # ----------------------------------------------------------------------------
 
+                #print(event_dict["EditableObjects"]["selected"])
+
                 #Draw
                 # ----------------------------------------------------------------------------
 
@@ -212,7 +215,7 @@ def main():
                 # ----------------------------------------------------------------------------
                 
 
-                default_screen_surface.fill((50,50,50)) # limpia escena 
+                default_screen_surface.fill((0,0,255)) # limpia escena 
 
 
                 engine_window.draw(event_dict) # engine_screen

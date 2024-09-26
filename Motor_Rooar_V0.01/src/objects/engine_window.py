@@ -7,12 +7,11 @@ from scripts.surface_reposition import SurfaceReposition
 #from scripts.fonts import Font
 
 
-import tkinter as tk
-
 
 class EngineWindow():
-
+    """Crea el objeto ventana del proyecto sin ningun objeto en su interior"""
     def __init__(self,event_dict,presurface):
+
 
         # prufundidad del objeto +1
         # ----------------------------------------------------------------------------
@@ -45,7 +44,7 @@ class EngineWindow():
         # Obtener el identificador de la ventana de Pygame (solo en Windows)
         self.window_id = pg.display.get_wm_info()["window"]
         # Habilitar que la ventana sea movible (solo en Windows)
-        ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
+        #ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
         self.initial_mouse_x = 0
         self.initial_mouse_y = 0
 
@@ -67,17 +66,14 @@ class EngineWindow():
         self.rects_updates(presurface,w,h)
         # ----------------------------------------------------------------------------
 
-        
+        # # # Crear ventanas y objetos
+        # from objects.windows import Window
+        # window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
+        # self.objects_list.append(window)  # Agregar el objeto window a la lista
 
-
-        # Crear ventanas y objetos
-        from objects.windows import Window
-        window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
-        self.objects_list.append(window)  # Agregar el objeto window a la lista
-
-        from instances.Objects_creator import ObjectsCreator
-        objects_creator_window = ObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
-        self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
+        # from instances.Window_objects_creator import WindowObjectsCreator
+        # objects_creator_window = WindowObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
+        # self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
 
         # prufundidad del objeto -1
@@ -122,7 +118,6 @@ class EngineWindow():
             self.rect.width += w
             self.rect.height += h
             # ----------------------------------------------------------------------------
-        
 
         # scale_modifier_rect 
         # ----------------------------------------------------------------------------
@@ -134,9 +129,9 @@ class EngineWindow():
         bar = self.scale_modifier_bar
         margin = self.scale_modifier_margin
 
-        x = margin
-        y = bar #margin
-        w = self.rect.width - (margin*2)
+        x = self.rect.x + margin
+        y = self.rect.y + bar #margin
+        w = self.rect.width - (margin*2) 
         h = self.rect.height - (bar) - (margin)
 
         self.view_rect = pg.rect.Rect(x,y,w,h)
@@ -145,12 +140,18 @@ class EngineWindow():
         self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
         # ----------------------------------------------------------------------------
 
-        # recreo los rects de los objetos dentro de engine window
-        # ----------------------------------------------------------------------------
-        if self.objects_list:
-            for obj in self.objects_list:
-                obj.rects_updates(self.view_surface, force = True)
-        # ----------------------------------------------------------------------------
+        # # recreo los rects de los objetos dentro de engine window
+        # # ----------------------------------------------------------------------------
+        # if self.objects_list:
+        #     for obj in self.objects_list:
+        #         obj.rects_updates(self.view_surface, force = True)
+        # # ----------------------------------------------------------------------------
+    # LOAD_OBJECT_NO ESTA ACTIVO
+    def load_objects(self,*objects_list):
+        """carga los objetos que estaran dentro de la ventana"""
+        #self.objects_list = objects_list # cargar objetos
+        pass
+        #self.objects_list.extend(objects_list)
 
     def collision_detector(self,event_dict):
 
@@ -518,10 +519,6 @@ class EngineWindow():
                 del event_dict["EditableObjects"]["selected"][self.depth_number:]     
             """
 
-
-              
-
-
     def edit(self,event_dict,code = None):
 
         # mouse x,y con respecto a view_rect
@@ -549,19 +546,17 @@ class EngineWindow():
 
 
 
-         # Delate objects from object_list
-        if event_dict["Delate_List"]:
-            for obj in event_dict["Delate_List"]:
-                if obj in self.objects_list:
-                    self.objects_list.remove(obj)
-            event_dict["Delate_List"].clear()
-
-
+        #  # Delate objects from object_list
+        # if event_dict["Delate_List"]:
+        #     for obj in event_dict["Delate_List"]:
+        #         if obj in self.objects_list:
+        #             self.objects_list.remove(obj)
+        #     event_dict["Delate_List"].clear()
 
     def draw(self,event_dict):
 
         #self.view_surface.fill((50,50,50)) # limpia escena 
-        
+        pg.draw.rect(self.presurface,(50,50,50),self.rect)
 
         pg.draw.rect(self.presurface,self.color,self.view_rect)
         #pg.draw.rect(self.presurface,(0,255,0),self.view_rect)
@@ -574,13 +569,61 @@ class EngineWindow():
 
 
 
-        #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
+        # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
+        # if self.objects_list:
+        #     for obj in self.objects_list:
+        #         obj.draw(event_dict)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------EngineWindowInstance---------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+
+class EngineWindowInstance(EngineWindow):
+    """Crea una instancia del objeto "EngineWindow" y coloca objetos dentro"""
+    def __init__(self, event_dict, presurface):
+        super().__init__(event_dict, presurface)
+
+        event_dict["depth_number"]+=1
+
+        # Crear ventanas y objetos
+        from objects.windows import Window
+        window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
+        self.objects_list.append(window)  # Agregar el objeto window a la lista
+
+        from instances.objects_creator import ObjectsCreator
+        objects_creator_window = ObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
+        self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
+
+        event_dict["depth_number"]-=1
+
+    def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
+        super().rects_updates(presurface, w, h, resize, force)
+
+        # recreo los rects de los objetos dentro de engine window
+        # ----------------------------------------------------------------------------
+        if self.objects_list:
+            for obj in self.objects_list:
+                obj.rects_updates(self.view_surface, force = True)
+        # ----------------------------------------------------------------------------
+
+        
+
+    def edit(self, event_dict, code=None):
+        super().edit(event_dict, code)
+
+        # Delate objects from object_list
+        if event_dict["Delate_List"]:
+            for obj in event_dict["Delate_List"]:
+                if obj in self.objects_list:
+                    self.objects_list.remove(obj)
+            event_dict["Delate_List"].clear()
+
+    def draw(self, event_dict):
+        super().draw(event_dict)
+
         if self.objects_list:
             for obj in self.objects_list:
                 obj.draw(event_dict)
 
-        
-
-
-
-        

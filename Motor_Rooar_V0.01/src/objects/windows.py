@@ -654,11 +654,12 @@ class WindowBase():
                 self.scroll_bar_down_rect = pg.rect.Rect(0, 0, 0, 0)
                 self.scroll_bar_down_inside_rect = pg.rect.Rect(0, 0, 0, 0)
         # ----------------------------------------------------------------------------
-
+# LOAD_OBJECT_NO ESTA ACTIVO
     def load_objects(self,*objects_list):
+        pass
         """carga los objetos que estaran dentro de la ventana"""
         #self.objects_list = objects_list # cargar objetos
-        self.objects_list.extend(objects_list)
+        #self.objects_list.extend(objects_list)
         
     def collision_detector(self, event_dict):
         """detecta colision con los "rects" del objeto "windows" y con los objetos que contenga dentro, y los agrega a la lista "clickable" """
@@ -897,8 +898,9 @@ class WindowBase():
         """metodo  principal por donde pasa la logica de las interacciones con los objetos dentro de "view" """
         # clickeable
         if code == "clickable":
-
-            if event_dict["Mouse"]["Scroll"]:
+            
+            # Scroll dentro de la ventana 
+            if event_dict["Mouse"]["Scroll"]: 
 
                 if event_dict["Mouse"]["Scroll"] == 1:
                     mouse_scroll_motion_y = 20

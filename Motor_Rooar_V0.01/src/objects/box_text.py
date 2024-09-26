@@ -13,7 +13,7 @@ from scripts.fonts import Font  # Para las fuentes
 
 class BoxText:
     """ESTA CLASE CREA UN CUADRO DE TEXTO EDITABLE"""
-    def __init__(self, event_dict, surface, x, y, w, h, rect_color=(150, 20, 20), text_color=(190, 190, 190), text=""):
+    def __init__(self, event_dict, surface, x, y, w, h, rect_color=(20, 20, 20), text_color=(190, 190, 190), text=""):
         # Profundidad del objeto +1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"] += 1
@@ -74,8 +74,6 @@ class BoxText:
         # ----------------------------------------------------------------------------
         event_dict["depth_number"] -= 1
         # ----------------------------------------------------------------------------
-
-
     #def rects_updates(self, presurface , force = False):
     def rects_updates(self, presurface, x=0, y=0, w=0, h=0 , force = False):
         """Modifica los atributos de los "rects" del objeto, o los reeinicia usarndo "force" """
@@ -109,10 +107,9 @@ class BoxText:
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
         
-
-
     def pre_edit(self,event_dict, code = None):
         if code == "selected":
+            event_dict["ForceLoop"] = True # fuerza el bucle mientras box_text este activo
             self.is_editing = True # el objeto se esta editando
             self.rect_box_color = (20,20,20)
             self.rect_line_color = event_dict["Colors"]["GreenFluor"]
@@ -127,6 +124,7 @@ class BoxText:
         #-------------------------------------------------------------------------------------
         
         if code == "selected":
+            event_dict["ForceLoop"] = False # desactiva el forzador de bucle 
             self.is_editing = False # el objeto deja de editarse
             self.rect_line_color = event_dict["Colors"]["LightGrey"]
         if code == "clickable" :
@@ -135,7 +133,7 @@ class BoxText:
     def edit(self, event_dict, code = None): # metodo de edicion
         """metodo  principal por donde pasa la logica de las interacciones"""
         #-------------------------------------------------------------------------------------
-        # if code == "clickable":
+        #if code == "clickable":
         #     self.rect_box_color = event_dict["Colors"]["IntermediumGrey"]
 
         if code == "selected":
@@ -456,7 +454,6 @@ class BoxText:
                 self.key_alarm = 0
             #-------------------------------------------------------------------------------------
             init() # inicio 
-
 
     def draw(self,event_dict): 
 
