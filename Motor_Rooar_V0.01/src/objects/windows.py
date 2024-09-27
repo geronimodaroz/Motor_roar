@@ -1,5 +1,5 @@
 import pygame as pg
-#import sys
+import sys
 #import pygame.gfxdraw
 import ctypes
 from ctypes import wintypes
@@ -992,8 +992,6 @@ class EngineWindow():
         self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
 
-        #self.presurface = presurface
-
         # Rect
         # ----------------------------------------------------------------------------
         self.rect = pg.rect.Rect(0,0,0,0)
@@ -1013,11 +1011,9 @@ class EngineWindow():
 
         # variables de engine_window 
         # ----------------------------------------------------------------------------
-        # ESTO TAL CEZ NO SEA NECESARIO!
         # Obtener el identificador de la ventana de Pygame (solo en Windows)
         self.window_id = pg.display.get_wm_info()["window"]
-        # Habilitar que la ventana sea movible (solo en Windows)
-        #ctypes.windll.user32.SetWindowLongW(self.window_id, -16, ctypes.windll.user32.GetWindowLongW(self.window_id, -16) | 0x00080000)
+
         self.initial_mouse_x = 0
         self.initial_mouse_y = 0
 
@@ -1028,7 +1024,6 @@ class EngineWindow():
 
         self.save_global_mouse_x = 0
         self.save_global_mouse_y = 0
-
         # ----------------------------------------------------------------------------
 
         self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
@@ -1097,6 +1092,16 @@ class EngineWindow():
         self.scale_modifier_rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         # ----------------------------------------------------------------------------
 
+        # close_button
+        # ----------------------------------------------------------------------------
+        button_dimension = 20
+        x = self.rect.width - button_dimension - 5
+        y = 5
+        w = button_dimension
+        h = button_dimension
+        self.close_button_rect = pg.rect.Rect(x,y,w,h)
+        # ----------------------------------------------------------------------------
+
         # view_rect 
         # ----------------------------------------------------------------------------
         bar = self.scale_modifier_bar
@@ -1136,9 +1141,29 @@ class EngineWindow():
 
             if self.view_rect.collidepoint(mouse_x, mouse_y):
                 _comprobation_section_view_edit()
+            elif self.close_button_rect.collidepoint(mouse_x, mouse_y):
+                _comprobation_section_close_button()
             elif self.scale_modifier_rect.collidepoint(mouse_x, mouse_y):
                 _comprobation_section_scale_modifier()
 
+        def _comprobation_section_view_edit():
+
+            event_dict["EditableObjects"]["clickable"].append(self.edit)
+
+            # mouse x,y con respecto a view_rect
+            x = event_dict["Mouse"]["Position"][0] - self.view_rect.x 
+            y = event_dict["Mouse"]["Position"][1] - self.view_rect.y
+            save_x_y = event_dict["Mouse"]["Position"]
+            event_dict["Mouse"]["Position"] = (x,y)
+
+            # Detectar colisión con objetos
+            for obj in self.objects_list:
+                if obj.rect.collidepoint(x, y):
+                    obj.collision_detector(event_dict)
+                    if event_dict["EditableObjects"]["clickable"]: break
+
+            event_dict["Mouse"]["Position"] = save_x_y
+ 
         def _comprobation_section_scale_modifier():
 
             event_dict["EditableObjects"]["clickable"].append(self.scale_modifier)
@@ -1185,23 +1210,9 @@ class EngineWindow():
                 self.scale_modifier_hit_right = True
                 event_dict["Mouse"]["Icon"] = pg.SYSTEM_CURSOR_SIZEWE
 
-        def _comprobation_section_view_edit():
-
-            event_dict["EditableObjects"]["clickable"].append(self.edit)
-
-            # mouse x,y con respecto a view_rect
-            x = event_dict["Mouse"]["Position"][0] - self.view_rect.x 
-            y = event_dict["Mouse"]["Position"][1] - self.view_rect.y
-            save_x_y = event_dict["Mouse"]["Position"]
-            event_dict["Mouse"]["Position"] = (x,y)
-
-            # Detectar colisión con objetos
-            for obj in self.objects_list:
-                if obj.rect.collidepoint(x, y):
-                    obj.collision_detector(event_dict)
-                    if event_dict["EditableObjects"]["clickable"]: break
-
-            event_dict["Mouse"]["Position"] = save_x_y
+        def _comprobation_section_close_button():
+            event_dict["EditableObjects"]["clickable"].append(self.close)
+        
             
         init()
     
@@ -1528,22 +1539,22 @@ class EngineWindow():
 
     def draw(self,event_dict):
 
-        #self.view_surface.fill((50,50,50)) # limpia escena 
         pg.draw.rect(self.presurface,(50,50,50),self.rect)
 
+        pg.draw.rect(self.presurface,(200,0,0),self.close_button_rect,0,10)
+
         pg.draw.rect(self.presurface,self.color,self.view_rect)
-        #pg.draw.rect(self.presurface,(0,255,0),self.view_rect)
 
-        #pg.draw.rect(self.presurface,(0,255,0),(200,200,100,100))
-
-        #pg.draw.rect(self.presurface,(255,0,0),self.rect,1)
-
-        #pg.draw.rect(self.presurface,(255,0,0),self.view_rect,1)
-
-
+        
 
         # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
         # if self.objects_list:
         #     for obj in self.objects_list:
         #         obj.draw(event_dict)
 
+    def close(self,event_dict,code = None):
+
+        if code == "selected":
+            if event_dict["Mouse"]["ClickLeftDown"]:
+                pg.quit()
+                sys.exit()
