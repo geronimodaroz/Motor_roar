@@ -1,15 +1,13 @@
-#---------------------------------------------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------EngineWindowInstance---------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------------------------------------
+from objects.windows import EngineWindow
 
-from objects.engine_window import EngineWindow
+
 
 class EngineWindowInstance(EngineWindow):
     """Crea una instancia del objeto "EngineWindow" y coloca objetos dentro"""
     def __init__(self, event_dict, presurface):
         super().__init__(event_dict, presurface)
+
+        event_dict["depth_number"]+=1
 
         # Crear ventanas y objetos
         from objects.windows import Window
@@ -20,8 +18,8 @@ class EngineWindowInstance(EngineWindow):
         objects_creator_window = ObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
         self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
-        #super().load_objects(window,objects_creator_window)
-    
+        event_dict["depth_number"]-=1
+
     def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
         super().rects_updates(presurface, w, h, resize, force)
 
@@ -31,7 +29,7 @@ class EngineWindowInstance(EngineWindow):
             for obj in self.objects_list:
                 obj.rects_updates(self.view_surface, force = True)
         # ----------------------------------------------------------------------------
-    
+
     def edit(self, event_dict, code=None):
         super().edit(event_dict, code)
 

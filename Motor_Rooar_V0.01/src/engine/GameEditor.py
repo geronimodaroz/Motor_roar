@@ -96,7 +96,7 @@ def main():
 
      # engine screen
     #-----------------------------------------------------------------------------
-    from objects.engine_window import EngineWindowInstance
+    from instances.engine_window import EngineWindowInstance
     engine_window = EngineWindowInstance(event_dict,default_screen_surface)
 
     #-----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ def main():
             # Solo procesar eventos si hay alguno
             events = pg.event.get()
 
-            # hay bucle si hay evento y si algun objeto activa el forzador de bucle "event_dict["ForceLoop"]""
+            # hay bucle si hay evento o si algun objeto activa el forzador de bucle "event_dict["ForceLoop"]""
             if events or event_dict["ForceLoop"]:
 
                 #Bucle de Eventos
@@ -192,7 +192,7 @@ def main():
                 # ----------------------------------------------------------------------------
 
                 # # ----------------------------------------------------------------------------
-                # # ejecuto objetos de lista selected
+                # # ejecuto objetos de lista clickable o selected
                 # # ----------------------------------------------------------------------------
                 exists_next_clickable_list = len(event_dict["EditableObjects"]["clickable"])-1 >= depth_number+1 
                 if exists_next_clickable_list:

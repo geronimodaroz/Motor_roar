@@ -3,7 +3,7 @@ from typing import Literal
 from objects.windows import WindowBase
 
 class ObjectsCreator(WindowBase):
-
+    """la ventana encargada de crear los objectos para el proyecto"""
     def __init__(self,event_dict,screen,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
@@ -24,10 +24,6 @@ class ObjectsCreator(WindowBase):
 
         if self.objects_list:
             self.box_text.rects_updates( self.view_surface, force = True)
-
-
-
-
 
     def edit(self, event_dict,code = None):
         super().edit(event_dict,code)
@@ -56,9 +52,6 @@ class ObjectsCreator(WindowBase):
 
         event_dict["Mouse"]["Position"] = save_x_y
 
-
-
-    
     def draw(self, event_dict):
         super().draw(event_dict)
 
