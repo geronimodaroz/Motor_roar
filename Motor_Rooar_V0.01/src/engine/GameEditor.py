@@ -8,6 +8,8 @@ import pygame as pg
 
 
 
+
+
 def main():
 
     # Inicializar Pygame    
@@ -20,9 +22,14 @@ def main():
     from Events import event  # eventos
 
     # Configuración de la pantalla
+    
     width, height = 800, 600
     default_screen_surface = pg.display.set_mode((width, height), pg.NOFRAME)
     window_id = pg.display.get_wm_info()["window"]
+    # Carga el ícono (debe ser una imagen pequeña, preferiblemente 32x32)
+    icono = pg.image.load('C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01/assets/images/dino-32.png')
+    # Establece el ícono de la ventana
+    pg.display.set_icon(icono)
 
     pg.display.set_caption("Roar!!")
 

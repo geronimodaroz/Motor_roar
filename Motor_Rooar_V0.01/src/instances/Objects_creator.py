@@ -3,7 +3,7 @@ from typing import Literal
 from objects.windows import WindowBase
 
 class ObjectsCreator(WindowBase):
-    """la ventana encargada de crear los objectos para el proyecto"""
+    """la ventana encargada de crear los objectos para el proyecto-juego"""
     def __init__(self,event_dict,screen,x:int,y:int,w:int,h:int,curtain_w:int,curtain_h:int,scroll_bar: Literal[0, 1, -1] = 0):
         super().__init__(event_dict, screen, x, y, w, h, curtain_w, curtain_h, scroll_bar)
 
