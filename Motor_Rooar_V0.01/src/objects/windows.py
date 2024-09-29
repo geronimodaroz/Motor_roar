@@ -1269,6 +1269,8 @@ class EngineWindow():
         
         if code == "selected":
 
+            
+
             class POINT(ctypes.Structure):
                 _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
 
@@ -1296,69 +1298,112 @@ class EngineWindow():
                 displacement_y = y - self.save_global_mouse_y
                 self.save_global_mouse_x, self.save_global_mouse_y = get_global_mouse_position()
 
+            
+
             # Mover la ventana hacia arriba
             if self.scale_modifier_hit_top:
 
-                self.window_left += displacement_x
-                self.window_top += displacement_y
-                x = self.window_left
-                y = self.window_top
-                w = self.window_width
-                h = self.window_height
-                #w = event_dict["Screen"]["Width"]#self.window_width
-                #h = event_dict["Screen"]["Height"]#self.window_height
-                
-                #if self.is_maximize and (x,y) != (0,0):
-                #    self.is_maximize == False
+
+                #if displacement_x != 0 or displacement_y != 0:
                     
-                #     #Obtener dimensiones de la pantalla
-                #     #Funciones de la API de Windows
-                #     user32 = ctypes.windll.user32
-                #     screen_width = user32.GetSystemMetrics(0)  # Ancho
-                #     screen_height = user32.GetSystemMetrics(1)  # Alto
+                    self.window_left += displacement_x
+                    self.window_top += displacement_y
+                    x = self.window_left
+                    y = self.window_top
+                    #w = self.window_width
+                    #h = self.window_height
+                    w = event_dict["Screen"]["Width"]
+                    h = event_dict["Screen"]["Height"]
+                    
 
-                #     # Estructura para almacenar la información del rectángulo
-                #     class RECT(ctypes.Structure):
-                #         _fields_ = [("left", wintypes.LONG),
-                #                     ("top", wintypes.LONG),
-                #                     ("right", wintypes.LONG),
-                #                     ("bottom", wintypes.LONG)]
+                    # si esta maximizada y la muevo se redimenciona y salgo de maximizado
+                    if self.is_maximize:
+
+                        """ Si la ventana esta maximizada y la muevo, self.is_maximize = False y deja de estar maximizada se redimenciona a un valor menor """
+
+                        self.is_maximize = False
                         
-                #     # Obtener el rectángulo de la barra de tareas
-                #     hwnd = user32.FindWindowW("Shell_TrayWnd", None)
-                #     rect = RECT()
-                #     user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                        # Funciones de la API de Windows
+                        user32 = ctypes.windll.user32
 
-                #     # Calcula el ancho y alto de la barra de tareas
-                #     taskbar_x = rect.left
-                #     taskbar_y = rect.top
-                #     taskbar_w = rect.right - rect.left
-                #     taskbar_h = rect.bottom - rect.top
+                        # Obtener dimensiones de la pantalla
+                        screen_width, screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)  # Ancho y alto
 
-                #     w = screen_width - 40
-                #     h = screen_height - taskbar_h -40 
+                        # Estructura para almacenar la información del rectángulo
+                        class RECT(ctypes.Structure):
+                            _fields_ = [("left", wintypes.LONG),
+                                        ("top", wintypes.LONG),
+                                        ("right", wintypes.LONG),
+                                        ("bottom", wintypes.LONG)]
 
-                #     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
-                #     self.window_id = pg.display.get_wm_info()["window"]
-                #     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
-                #     event_dict["Screen"]["Width"] = w
-                #     event_dict["Screen"]["Height"] = h
+                        # Obtener el rectángulo de la barra de tareas
+                        rect = RECT()
+                        user32.GetWindowRect(user32.FindWindowW("Shell_TrayWnd", None), ctypes.byref(rect))
 
-                #     print(w,h)
+                        # Calcular dimensiones de la barra de tareas
+                        taskbar_w, taskbar_h = rect.right - rect.left, rect.bottom - rect.top
 
-                #     ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+                        # Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
+                        if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
+                            position = "Top"
+                        elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
+                            position = "Bottom"
+                        elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
+                            position = "Left"
+                        elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
+                            position = "Right"
+                        else:
+                            position = "Could not determine the position"
 
-                #     # Obtener el manejador de la ventana
-                #     window_handle = pg.display.get_wm_info()['window']
-                #     # Función para obtener la posición de la ventana en Windows
-                #     def get_window_position(hwnd):
-                #         rect = ctypes.wintypes.RECT()
-                #         ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
-                #         return rect.left, rect.top
-                #     self.save_x_y_minimized_window_screen = get_window_position(window_handle)
-                # else:
+                        # Definir el tamaño y la posición de la ventana, ajustando para no cubrir la barra de tareas
 
-                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+                        num = 40
+
+                        if position == "Bottom":
+                            w = screen_width - num
+                            h = screen_height - taskbar_h - num
+                            x = 0
+                            y = 0
+                        elif position == "Top":
+                            w = screen_width - num
+                            h = screen_height - taskbar_h - num
+                            x = 0
+                            y = taskbar_h
+                        elif position == "Left":
+                            w = screen_width - taskbar_w - num
+                            h = screen_height - num
+                            x = taskbar_w
+                            y = 0
+                        elif position == "Right":
+                            w = screen_width - taskbar_w - num
+                            h = screen_height - num
+                            x = 0
+                            y = 0
+                        else:
+                            # Si no se puede determinar la posición, ajusta a pantalla completa sin bordes
+                            w = screen_width
+                            h = screen_height
+                            x = 0
+                            y = 0
+
+                        pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
+                        self.window_id = pg.display.get_wm_info()["window"]
+                        self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
+                        event_dict["Screen"]["Width"] = w
+                        event_dict["Screen"]["Height"] = h
+
+                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+
+                        # Obtener el manejador de la ventana
+                        window_handle = pg.display.get_wm_info()['window']
+                        # Función para obtener la posición de la ventana en Windows
+                        def get_window_position(hwnd):
+                            rect = ctypes.wintypes.RECT()
+                            ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                            return rect.left, rect.top
+                        self.save_x_y_minimized_window_screen = get_window_position(window_handle)
+                    else:
+                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
 
             elif self.scale_modifier_hit_down:
 
@@ -1388,16 +1433,23 @@ class EngineWindow():
                 w = max(100, self.window_width)
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
-            
+                
 
             if event_dict["Mouse"]["ClickLeftUp"]:
+
+                #if x < 0 or y < 0:
+                #    if x < 0: x = 0
+                #    if y < 0: y = 0
+                #    ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+                
                 #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                 pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                 event_dict["Screen"]["Width"] = w
                 event_dict["Screen"]["Height"] = h
-                del event_dict["EditableObjects"]["selected"][self.depth_number:]  
+                del event_dict["EditableObjects"]["selected"][self.depth_number:] 
+                      
 
             """if self.scale_modifier_hit_top:
 
@@ -1672,9 +1724,9 @@ class EngineWindow():
     def close(self,event_dict,code = None):
 
         if code == "selected":
-            if event_dict["Mouse"]["ClickLeftDown"]:
-                pg.quit()
-                sys.exit()
+            #if event_dict["Mouse"]["ClickLeftDown"]:
+            pg.quit()
+            sys.exit()
 
     def maximize(self,event_dict,code = None):
 
@@ -1704,11 +1756,11 @@ class EngineWindow():
                                 ("bottom", wintypes.LONG)]
 
                 # Obtiene la lista de monitores (aquí debes implementar la función get_monitors())
+                """AQUI TENER CUIDADO SI HAY MAS DE UN MONITOR"""
                 monitores = get_monitors()  # Asegúrate de definir esta función
-
                 # Itera sobre los monitores y muestra sus dimensiones
-                for monitor in monitores:
-                    print(f"Monitor: {monitor.name} - Ancho: {monitor.width}, Alto: {monitor.height}")
+                #for monitor in monitores:
+                #    print(f"Monitor: {monitor.name} - Ancho: {monitor.width}, Alto: {monitor.height}")
 
                 # Obtener el rectángulo de la barra de tareas
                 hwnd = user32.FindWindowW("Shell_TrayWnd", None)
@@ -1728,24 +1780,17 @@ class EngineWindow():
                 # Determinar la posición de la barra de tareas
                 position = ""
 
-                if taskbar_h < 100:  # Si la altura es menor a 100, podría ser Top o Bottom
-                    if rect.top == 0:
-                        position = "Top"
-                    elif rect.bottom == screen_height:
-                        position = "Bottom"
-                elif taskbar_w < 100:  # Si el ancho es menor a 100, podría ser Left o Right
-                    if rect.left == 0:
-                        position = "Left"
-                    elif rect.right == screen_width:
-                        position = "Right"
+                # Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
+                if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
+                    position = "Top"
+                elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
+                    position = "Bottom"
+                elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
+                    position = "Left"
+                elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
+                    position = "Right"
                 else:
-                    # Detectar si está anclada a la derecha o izquierda
-                    if rect.left > screen_width / 2:
-                        position = "Right"
-                    elif rect.right < screen_width / 2:
-                        position = "Left"
-                    else:
-                        position = "No se puede determinar la posicion de la barra de tareas"
+                    position = "Could not determine the position"
 
                 # Establecer la posición de la ventana
                 x = 0
@@ -1794,11 +1839,10 @@ class EngineWindow():
                 ctypes.windll.user32.SetWindowPos(pg.display.get_wm_info()['window'], None, x, y, 0, 0, 0x0001)# 0x0001 es la bandera SWP_NOSIZE
                 self.is_maximize = False # la ventana esta maximizada
 
-
             del event_dict["EditableObjects"]["selected"][self.depth_number:] 
 
     def minimize(self,event_dict,code = None):
         if code == "selected":
-            if event_dict["Mouse"]["ClickLeftDown"]:
-                pg.display.iconify()
-                del event_dict["EditableObjects"]["selected"][self.depth_number:]  
+            #if event_dict["Mouse"]["ClickLeftDown"]:
+            pg.display.iconify()
+            del event_dict["EditableObjects"]["selected"][self.depth_number:]  
