@@ -1,37 +1,79 @@
+import pygame as pg
 import ctypes
 from ctypes import wintypes
 
-# Funciones de la API de Windows
-user32 = ctypes.windll.user32
+# Inicializar Pygame
+pg.init()
 
-# Obtener dimensiones de la pantalla
-screen_width, screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)  # Ancho y alto
+# Configurar la ventana de Pygame
+screen = pg.display.set_mode((800, 600), pg.RESIZABLE)
 
-# Estructura para almacenar la información del rectángulo
+# Definir RECT y MONITORINFO para Windows
 class RECT(ctypes.Structure):
     _fields_ = [("left", wintypes.LONG),
                 ("top", wintypes.LONG),
                 ("right", wintypes.LONG),
                 ("bottom", wintypes.LONG)]
 
-# Obtener el rectángulo de la barra de tareas
-rect = RECT()
-user32.GetWindowRect(user32.FindWindowW("Shell_TrayWnd", None), ctypes.byref(rect))
+class MONITORINFO(ctypes.Structure):
+    _fields_ = [("cbSize", wintypes.DWORD),
+                ("rcMonitor", RECT),
+                ("rcWork", RECT),
+                ("dwFlags", wintypes.DWORD)]
 
-# Calcular dimensiones de la barra de tareas
-taskbar_w, taskbar_h = rect.right - rect.left, rect.bottom - rect.top
+# Función para obtener la posición de la ventana en Windows
+def get_window_position(hwnd):
+    rect = RECT()
+    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+    return rect.left, rect.top, rect.right, rect.bottom
 
-# Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
-if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
-    position = "Top"
-elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
-    position = "Bottom"
-elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
-    position = "Left"
-elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
-    position = "Right"
-else:
-    position = "Could not determine the position"
+# Función para obtener la lista de monitores conectados
+def get_monitors():
+    monitors = []
+    def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
+        mi = MONITORINFO()
+        mi.cbSize = ctypes.sizeof(MONITORINFO)
+        ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
+        monitors.append(mi)
+        return 1  # Continuar la enumeración
+    MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(RECT), ctypes.c_int)
+    ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
+    return monitors
 
-# Imprimir la posición de la barra de tareas
-print(f"Position of the taskbar: {position}")
+# Función para detectar si la ventana ha cambiado de monitor
+def detect_monitor_change(hwnd, monitors):
+    window_left, window_top, window_right, window_bottom = get_window_position(hwnd)
+    
+    # Comparar la posición de la ventana con cada monitor
+    for monitor in monitors:
+        if (window_left >= monitor.rcMonitor.left and window_right <= monitor.rcMonitor.right and
+            window_top >= monitor.rcMonitor.top and window_bottom <= monitor.rcMonitor.bottom):
+            return monitor.rcMonitor
+    return None
+
+# Obtener el manejador de la ventana de Pygame
+window_handle = pg.display.get_wm_info()['window']
+
+# Obtener los monitores conectados
+monitors = get_monitors()
+
+# Bucle principal de Pygame
+running = True
+current_monitor = None
+
+while running:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            running = False
+        
+        # Detectar si la ventana ha cambiado de monitor
+        
+        new_monitor = detect_monitor_change(window_handle, monitors)
+
+        if new_monitor and new_monitor != current_monitor:
+            current_monitor = new_monitor
+            print(f"Ventana movida al monitor: {new_monitor.left}, {new_monitor.top}")
+
+    pg.display.flip()
+
+pg.quit()

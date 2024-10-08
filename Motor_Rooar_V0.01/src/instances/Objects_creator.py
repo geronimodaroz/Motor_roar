@@ -1,6 +1,6 @@
 
 from typing import Literal
-from objects.windows import WindowBase
+from src.objects.windows import WindowBase
 
 class ObjectsCreator(WindowBase):
     """la ventana encargada de crear los objectos para el proyecto-juego"""
@@ -10,7 +10,7 @@ class ObjectsCreator(WindowBase):
         # ACA QUE DEPTH NUMBER RECIBE BOX TEXT!!!
         event_dict["depth_number"]+=1
 
-        from objects.box_text import BoxText
+        from src.objects.box_text import BoxText
         self.box_text = BoxText(event_dict,self.view_surface,20,150,200,20,text="Proyecto_01")
 
         self.objects_list.append(self.box_text)

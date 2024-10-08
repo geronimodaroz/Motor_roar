@@ -16,13 +16,19 @@ def main():
     pg.init()
 
     # Añadir la ruta al módulo de scripts
-    sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01/src')
+    sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01')
 
-    from scripts.fonts import Font
-    from Events import event  # eventos
+
+
+    from system_info.sys_info import SysInfo
+    print(SysInfo.get_system_info())
+
+
+
+    from src.scripts.fonts import Font
+    from src.engine.Events import event  # eventos
 
     # Configuración de la pantalla
-    
     width, height = 800, 600
     default_screen_surface = pg.display.set_mode((width, height), pg.NOFRAME)
     window_id = pg.display.get_wm_info()["window"]
@@ -45,7 +51,7 @@ def main():
     game_folder_path = os.path.join(desktop_path, "Videojuego_00")  # Ruta a la carpeta del juego
     # Monitor de archivos en la carpeta del juego
     #-----------------------------------------------------------------------------
-    from scripts import detection_archive_delate
+    from src.scripts import detection_archive_delate
     detection_archive_delate.monitorear_carpeta(game_folder_path)
 
     # # Inicializar el reloj y configurar FPS
@@ -55,7 +61,19 @@ def main():
 
     # Diccionario de eventos
     #-----------------------------------------------------------------------------
+
+    
+
     event_dict = {
+
+        # "SysInfo":{
+        #     "Monitors": {
+        #         "Numbers": None,  # Número total de monitores
+        #         "Info": [],  # Lista para almacenar la información de cada monitor
+        #         "WindowInMonitor": None
+        #         }
+        # },
+
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
         "Screen":{"Width":width, "Height":height},
@@ -95,6 +113,7 @@ def main():
         "depth_number": -1,
         "Delate_List": [],
     }
+    #-----------------------------------------------------------------------------
 
     # Inicialización de objetos
     #-----------------------------------------------------------------------------
@@ -103,9 +122,8 @@ def main():
 
      # engine screen
     #-----------------------------------------------------------------------------
-    from instances.engine_window import EngineWindowInstance
+    from src.instances.engine_window import EngineWindowInstance
     engine_window = EngineWindowInstance(event_dict,default_screen_surface)
-
     #-----------------------------------------------------------------------------
 
     # Forzar un evento de teclado

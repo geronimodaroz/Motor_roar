@@ -126,6 +126,7 @@ def event(events,event_dict):
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
 # ----------------------------------------------------------------------------
 
+
 key_events_shortcutsr_list = [ # ATAJOS DE TECLADO
     {"unicode": '\x03', "key": 99, "scancode": 6},  # Ctrl + c
     {"unicode": '\x16', "key": 118, "scancode": 25} # Ctrl + v

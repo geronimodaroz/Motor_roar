@@ -9,4 +9,6 @@
 
 * modificar engine_window en objeto e instancia separar el objeto y crear una instancia que cargue su contenido - LISTO
 
+* configurar ventana para monitores
+
 * crear boton de cerrar y minimizar en la ventana del proyecto

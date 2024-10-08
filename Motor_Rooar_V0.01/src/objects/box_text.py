@@ -6,9 +6,9 @@ import time
 import pygame as pg
 import pyperclip  # Para hacer Ctrl + C, Ctrl + V
 
-from scripts.surface_reposition import SurfaceReposition  # Reposicion de surface
-from scripts.clicks_detector import ClicksDetector  # Detector de clicks
-from scripts.fonts import Font  # Para las fuentes
+from src.scripts.surface_reposition import SurfaceReposition  # Reposicion de surface
+from src.scripts.clicks_detector import ClicksDetector  # Detector de clicks
+from src.scripts.fonts import Font  # Para las fuentes
 
 
 class BoxText:

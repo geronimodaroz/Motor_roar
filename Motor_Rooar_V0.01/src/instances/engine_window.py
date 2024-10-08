@@ -1,4 +1,4 @@
-from objects.windows import EngineWindow
+from src.objects.windows import EngineWindow
 
 
 
@@ -10,11 +10,11 @@ class EngineWindowInstance(EngineWindow):
         event_dict["depth_number"]+=1
 
         # Crear ventanas y objetos
-        from objects.windows import Window
+        from src.objects.windows import Window
         window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
         self.objects_list.append(window)  # Agregar el objeto window a la lista
 
-        from instances.objects_creator import ObjectsCreator
+        from src.instances.objects_creator import ObjectsCreator
         objects_creator_window = ObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
         self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
 
