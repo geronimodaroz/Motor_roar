@@ -985,6 +985,60 @@ class WindowBase():
 
 class EngineWindow():
     """Crea el objeto ventana del proyecto sin ningun objeto en su interior"""
+    
+    
+    def get_monitors_info(self):
+        """Obtiene la información de los monitores conectados."""
+
+        # Definición de MONITORINFO
+        class MONITORINFO(ctypes.Structure):
+            _fields_ = [
+                ("cbSize", wintypes.DWORD),
+                ("rcMonitor", wintypes.RECT),
+                ("rcWork", wintypes.RECT),
+                ("dwFlags", wintypes.DWORD)
+            ]
+
+        # Función interna para obtener la lista de monitores conectados
+        def _get_monitors_info():
+            monitors = []
+            def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
+                mi = MONITORINFO(cbSize=ctypes.sizeof(MONITORINFO))
+                ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
+                monitors.append(mi)
+                return 1  # Continuar la enumeración
+            MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(wintypes.RECT), ctypes.c_int)
+            ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
+            return monitors
+
+        monitors_list = []
+
+        # Obtener la lista de monitores
+        monitors = _get_monitors_info()  # Asumimos que esta función está definida
+
+        for i, monitor in enumerate(monitors):
+            
+            monitors_list.append({
+                            "Number": i+1,  # Número del monitor
+                            "Position": {
+                                "X": monitor.rcMonitor.left,
+                                "Y": monitor.rcMonitor.top
+                                },
+                            "Dimensions": { # Ancho y Alto
+                                "Width": monitor.rcMonitor.right - monitor.rcMonitor.left,
+                                "Height": monitor.rcMonitor.bottom - monitor.rcMonitor.top
+                                },  
+                            "WorkArea": { # Área de trabajo
+                                "X": monitor.rcWork.left,
+                                "Y": monitor.rcWork.top,
+                                "Width": monitor.rcWork.right - monitor.rcWork.left,
+                                "Height": monitor.rcWork.bottom - monitor.rcWork.top
+                                }  
+                            })
+
+        return monitors_list
+
+
     def __init__(self,event_dict,presurface):
 
 
@@ -1020,6 +1074,8 @@ class EngineWindow():
         self.minimize_button_color = (80, 80, 80)
         self.is_maximize = False
         self.save_x_y_minimized_window_screen = (0,0)
+        self.monitor_selected = 0#None
+        self.monitors_list = self.get_monitors_info()
         # ----------------------------------------------------------------------------
 
         # variables de engine_window 
@@ -1027,8 +1083,8 @@ class EngineWindow():
         # Obtener el identificador de la ventana de Pygame (solo en Windows)
         self.window_id = pg.display.get_wm_info()["window"]
 
-        self.initial_mouse_x = 0
-        self.initial_mouse_y = 0
+        #self.initial_mouse_x = 0
+        #self.initial_mouse_y = 0
 
         self.window_left = 0
         self.window_top = 0
@@ -1062,6 +1118,8 @@ class EngineWindow():
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
 
+    
+
     def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
         """
         Actualiza las propiedades del rectángulo del objeto.
@@ -1075,7 +1133,7 @@ class EngineWindow():
             resize (bool): Indica si se debe redimensionar el rectángulo con los valores proporcionados.
             force (bool): Si es True, fuerza la actualización aunque no se cambien x, y, w, h.
         """
-
+        
         # Si no hay valores para x, y, w, h y no se fuerza la actualización, salir
         if not any([w, h]) and not force:
             return
@@ -1279,7 +1337,7 @@ class EngineWindow():
 
             # Detectar el clic izquierdo y activar el movimiento
             if event_dict["Mouse"]["ClickLeftDown"]:
-                self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
+                #self.initial_mouse_x, self.initial_mouse_y = get_global_mouse_position()
                 rect = wintypes.RECT()
                 ctypes.windll.user32.GetWindowRect(self.window_id, ctypes.byref(rect))
 
@@ -1287,6 +1345,7 @@ class EngineWindow():
                 self.window_top = rect.top
                 self.window_width = rect.right - rect.left
                 self.window_height = rect.bottom - rect.top
+
 
             displacement_x, displacement_y = 0, 0
 
@@ -1301,7 +1360,7 @@ class EngineWindow():
             if self.scale_modifier_hit_top:
 
                 if displacement_x != 0 or displacement_y != 0:
-                    
+
                     self.window_left += displacement_x
                     self.window_top += displacement_y
                     x = self.window_left
@@ -1310,7 +1369,35 @@ class EngineWindow():
                     #h = self.window_height
                     w = event_dict["Screen"]["Width"]
                     h = event_dict["Screen"]["Height"]
-                    
+
+                    self.monitors_list = self.get_monitors_info() # redefino los monitores existentes
+
+                    for m in range(0,len(self.monitors_list)):
+                        
+                        x_monit = self.monitors_list[m]["Position"]["X"]
+                        y_monit = self.monitors_list[m]["Position"]["Y"]
+                        w_monit = self.monitors_list[m]["Dimensions"]["Width"]
+                        h_monit = self.monitors_list[m]["Dimensions"]["Height"]
+
+
+                        if x_monit < x < x_monit + w_monit and y_monit < y < y_monit + h_monit:
+
+                            self.monitor_selected = m # moniotor seleccionado 
+
+                    # elegimos el monitor seleccionado
+                    # for monit in range(0,len(event_dict["SysInfo"]["Monitors"])):
+                    #     monitors_list["Position"]
+                    #     x_monit = event_dict["SysInfo"]["Monitors"][monit]["Position"]["Left"]
+                    #     y_monit = event_dict["SysInfo"]["Monitors"][monit]["Position"]["Top"]
+                    #     w_monit = event_dict["SysInfo"]["Monitors"][monit]["Dimensions"]["Width"]
+                    #     h_monit = event_dict["SysInfo"]["Monitors"][monit]["Dimensions"]["Hight"]
+                    #     #x_monit_Wa = event_dict["SysInfo"]["Monitors"][monit]["WorkArea"]["X"]
+                    #     #y_monit_Wa = event_dict["SysInfo"]["Monitors"][monit]["WorkArea"]["Y"]
+                    #     #w_monit_Wa = event_dict["SysInfo"]["Monitors"][monit]["WorkArea"]["Width"]
+                    #     #h_monit_Wa = event_dict["SysInfo"]["Monitors"][monit]["WorkArea"]["Hight"]
+                    #     if x_monit < x < x_monit + w_monit and y_monit < y < y_monit + h_monit:
+                    #         self.monitor_selected = monit # moniotor seleccionado 
+
 
                     # si esta maximizada y la muevo se redimenciona y salgo de maximizado
                     if self.is_maximize:
@@ -1319,78 +1406,49 @@ class EngineWindow():
 
                         self.is_maximize = False
                         
-                        # Funciones de la API de Windows
-                        user32 = ctypes.windll.user32
+                        # # Funciones de la API de Windows
+                        # user32 = ctypes.windll.user32
 
-                        # Obtener dimensiones de la pantalla
-                        screen_width, screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)  # Ancho y alto
+                        # # Obtener dimensiones de la pantalla
+                        # screen_width, screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)  # Ancho y alto
 
-                        # Estructura para almacenar la información del rectángulo de la barra de tareas
-                        class RECT(ctypes.Structure):
-                            _fields_ = [("left", wintypes.LONG), ("top", wintypes.LONG), ("right", wintypes.LONG), ("bottom", wintypes.LONG)]
+                        # # Estructura para almacenar la información del rectángulo de la barra de tareas
+                        # #class RECT(ctypes.Structure):
+                        # #    _fields_ = [("left", wintypes.LONG), ("top", wintypes.LONG), ("right", wintypes.LONG), ("bottom", wintypes.LONG)]
 
-                        # Obtener el rectángulo de la barra de tareas
-                        rect = RECT()
-                        user32.GetWindowRect(user32.FindWindowW("Shell_TrayWnd", None), ctypes.byref(rect))
+                        # # Obtener el rectángulo de la barra de tareas
+                        # rect = wintypes.RECT()
+                        # user32.GetWindowRect(user32.FindWindowW("Shell_TrayWnd", None), ctypes.byref(rect))
 
-                        # Calcular dimensiones de la barra de tareas
-                        taskbar_w, taskbar_h = rect.right - rect.left, rect.bottom - rect.top
+                        # # Calcular dimensiones de la barra de tareas
+                        # taskbar_w, taskbar_h = rect.right - rect.left, rect.bottom - rect.top
 
-                         # Determinar la posición de la barra de tareas y ajustar el tamaño de la ventana
-                        num = 40
-                        if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas superior
-                            w, h, x, y = screen_width - num, screen_height - taskbar_h - num, 0, taskbar_h
-                        elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas inferior
-                            w, h, x, y = screen_width - num, screen_height - taskbar_h - num, 0, 0
-                        elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas izquierda
-                            w, h, x, y = screen_width - taskbar_w - num, screen_height - num, taskbar_w, 0
-                        elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas derecha
-                            w, h, x, y = screen_width - taskbar_w - num, screen_height - num, 0, 0
-                        else:
-                            w, h, x, y = screen_width, screen_height, 0, 0  # Pantalla completa sin bordes
-
-                        # # Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
-                        # if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
-                        #     position = "Top"
-                        # elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
-                        #     position = "Bottom"
-                        # elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
-                        #     position = "Left"
-                        # elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
-                        #     position = "Right"
-                        # else:
-                        #     position = "Could not determine the position"
-
-                        # # Definir el tamaño y la posición de la ventana, ajustando para no cubrir la barra de tareas
-
+                        #  # Determinar la posición de la barra de tareas y ajustar el tamaño de la ventana
                         # num = 40
-
-                        # if position == "Bottom":
-                        #     w = screen_width - num
-                        #     h = screen_height - taskbar_h - num
-                        #     x = 0
-                        #     y = 0
-                        # elif position == "Top":
-                        #     w = screen_width - num
-                        #     h = screen_height - taskbar_h - num
-                        #     x = 0
-                        #     y = taskbar_h
-                        # elif position == "Left":
-                        #     w = screen_width - taskbar_w - num
-                        #     h = screen_height - num
-                        #     x = taskbar_w
-                        #     y = 0
-                        # elif position == "Right":
-                        #     w = screen_width - taskbar_w - num
-                        #     h = screen_height - num
-                        #     x = 0
-                        #     y = 0
+                        # if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas superior
+                        #     w, h, x, y = screen_width - num, screen_height - taskbar_h - num, 0, taskbar_h
+                        # elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas inferior
+                        #     w, h, x, y = screen_width - num, screen_height - taskbar_h - num, 0, 0
+                        # elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas izquierda
+                        #     w, h, x, y = screen_width - taskbar_w - num, screen_height - num, taskbar_w, 0
+                        # elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas derecha
+                        #     w, h, x, y = screen_width - taskbar_w - num, screen_height - num, 0, 0
                         # else:
-                        #     # Si no se puede determinar la posición, ajusta a pantalla completa sin bordes
-                        #     w = screen_width
-                        #     h = screen_height
-                        #     x = 0
-                        #     y = 0
+                        #     w, h, x, y = screen_width, screen_height, 0, 0  # Pantalla completa sin bordes
+
+                        m = self.monitor_selected
+                        num = 40
+
+                        x = self.monitors_list[m]["WorkArea"]["X"]
+                        y = self.monitors_list[m]["WorkArea"]["Y"]
+                        w = self.monitors_list[m]["WorkArea"]["Width"] - num
+                        h = self.monitors_list[m]["WorkArea"]["Height"] - num
+
+                        # x = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["X"] 
+                        # y = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Y"] 
+                        # w = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Width"] - num
+                        # h = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Height"] - num
+
 
                         pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                         self.window_id = pg.display.get_wm_info()["window"]
@@ -1398,7 +1456,7 @@ class EngineWindow():
                         event_dict["Screen"]["Width"] = w
                         event_dict["Screen"]["Height"] = h
 
-                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # reposiciona la ventana en x,y
 
                         # Obtener el manejador de la ventana
                         window_handle = pg.display.get_wm_info()['window']
@@ -1409,22 +1467,14 @@ class EngineWindow():
                             return rect.left, rect.top
                         self.save_x_y_minimized_window_screen = get_window_position(window_handle)
                     else:
-                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
+                        ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # reposiciona la ventana en x,y
                     
                     if event_dict["Mouse"]["ClickLeftUp"]:
-                        #if x < 0 or y < 0:
-                        #    if x < 0: x = 0
-                        #    if y < 0: y = 0
-                        #    ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
-                        
-                        #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                         pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                         self.window_id = pg.display.get_wm_info()["window"]
                         self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                         event_dict["Screen"]["Width"] = w
                         event_dict["Screen"]["Height"] = h
-
-                
 
             elif self.scale_modifier_hit_down:
 
@@ -1436,20 +1486,12 @@ class EngineWindow():
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
                 if event_dict["Mouse"]["ClickLeftUp"]:
-                    #if x < 0 or y < 0:
-                    #    if x < 0: x = 0
-                    #    if y < 0: y = 0
-                    #    ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
-                    
-                    #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                     self.window_id = pg.display.get_wm_info()["window"]
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
-                    #del event_dict["EditableObjects"]["selected"][self.depth_number:] 
 
-            # Redimensionar la ventana hacia la derecha
             if self.scale_modifier_hit_right:
 
                 self.window_width += displacement_x
@@ -1460,20 +1502,12 @@ class EngineWindow():
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
                 if event_dict["Mouse"]["ClickLeftUp"]:
-                    #if x < 0 or y < 0:
-                    #    if x < 0: x = 0
-                    #    if y < 0: y = 0
-                    #    ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
-                    
-                    #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                     self.window_id = pg.display.get_wm_info()["window"]
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
-                    #del event_dict["EditableObjects"]["selected"][self.depth_number:] 
 
-            # Redimensionar la ventana hacia la izquierda
             elif self.scale_modifier_hit_left:
 
                 self.window_width -= displacement_x
@@ -1483,20 +1517,12 @@ class EngineWindow():
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
                 
-
                 if event_dict["Mouse"]["ClickLeftUp"]:
-                    #if x < 0 or y < 0:
-                    #    if x < 0: x = 0
-                    #    if y < 0: y = 0
-                    #    ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # 0x0001 es la bandera SWP_NOSIZE
-                    
-                    #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                     self.window_id = pg.display.get_wm_info()["window"]
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
-                    #del event_dict["EditableObjects"]["selected"][self.depth_number:] 
             
             if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:] 
@@ -1783,98 +1809,112 @@ class EngineWindow():
 
         if code == "selected":
 
-            #if event_dict["Mouse"]["ClickLeftDown"]: # esto esta de mas?
+
+            self.monitors_list = self.get_monitors_info() # redefino los monitores existentes
 
             if self.is_maximize==False:
 
                 # Obtener el manejador de la ventana
                 window_handle = pg.display.get_wm_info()['window']
-                # Función para obtener la posición de la ventana en Windows
+                # # Función para obtener la posición de la ventana en Windows
                 def get_window_position(hwnd):
                     rect = ctypes.wintypes.RECT()
                     ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
                     return rect.left, rect.top
                 self.save_x_y_minimized_window_screen = get_window_position(window_handle)
 
-                # Funciones de la API de Windows
-                user32 = ctypes.windll.user32
+                # # Funciones de la API de Windows
+                #user32 = ctypes.windll.user32
 
-                # Estructura para almacenar la información del rectángulo
-                class RECT(ctypes.Structure):
-                    _fields_ = [("left", wintypes.LONG),
-                                ("top", wintypes.LONG),
-                                ("right", wintypes.LONG),
-                                ("bottom", wintypes.LONG)]
+                # # Estructura para almacenar la información del rectángulo
+                # class RECT(ctypes.Structure):
+                #     _fields_ = [("left", wintypes.LONG),
+                #                 ("top", wintypes.LONG),
+                #                 ("right", wintypes.LONG),
+                #                 ("bottom", wintypes.LONG)]
 
-                # Obtiene la lista de monitores (aquí debes implementar la función get_monitors())
-                """AQUI TENER CUIDADO SI HAY MAS DE UN MONITOR"""
-                monitores = get_monitors()  # Asegúrate de definir esta función
-                # Itera sobre los monitores y muestra sus dimensiones
-                #for monitor in monitores:
-                #    print(f"Monitor: {monitor.name} - Ancho: {monitor.width}, Alto: {monitor.height}")
+                # # Obtiene la lista de monitores (aquí debes implementar la función get_monitors())
+                # """AQUI TENER CUIDADO SI HAY MAS DE UN MONITOR"""
+                # monitores = get_monitors()  # Asegúrate de definir esta función
+                # # Itera sobre los monitores y muestra sus dimensiones
+                # #for monitor in monitores:
+                # #    print(f"Monitor: {monitor.name} - Ancho: {monitor.width}, Alto: {monitor.height}")
 
-                # Obtener el rectángulo de la barra de tareas
-                hwnd = user32.FindWindowW("Shell_TrayWnd", None)
-                rect = RECT()
-                user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                # # Obtener el rectángulo de la barra de tareas
+                # hwnd = user32.FindWindowW("Shell_TrayWnd", None)
+                # rect = RECT()
+                # user32.GetWindowRect(hwnd, ctypes.byref(rect))
 
-                # Calcula el ancho y alto de la barra de tareas
-                taskbar_x = rect.left
-                taskbar_y = rect.top
-                taskbar_w = rect.right - rect.left
-                taskbar_h = rect.bottom - rect.top
+                # # Calcula el ancho y alto de la barra de tareas
+                # taskbar_x = rect.left
+                # taskbar_y = rect.top
+                # taskbar_w = rect.right - rect.left
+                # taskbar_h = rect.bottom - rect.top
 
-                # Obtener dimensiones de la pantalla
-                screen_width = user32.GetSystemMetrics(0)  # Ancho
-                screen_height = user32.GetSystemMetrics(1)  # Alto
+                # # Obtener dimensiones de la pantalla
+                # screen_width = user32.GetSystemMetrics(0)  # Ancho
+                # screen_height = user32.GetSystemMetrics(1)  # Alto
 
-                # Determinar la posición de la barra de tareas
-                position = ""
+                # # Determinar la posición de la barra de tareas
+                # position = ""
 
-                # Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
-                if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
-                    position = "Top"
-                elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
-                    position = "Bottom"
-                elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
-                    position = "Left"
-                elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
-                    position = "Right"
-                else:
-                    position = "Could not determine the position"
+                # # Determinar la posición de la barra de tareas basándonos en las coordenadas y los bordes de la pantalla
+                # if rect.top == 0 and taskbar_w == screen_width:  # Barra de tareas en la parte superior
+                #     position = "Top"
+                # elif rect.bottom == screen_height and taskbar_w == screen_width:  # Barra de tareas en la parte inferior
+                #     position = "Bottom"
+                # elif rect.left == 0 and taskbar_h == screen_height:  # Barra de tareas en el lado izquierdo
+                #     position = "Left"
+                # elif rect.right == screen_width and taskbar_h == screen_height:  # Barra de tareas en el lado derecho
+                #     position = "Right"
+                # else:
+                #     position = "Could not determine the position"
 
-                # Establecer la posición de la ventana
-                x = 0
-                y = 0
-                # Inicializa las dimensiones de la ventana
-                w = screen_width  # Ancho por defecto
-                h = screen_height  # Alto por defecto
+                # # Establecer la posición de la ventana
+                # x = 0
+                # y = 0
+                # # Inicializa las dimensiones de la ventana
+                # w = screen_width  # Ancho por defecto
+                # h = screen_height  # Alto por defecto
 
-                # Establecer la posición de la ventana
-                if position == "Bottom":
-                    y = 0  # La ventana empieza desde la parte superior
-                    h = screen_height - taskbar_h  # Altura total menos la barra de tareas
-                elif position == "Top":
-                    y = taskbar_h  # La ventana empieza justo debajo de la barra de tareas
-                    h = screen_height - taskbar_h  # Mantiene la altura total menos la barra de tareas
-                elif position == "Left":
-                    x = taskbar_w  # La ventana empieza justo a la derecha de la barra de tareas
-                    y = 0
-                    w = screen_width - taskbar_w  # Ancho total menos la barra de tareas
-                elif position == "Right":
-                    x = 0  # La ventana empieza desde el borde izquierdo
-                    y = 0
-                    w = screen_width - taskbar_w  # Ancho total menos la barra de tareas
-                else:
-                    # Si no se pudo determinar la posición, puedes optar por valores por defecto
-                    x = 0
-                    y = 0
-                    w = screen_width
-                    h = screen_height
+                # # Establecer la posición de la ventana
+                # if position == "Bottom":
+                #     y = 0  # La ventana empieza desde la parte superior
+                #     h = screen_height - taskbar_h  # Altura total menos la barra de tareas
+                # elif position == "Top":
+                #     y = taskbar_h  # La ventana empieza justo debajo de la barra de tareas
+                #     h = screen_height - taskbar_h  # Mantiene la altura total menos la barra de tareas
+                # elif position == "Left":
+                #     x = taskbar_w  # La ventana empieza justo a la derecha de la barra de tareas
+                #     y = 0
+                #     w = screen_width - taskbar_w  # Ancho total menos la barra de tareas
+                # elif position == "Right":
+                #     x = 0  # La ventana empieza desde el borde izquierdo
+                #     y = 0
+                #     w = screen_width - taskbar_w  # Ancho total menos la barra de tareas
+                # else:
+                #     # Si no se pudo determinar la posición, puedes optar por valores por defecto
+                #     x = 0
+                #     y = 0
+                #     w = screen_width
+                #     h = screen_height
+
+                m = self.monitor_selected
+
+                # x = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["X"]
+                # y = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Y"]
+                # w = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Width"]
+                # h = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Height"]
+
+                x = self.monitors_list[m]["WorkArea"]["X"]
+                y = self.monitors_list[m]["WorkArea"]["Y"]
+                w = self.monitors_list[m]["WorkArea"]["Width"] 
+                h = self.monitors_list[m]["WorkArea"]["Height"] 
 
                 # Establecer la posición y dimensiones de la ventana en Pygame
                 pg.display.set_mode((w, h), pg.NOFRAME)
-                ctypes.windll.user32.SetWindowPos(pg.display.get_wm_info()['window'], None, x, y, 0, 0, 0x0001)# 0x0001 es la bandera SWP_NOSIZE
+                #ctypes.windll.user32.SetWindowPos(pg.display.get_wm_info()['window'], None, x, y, 0, 0, 0x0001)# 0x0001 es la bandera SWP_NOSIZE
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001) # reposicion de la ventana  
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                 self.is_maximize = True # la ventana esta maximizada
@@ -1887,7 +1927,8 @@ class EngineWindow():
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                 x,y = self.save_x_y_minimized_window_screen
-                ctypes.windll.user32.SetWindowPos(pg.display.get_wm_info()['window'], None, x, y, 0, 0, 0x0001)# 0x0001 es la bandera SWP_NOSIZE
+                #ctypes.windll.user32.SetWindowPos(pg.display.get_wm_info()['window'], None, x, y, 0, 0, 0x0001)# 0x0001 es la bandera SWP_NOSIZE
+                ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001) # reposicion de la ventana  
                 self.is_maximize = False # la ventana esta maximizada
 
             del event_dict["EditableObjects"]["selected"][self.depth_number:] 

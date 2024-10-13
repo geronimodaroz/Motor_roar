@@ -1,79 +1,71 @@
-import pygame as pg
 import ctypes
 from ctypes import wintypes
+import sys
 
-# Inicializar Pygame
-pg.init()
+WM_DISPLAYCHANGE = 0x007E
+WM_SETTINGCHANGE = 0x001A
+LRESULT = ctypes.c_long  # Define LRESULT directly using ctypes
 
-# Configurar la ventana de Pygame
-screen = pg.display.set_mode((800, 600), pg.RESIZABLE)
+class MSG(ctypes.Structure):
+    _fields_ = [
+        ("hwnd", wintypes.HWND),
+        ("message", wintypes.UINT),
+        ("wParam", wintypes.WPARAM),
+        ("lParam", wintypes.LPARAM),
+        ("time", wintypes.DWORD),
+        ("pt", wintypes.POINT),
+    ]
 
-# Definir RECT y MONITORINFO para Windows
-class RECT(ctypes.Structure):
-    _fields_ = [("left", wintypes.LONG),
-                ("top", wintypes.LONG),
-                ("right", wintypes.LONG),
-                ("bottom", wintypes.LONG)]
+class WNDCLASS(ctypes.Structure):
+    _fields_ = [
+        ("style", wintypes.UINT),
+        ("lpfnWndProc", ctypes.WINFUNCTYPE(
+            LRESULT, wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM)),
+        ("cbClsExtra", ctypes.c_int),
+        ("cbWndExtra", ctypes.c_int),
+        ("hInstance", wintypes.HINSTANCE),
+        ("hIcon", wintypes.HICON),
+        ("hCursor", wintypes.HCURSOR),
+        ("hbrBackground", wintypes.HBRUSH),
+        ("lpszMenuName", wintypes.LPCWSTR),
+        ("lpszClassName", wintypes.LPCWSTR),
+    ]
 
-class MONITORINFO(ctypes.Structure):
-    _fields_ = [("cbSize", wintypes.DWORD),
-                ("rcMonitor", RECT),
-                ("rcWork", RECT),
-                ("dwFlags", wintypes.DWORD)]
+def create_hidden_window():
+    WndProcType = ctypes.WINFUNCTYPE(
+        LRESULT, wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM)
 
-# Función para obtener la posición de la ventana en Windows
-def get_window_position(hwnd):
-    rect = RECT()
-    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
-    return rect.left, rect.top, rect.right, rect.bottom
-
-# Función para obtener la lista de monitores conectados
-def get_monitors():
-    monitors = []
-    def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
-        mi = MONITORINFO()
-        mi.cbSize = ctypes.sizeof(MONITORINFO)
-        ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
-        monitors.append(mi)
-        return 1  # Continuar la enumeración
-    MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(RECT), ctypes.c_int)
-    ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
-    return monitors
-
-# Función para detectar si la ventana ha cambiado de monitor
-def detect_monitor_change(hwnd, monitors):
-    window_left, window_top, window_right, window_bottom = get_window_position(hwnd)
+    def wnd_proc(hwnd, msg, wparam, lparam):
+        return ctypes.windll.user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+        
+    wnd_proc_func = WndProcType(wnd_proc)
     
-    # Comparar la posición de la ventana con cada monitor
-    for monitor in monitors:
-        if (window_left >= monitor.rcMonitor.left and window_right <= monitor.rcMonitor.right and
-            window_top >= monitor.rcMonitor.top and window_bottom <= monitor.rcMonitor.bottom):
-            return monitor.rcMonitor
-    return None
-
-# Obtener el manejador de la ventana de Pygame
-window_handle = pg.display.get_wm_info()['window']
-
-# Obtener los monitores conectados
-monitors = get_monitors()
-
-# Bucle principal de Pygame
-running = True
-current_monitor = None
-
-while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            running = False
+    wc = WNDCLASS()
+    wc.lpfnWndProc = wnd_proc_func
+    wc.lpszClassName = "MonitorWatcher"
+    
+    if not ctypes.windll.user32.RegisterClassW(ctypes.byref(wc)):
+        raise ctypes.WinError(ctypes.get_last_error())
         
-        # Detectar si la ventana ha cambiado de monitor
+    hwnd = ctypes.windll.user32.CreateWindowExW(
+        0, wc.lpszClassName, None, 0, 0, 0, 0, 0, None, None, None, None)
         
-        new_monitor = detect_monitor_change(window_handle, monitors)
+    if not hwnd:
+        raise ctypes.WinError(ctypes.get_last_error())
+    
+    return hwnd
 
-        if new_monitor and new_monitor != current_monitor:
-            current_monitor = new_monitor
-            print(f"Ventana movida al monitor: {new_monitor.left}, {new_monitor.top}")
+def message_loop():
+    msg = MSG()
+    while ctypes.windll.user32.GetMessageW(ctypes.byref(msg), None, 0, 0) != 0:
+        if msg.message == WM_DISPLAYCHANGE:
+            print("Cambio en la configuración de monitores detectado.")
+        elif msg.message == WM_SETTINGCHANGE:
+            print("Cambio en la configuración del sistema detectado.")
+        ctypes.windll.user32.TranslateMessage(ctypes.byref(msg))
+        ctypes.windll.user32.DispatchMessageW(ctypes.byref(msg))
 
-    pg.display.flip()
-
-pg.quit()
+if __name__ == "__main__":
+    hwnd = create_hidden_window()
+    print("Esperando cambios en la configuración de monitores...")
+    message_loop()

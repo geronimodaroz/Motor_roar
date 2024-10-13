@@ -7,9 +7,6 @@ from ctypes import wintypes
 import pygame as pg
 
 
-
-
-
 def main():
 
     # Inicializar Pygame    
@@ -18,12 +15,7 @@ def main():
     # Añadir la ruta al módulo de scripts
     sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01')
 
-
-
-    from system_info.sys_info import SysInfo
-    print(SysInfo.get_system_info())
-
-
+    from system_info.sys_info import SysInfo # informacion del sistema
 
     from src.scripts.fonts import Font
     from src.engine.Events import event  # eventos
@@ -54,25 +46,20 @@ def main():
     from src.scripts import detection_archive_delate
     detection_archive_delate.monitorear_carpeta(game_folder_path)
 
+
     # # Inicializar el reloj y configurar FPS
-    # #-----------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------
     clock = pg.time.Clock()
     fps_text = Font().surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
+    #-----------------------------------------------------------------------------
+
 
     # Diccionario de eventos
     #-----------------------------------------------------------------------------
 
-    
-
     event_dict = {
 
-        # "SysInfo":{
-        #     "Monitors": {
-        #         "Numbers": None,  # Número total de monitores
-        #         "Info": [],  # Lista para almacenar la información de cada monitor
-        #         "WindowInMonitor": None
-        #         }
-        # },
+        "SysInfo": {"Monitors": SysInfo.get_monitors_info()},  
 
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
@@ -115,25 +102,77 @@ def main():
     }
     #-----------------------------------------------------------------------------
 
-    # Inicialización de objetos
+
+    # variables
     #-----------------------------------------------------------------------------
     depth_number = event_dict["depth_number"]
-    #objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
+    #-----------------------------------------------------------------------------
+
 
      # engine screen
     #-----------------------------------------------------------------------------
+    """Ventana del motor"""
     from src.instances.engine_window import EngineWindowInstance
     engine_window = EngineWindowInstance(event_dict,default_screen_surface)
     #-----------------------------------------------------------------------------
 
+
     # Forzar un evento de teclado
     #-----------------------------------------------------------------------------
+    """Fuerzo un evento de teclado para que se detecten las teclas precionadas"""
     key_event_down = pg.event.Event(pg.KEYDOWN, {"key": pg.K_a, "mod": 0, "unicode": "a", "scancode": 4})
     pg.event.post(key_event_down)
+    #-----------------------------------------------------------------------------
 
     while True: # Bucle principal
 
         try: # capturo errores 
+
+            # DETECTAR SI HAY CAMBIOS EN LA CONFIGURACION DEL SISTEMA 
+
+
+            # si detecto un cambio en los monitores
+            #-----------------------------------------------------------------------------
+            if len(SysInfo.get_monitors_info()) < len(event_dict["SysInfo"]["Monitors"]):
+
+                monitors_list = SysInfo.get_monitors_info()
+
+                del_monitors_list = [
+                    monitor for monitor in event_dict["SysInfo"]["Monitors"]
+                    if monitor not in monitors_list
+                ]
+
+                rect = wintypes.RECT()
+                ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+
+                window_x = rect.left 
+                window_y = rect.top
+                
+                for monitor in del_monitors_list:
+
+                    monitor_x = monitor["Position"]["X"]
+                    monitor_y = monitor["Position"]["Y"]
+                    monitor_w = monitor["Dimensions"]["Width"]
+                    monitor_h = monitor["Dimensions"]["Height"]
+
+                    monitor_rect = pg.rect.Rect(monitor_x,monitor_y,monitor_w,monitor_h)
+
+                    # Comprobar si x,y de la ventana está dentro del monitor
+                    if monitor_rect.collidepoint(window_x,window_y):
+
+                        pg.display.set_mode((800, 600), pg.DOUBLEBUF | pg.NOFRAME)
+                        window_id = pg.display.get_wm_info()["window"]
+                        engine_window.rects_updates(pg.display.get_surface(), w=800,h=600, resize=True)
+                        ctypes.windll.user32.SetWindowPos(window_id, None, 20, 20, 0, 0, 0x0001)  # reposiciona la ventana en x,y
+                        #engine_window.monitor_selected = 0
+                        event_dict["Screen"]["Width"] = 800
+                        event_dict["Screen"]["Height"] = 600
+                        
+                event_dict["SysInfo"]["Monitors"] = monitors_list
+            #-----------------------------------------------------------------------------
+
+
+
 
             # Solo procesar eventos si hay alguno
             events = pg.event.get()

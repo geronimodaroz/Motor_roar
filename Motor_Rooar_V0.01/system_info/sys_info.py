@@ -5,6 +5,9 @@ from ctypes import wintypes
 
 
 
+# SYSINFO DEBE TENER UN BOCLU CONTINUO QUE DETECTE CAMBIOS ENEL SISTEMA INDEPENIENTEMENTE DEL BUCLE DEL PROYECTO?
+
+
 
 # Clase para obtener y manejar la información del sistema
 class SysInfo:
@@ -15,30 +18,18 @@ class SysInfo:
        * Actualización automática si alguna de estas propiedades cambia
     """
 
-    # sys_info_dict = {
-    #             "Monitors": {
-    #                 "Numbers": None,  # Número total de monitores
-    #                 "Info": [],  # Lista para almacenar la información de cada monitor
-    #                 "WindowInMonitor": None
-    #             }
-    #         }
-
     @staticmethod
-    def get_system_info():
+    def get_monitors_info():
         """Método estático para obtener la información del sistema sin crear una instancia."""
 
-        # Definir RECT y MONITORINFO para Windows
-        class RECT(ctypes.Structure):
-            _fields_ = [("left", wintypes.LONG),
-                        ("top", wintypes.LONG),
-                        ("right", wintypes.LONG),
-                        ("bottom", wintypes.LONG)]
-
+        # Definición de MONITORINFO
         class MONITORINFO(ctypes.Structure):
-            _fields_ = [("cbSize", wintypes.DWORD),
-                        ("rcMonitor", RECT),
-                        ("rcWork", RECT),
-                        ("dwFlags", wintypes.DWORD)]
+            _fields_ = [
+                ("cbSize", wintypes.DWORD),
+                ("rcMonitor", wintypes.RECT),
+                ("rcWork", wintypes.RECT),
+                ("dwFlags", wintypes.DWORD)
+            ]
 
         # Función para obtener la lista de monitores conectados
         def _get_monitors_info():
@@ -49,48 +40,38 @@ class SysInfo:
                 ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
                 monitors.append(mi)
                 return 1  # Continuar la enumeración
-            MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(RECT), ctypes.c_int)
+            MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(wintypes.RECT), ctypes.c_int)
             ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
             return monitors
         
-
-
-        # sys_info_dict = {
-        #         "Monitors": {
-        #             "Numbers": 0,  # Número total de monitores
-        #             "Info": []  # Lista para almacenar la información de cada monitor
-        #         }
-        # }
 
         monitors_list = []
 
         # Obtener la lista de monitores
         monitors = _get_monitors_info()  # Asumimos que esta función está definida
 
-        # Rellenar el diccionario con la información de los monitores
-        #sys_info_dict["Monitors"]["Numbers"] = len(monitors)
-
         for i, monitor in enumerate(monitors):
-            monitor_info = {
+            
+            monitors_list.append({
                             "Number": i+1,  # Número del monitor
                             "Position": {
-                                "left": monitor.rcMonitor.left,
-                                "top": monitor.rcMonitor.top},
-                            "Dimensions": (monitor.rcMonitor.right - monitor.rcMonitor.left,
-                                        monitor.rcMonitor.bottom - monitor.rcMonitor.top),  # Ancho y Alto
-                            "WorkArea": (monitor.rcWork.right - monitor.rcWork.left,
-                                        monitor.rcWork.bottom - monitor.rcWork.top)  # Área de trabajo
-                            }
+                                "X": monitor.rcMonitor.left,
+                                "Y": monitor.rcMonitor.top
+                                },
+                            "Dimensions": { # Ancho y Alto
+                                "Width": monitor.rcMonitor.right - monitor.rcMonitor.left,
+                                "Height": monitor.rcMonitor.bottom - monitor.rcMonitor.top
+                                },  
+                            "WorkArea": { # Área de trabajo
+                                "X": monitor.rcWork.left,
+                                "Y": monitor.rcWork.top,
+                                "Width": monitor.rcWork.right - monitor.rcWork.left,
+                                "Height": monitor.rcWork.bottom - monitor.rcWork.top
+                                }  
+                            })
 
-            # Añadir la información del monitor al diccionario
-            #sys_info_dict["Monitors"]["Info"].append(monitor_info)
-            monitors_list.append(monitor_info)
+        return monitors_list
 
-        return monitors_list#sys_info_dict
-
-
-# Crear instancia de SysInfo
-#info = SysInfo()
 
 
 
