@@ -18,6 +18,23 @@ class SysInfo:
        * Actualización automática si alguna de estas propiedades cambia
     """
 
+
+    @staticmethod
+    def get_monitor_count():
+        """Obtiene la cantidad de monitores conectados."""
+        count = ctypes.c_int(0)  # Variable para contar monitores
+        # Definir el callback para la enumeración
+        def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
+            count.value += 1  # Incrementar el contador
+            return 1  # Continuar la enumeración
+        MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.HMONITOR, wintypes.HDC, wintypes.LPRECT, wintypes.LPARAM)
+        # Enumerar los monitores
+        ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
+        return count.value
+    
+
+
+
     @staticmethod
     def get_monitors_info():
         """Método estático para obtener la información del sistema sin crear una instancia."""
@@ -53,7 +70,7 @@ class SysInfo:
         for i, monitor in enumerate(monitors):
             
             monitors_list.append({
-                            "Number": i+1,  # Número del monitor
+                            "Number": i,  # Número del monitor
                             "Position": {
                                 "X": monitor.rcMonitor.left,
                                 "Y": monitor.rcMonitor.top
@@ -69,6 +86,7 @@ class SysInfo:
                                 "Height": monitor.rcWork.bottom - monitor.rcWork.top
                                 }  
                             })
+            
 
         return monitors_list
 

@@ -124,6 +124,7 @@ def main():
     pg.event.post(key_event_down)
     #-----------------------------------------------------------------------------
 
+
     while True: # Bucle principal
 
         try: # capturo errores 
@@ -133,42 +134,56 @@ def main():
 
             # si detecto un cambio en los monitores
             #-----------------------------------------------------------------------------
-            if len(SysInfo.get_monitors_info()) < len(event_dict["SysInfo"]["Monitors"]):
+
+            # ESTOY USANDO SysInfo.get_monitors_info() EN CADA FRAME !
+
+            #print(SysInfo.get_monitor_count())
+
+            
+            if SysInfo.get_monitor_count() != len(event_dict["SysInfo"]["Monitors"]):
+
+                time.sleep(2) # Esperamos dos segundos a que se configuren los monitores(no es la mejor forma)
 
                 monitors_list = SysInfo.get_monitors_info()
 
-                del_monitors_list = [
-                    monitor for monitor in event_dict["SysInfo"]["Monitors"]
-                    if monitor not in monitors_list
-                ]
+                if len(monitors_list) < len(event_dict["SysInfo"]["Monitors"]):
 
-                rect = wintypes.RECT()
-                ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+                    del_monitors_list = [
+                        monitor for monitor in event_dict["SysInfo"]["Monitors"]
+                        if monitor not in monitors_list
+                    ]
 
-                window_x = rect.left 
-                window_y = rect.top
+                    rect = wintypes.RECT()
+                    ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+
+                    window_x = rect.left 
+                    window_y = rect.top
+                    
+                    for monitor in del_monitors_list:
+
+                        monitor_x = monitor["WorkArea"]["X"]
+                        monitor_y = monitor["WorkArea"]["Y"]
+                        monitor_w = monitor["WorkArea"]["Width"]
+                        monitor_h = monitor["WorkArea"]["Height"]
+
+                        monitor_rect = pg.rect.Rect(monitor_x,monitor_y,monitor_w,monitor_h)
+
+                        # Comprobar si x,y de la ventana está dentro del monitor
+                        if monitor_rect.collidepoint(window_x,window_y):
+
+                            pg.display.set_mode((800, 600), pg.DOUBLEBUF | pg.NOFRAME)
+                            window_id = pg.display.get_wm_info()["window"]
+                            engine_window.rects_updates(pg.display.get_surface(), w=800,h=600, resize=True)
+                            ctypes.windll.user32.SetWindowPos(window_id, None, 20, 20, 0, 0, 0x0001)  # reposiciona la ventana en x,y
+                            engine_window.is_maximize = False
+                            engine_window.monitor_selected = 0
+                            event_dict["Screen"]["Width"] = 800
+                            event_dict["Screen"]["Height"] = 600
+
                 
-                for monitor in del_monitors_list:
-
-                    monitor_x = monitor["Position"]["X"]
-                    monitor_y = monitor["Position"]["Y"]
-                    monitor_w = monitor["Dimensions"]["Width"]
-                    monitor_h = monitor["Dimensions"]["Height"]
-
-                    monitor_rect = pg.rect.Rect(monitor_x,monitor_y,monitor_w,monitor_h)
-
-                    # Comprobar si x,y de la ventana está dentro del monitor
-                    if monitor_rect.collidepoint(window_x,window_y):
-
-                        pg.display.set_mode((800, 600), pg.DOUBLEBUF | pg.NOFRAME)
-                        window_id = pg.display.get_wm_info()["window"]
-                        engine_window.rects_updates(pg.display.get_surface(), w=800,h=600, resize=True)
-                        ctypes.windll.user32.SetWindowPos(window_id, None, 20, 20, 0, 0, 0x0001)  # reposiciona la ventana en x,y
-                        #engine_window.monitor_selected = 0
-                        event_dict["Screen"]["Width"] = 800
-                        event_dict["Screen"]["Height"] = 600
-                        
+                            
                 event_dict["SysInfo"]["Monitors"] = monitors_list
+
             #-----------------------------------------------------------------------------
 
 
@@ -297,12 +312,12 @@ def main():
                 pg.display.flip()
                 # ----------------------------------------------------------------------------
 
-                # Limitar a 60 FPS
-                # ----------------------------------------------------------------------------
-                clock.tick(event_dict["FPS"]["Fixed"])
-                event_dict["FPS"]["Real"] = clock.get_fps()
-                event_dict["FPS"]["delta_time"] = clock.get_time() / 1000 # Calcular tiempo transcurrido
-                # ----------------------------------------------------------------------------
+            # Limitar a 60 FPS
+            # ----------------------------------------------------------------------------
+            clock.tick(event_dict["FPS"]["Fixed"])
+            event_dict["FPS"]["Real"] = clock.get_fps()
+            event_dict["FPS"]["delta_time"] = clock.get_time() / 1000 # Calcular tiempo transcurrido
+            # ----------------------------------------------------------------------------
 
 
         except Exception as e:
