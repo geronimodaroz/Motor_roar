@@ -131,58 +131,91 @@ def main():
 
             # DETECTAR SI HAY CAMBIOS EN LA CONFIGURACION DEL SISTEMA 
 
-
-            # si detecto un cambio en los monitores
             #-----------------------------------------------------------------------------
 
             # ESTOY USANDO SysInfo.get_monitors_info() EN CADA FRAME !
 
-            #print(SysInfo.get_monitor_count())
-
+            keys = pg.key.get_pressed()  # Estado actual de las teclas
+            # USO F5 PARA ACTUALIZAR LA INFORMACION SOBRE LOS MONITORES Y SUS DIMENCIONES
+            if keys[pg.K_F5]:
             
-            if SysInfo.get_monitor_count() != len(event_dict["SysInfo"]["Monitors"]):
+                if SysInfo.get_monitor_count() != len(event_dict["SysInfo"]["Monitors"]):
 
-                time.sleep(2) # Esperamos dos segundos a que se configuren los monitores(no es la mejor forma)
+                    """ si la cantidad de monitores cambia se modifica la lista de monitores del sistema, y se reuubica la ventana de ser necesario"""
+                    #time.sleep(2) # Esperamos dos segundos a que se configuren los monitores(no es la mejor forma)
+                    monitors_list = SysInfo.get_monitors_info()
 
-                monitors_list = SysInfo.get_monitors_info()
+                    if len(monitors_list) < len(event_dict["SysInfo"]["Monitors"]):
+                        del_monitors_list = [
+                            monitor for monitor in event_dict["SysInfo"]["Monitors"]
+                            if monitor not in monitors_list
+                        ]
+                        rect = wintypes.RECT()
+                        ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+                        window_x = rect.left 
+                        window_y = rect.top
+                        
+                        for monitor in del_monitors_list:
+                            monitor_x = monitor["WorkArea"]["X"]
+                            monitor_y = monitor["WorkArea"]["Y"]
+                            monitor_w = monitor["WorkArea"]["Width"]
+                            monitor_h = monitor["WorkArea"]["Height"]
 
-                if len(monitors_list) < len(event_dict["SysInfo"]["Monitors"]):
+                            monitor_rect = pg.rect.Rect(monitor_x,monitor_y,monitor_w,monitor_h)
 
-                    del_monitors_list = [
-                        monitor for monitor in event_dict["SysInfo"]["Monitors"]
-                        if monitor not in monitors_list
-                    ]
-
-                    rect = wintypes.RECT()
-                    ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
-
-                    window_x = rect.left 
-                    window_y = rect.top
-                    
-                    for monitor in del_monitors_list:
-
-                        monitor_x = monitor["WorkArea"]["X"]
-                        monitor_y = monitor["WorkArea"]["Y"]
-                        monitor_w = monitor["WorkArea"]["Width"]
-                        monitor_h = monitor["WorkArea"]["Height"]
-
-                        monitor_rect = pg.rect.Rect(monitor_x,monitor_y,monitor_w,monitor_h)
-
-                        # Comprobar si x,y de la ventana está dentro del monitor
-                        if monitor_rect.collidepoint(window_x,window_y):
-
-                            pg.display.set_mode((800, 600), pg.DOUBLEBUF | pg.NOFRAME)
-                            window_id = pg.display.get_wm_info()["window"]
-                            engine_window.rects_updates(pg.display.get_surface(), w=800,h=600, resize=True)
-                            ctypes.windll.user32.SetWindowPos(window_id, None, 20, 20, 0, 0, 0x0001)  # reposiciona la ventana en x,y
-                            engine_window.is_maximize = False
-                            engine_window.monitor_selected = 0
-                            event_dict["Screen"]["Width"] = 800
-                            event_dict["Screen"]["Height"] = 600
-
+                            # Comprobar si x,y de la ventana está dentro del monitor
+                            if monitor_rect.collidepoint(window_x,window_y):
+                                pg.display.set_mode((800, 600), pg.DOUBLEBUF | pg.NOFRAME)
+                                window_id = pg.display.get_wm_info()["window"]
+                                engine_window.rects_updates(pg.display.get_surface(), w=800,h=600, resize=True)
+                                ctypes.windll.user32.SetWindowPos(window_id, None, 20, 20, 0, 0, 0x0001)  # reposiciona la ventana en x,y
+                                engine_window.is_maximize = False
+                                engine_window.monitor_selected = 0
+                                event_dict["Screen"]["Width"] = 800
+                                event_dict["Screen"]["Height"] = 600
+                    event_dict["SysInfo"]["Monitors"] = monitors_list
                 
-                            
-                event_dict["SysInfo"]["Monitors"] = monitors_list
+                else:
+                    """Si el area de trabajo cambia la ventana se modifica con ella si esta en pantalla completa"""
+                    monitors_list = SysInfo.get_monitors_info()
+                    for i,m in enumerate(monitors_list):
+                        change = False
+                        if event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["X"] != m["WorkArea"]["X"]:
+                            event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["X"] = m["WorkArea"]["X"]
+                            change = True
+                        if event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Width"] != m["WorkArea"]["Width"]:
+                            event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Width"] = m["WorkArea"]["Width"]
+                            change = True
+                        if event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Y"] != m["WorkArea"]["Y"]:
+                            event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Y"] = m["WorkArea"]["Y"]
+                            change = True
+                        if event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Height"] != m["WorkArea"]["Height"]:
+                            event_dict["SysInfo"]["Monitors"][i]["WorkArea"]["Height"] = m["WorkArea"]["Height"]
+                            change = True
+
+                        screen_x = event_dict["SysInfo"]["Monitors"][i]["Position"]["X"]
+                        screen_y = event_dict["SysInfo"]["Monitors"][i]["Position"]["Y"]
+                        screen_w = event_dict["SysInfo"]["Monitors"][i]["Dimensions"]["Width"]
+                        screen_h = event_dict["SysInfo"]["Monitors"][i]["Dimensions"]["Height"]
+
+                        scr_rect = pg.rect.Rect(screen_x,screen_y,screen_w,screen_h)
+                        rect = wintypes.RECT()
+                        ctypes.windll.user32.GetWindowRect(window_id, ctypes.byref(rect))
+                        window_x = rect.left 
+                        window_y = rect.top
+
+                        if scr_rect.collidepoint(window_x,window_y) and change:
+                            if engine_window.is_maximize:
+                                engine_window.is_maximize = False
+                                engine_window.monitor_selected = i
+                                engine_window.maximize(event_dict,code = "selected")
+                
+
+
+                # Si el sistema reubica la ventana automaticamente y la desconfigura !! ERROR !!
+                # Metodo de reinicio para engine_window
+                #width, height = default_screen_surface.get_size()
+                #engine_window.rects_updates(default_screen_surface,w = width,h = height,force=True)
 
             #-----------------------------------------------------------------------------
 

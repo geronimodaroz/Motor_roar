@@ -985,57 +985,6 @@ class WindowBase():
 
 class EngineWindow():
     """Crea el objeto ventana del proyecto sin ningun objeto en su interior"""
-    
-    # def get_monitors_info(self):
-    #     """Obtiene la información de los monitores conectados."""
-
-    #     # Definición de MONITORINFO
-    #     class MONITORINFO(ctypes.Structure):
-    #         _fields_ = [
-    #             ("cbSize", wintypes.DWORD),
-    #             ("rcMonitor", wintypes.RECT),
-    #             ("rcWork", wintypes.RECT),
-    #             ("dwFlags", wintypes.DWORD)
-    #         ]
-
-    #     # Función interna para obtener la lista de monitores conectados
-    #     def _get_monitors_info():
-    #         monitors = []
-    #         def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
-    #             mi = MONITORINFO(cbSize=ctypes.sizeof(MONITORINFO))
-    #             ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
-    #             monitors.append(mi)
-    #             return 1  # Continuar la enumeración
-    #         MonitorEnumProc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(wintypes.RECT), ctypes.c_int)
-    #         ctypes.windll.user32.EnumDisplayMonitors(None, None, MonitorEnumProc(callback), 0)
-    #         return monitors
-
-    #     monitors_list = []
-
-    #     # Obtener la lista de monitores
-    #     monitors = _get_monitors_info()  # Asumimos que esta función está definida
-
-    #     for i, monitor in enumerate(monitors):
-            
-    #         monitors_list.append({
-    #                         "Number": i+1,  # Número del monitor
-    #                         "Position": {
-    #                             "X": monitor.rcMonitor.left,
-    #                             "Y": monitor.rcMonitor.top
-    #                             },
-    #                         "Dimensions": { # Ancho y Alto
-    #                             "Width": monitor.rcMonitor.right - monitor.rcMonitor.left,
-    #                             "Height": monitor.rcMonitor.bottom - monitor.rcMonitor.top
-    #                             },  
-    #                         "WorkArea": { # Área de trabajo
-    #                             "X": monitor.rcWork.left,
-    #                             "Y": monitor.rcWork.top,
-    #                             "Width": monitor.rcWork.right - monitor.rcWork.left,
-    #                             "Height": monitor.rcWork.bottom - monitor.rcWork.top
-    #                             }  
-    #                         })
-
-    #     return monitors_list
 
     def __init__(self,event_dict,presurface):
 
@@ -1115,8 +1064,6 @@ class EngineWindow():
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
         # ----------------------------------------------------------------------------
-
-    
 
     def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
         """
@@ -1764,9 +1711,6 @@ class EngineWindow():
                 y = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Y"]
                 w = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Width"]
                 h = event_dict["SysInfo"]["Monitors"][m]["WorkArea"]["Height"]
-
-                #print(event_dict["SysInfo"]["Monitors"])
-                #print(m,w,h)
 
                 # Establecer la posición y dimensiones de la ventana en Pygame
                 pg.display.set_mode((w, h), pg.NOFRAME)
