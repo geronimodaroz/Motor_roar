@@ -985,7 +985,6 @@ class WindowBase():
 
 class EngineWindow():
     """Crea el objeto ventana del proyecto sin ningun objeto en su interior"""
-
     def __init__(self,event_dict,presurface):
 
 
@@ -1007,6 +1006,8 @@ class EngineWindow():
 
         # scale_modifier
         # ----------------------------------------------------------------------------
+        self.icon = pg.image.load(r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\images\dino-32.png")
+        self.icon = pg.transform.scale(self.icon, (20, 20))
         self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
         self.scale_modifier_bar = 30
         self.scale_modifier_margin = 5
@@ -1648,14 +1649,21 @@ class EngineWindow():
 
     def draw(self,event_dict):
 
+
         pg.draw.rect(self.presurface,(50,50,50),self.rect)
 
-        pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
+        self.presurface.blit(self.icon,(5,5)) # icono
+
+        # text - ESTO TEIENE QUE CAMBIAR DE FUENTE!!
+        font = pg.font.SysFont('Arial', 14)
+        text_surface = font.render("Roaar !!", True, (200, 200, 200))
+        self.presurface.blit(text_surface, (30,6))
 
         # cruz de cierre
         # ----------------------------------------------------------------------------
-        color = (130,130,130)
-        num = 5
+        pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
+        color = (120,120,120)
+        num = 6
         x1 = self.close_button_rect.x + num
         y1 = self.close_button_rect.y + num
         x2 = self.close_button_rect.x + self.close_button_rect.width - num
@@ -1670,12 +1678,32 @@ class EngineWindow():
 
         # ----------------------------------------------------------------------------
 
+        # maximizar 
+        # ----------------------------------------------------------------------------
         pg.draw.rect(self.presurface,self.maximize_button_color,self.maximize_button_rect,0,6) # maximize
+        color = (120,120,120)
+        num = 5
+        x = self.maximize_button_rect.x + num
+        y = self.maximize_button_rect.y + num 
+        w = self.maximize_button_rect.width - num*2
+        h = self.maximize_button_rect.height - num*2 
+        pg.draw.rect(self.presurface,color,(x,y,w,h),2)
+        # ----------------------------------------------------------------------------
 
+        # minimizar
+        # ----------------------------------------------------------------------------
         pg.draw.rect(self.presurface,self.minimize_button_color,self.minimize_button_rect,0,6) # minimize
-
+        color = (120,120,120)
+        num = 4
+        x1 = self.minimize_button_rect.x + num
+        y1 = self.minimize_button_rect.y + self.minimize_button_rect.width/2
+        x2 = self.minimize_button_rect.x + self.minimize_button_rect.width - num
+        y2 = y1#self.minimize_button_rect.y + self.minimize_button_rect.height - self.minimize_button_rect.width/2 - num*2 
+        pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),2)
+        # ----------------------------------------------------------------------------
+        
+        # Interior de la ventana 
         pg.draw.rect(self.presurface,self.color,self.view_rect)
-
         
 
         # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!

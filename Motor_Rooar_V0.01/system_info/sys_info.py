@@ -37,7 +37,7 @@ class SysInfo:
 
     @staticmethod
     def get_monitors_info():
-        """Método estático para obtener la información del sistema sin crear una instancia."""
+        """Obtiene una lista de los monitores, sus dimenciones y areas de trabajo."""
 
         # Definición de MONITORINFO
         class MONITORINFO(ctypes.Structure):

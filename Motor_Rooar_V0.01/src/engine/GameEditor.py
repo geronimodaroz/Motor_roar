@@ -56,7 +56,6 @@ def main():
 
     # Diccionario de eventos
     #-----------------------------------------------------------------------------
-
     event_dict = {
 
         "SysInfo": {"Monitors": SysInfo.get_monitors_info()},  

@@ -1,107 +1,88 @@
-import ctypes
-from ctypes import wintypes
+import pygame as pg
+import tkinter as tk
+import sys
 
-# Definimos las constantes necesarias
-WM_DISPLAYCHANGE = 0x007E  # Mensaje cuando cambia la configuración de pantalla
-WM_DESTROY = 0x0002         # Mensaje para cerrar la ventana
+# Inicializa Pygame
+pg.init()
 
-class MONITORINFO(ctypes.Structure):
-    _fields_ = [
-        ("cbSize", wintypes.DWORD),
-        ("rcMonitor", wintypes.RECT),
-        ("rcWork", wintypes.RECT),
-        ("dwFlags", wintypes.DWORD)
-    ]
+# Configuración de la ventana principal de Pygame
+window = pg.display.set_mode((800, 600))
+pg.display.set_caption("Ventana Principal - Pygame")
 
-def get_monitors_info():
-    """Obtiene la información actual de los monitores."""
-    monitors = []
+background_color = (30, 30, 30)
+clock = pg.time.Clock()
 
-    def callback(hMonitor, hdcMonitor, lprcMonitor, dwData):
-        mi = MONITORINFO(cbSize=ctypes.sizeof(MONITORINFO))
-        ctypes.windll.user32.GetMonitorInfoW(hMonitor, ctypes.byref(mi))
-        monitors.append({
-            "MonitorRect": (mi.rcMonitor.left, mi.rcMonitor.top, 
-                            mi.rcMonitor.right, mi.rcMonitor.bottom),
-            "WorkArea": (mi.rcWork.left, mi.rcWork.top, 
-                         mi.rcWork.right, mi.rcWork.bottom)
-        })
-        return 1  # Continuar la enumeración
+def create_tkinter_window():
+    """Crea una ventana de Tkinter redimensionable desde las esquinas."""
+    root = tk.Tk()
+    root.overrideredirect(True)  # Sin barra de título
+    root.attributes('-alpha', 0.4)  # Transparencia
+    root.geometry("400x300+100+100")  # Tamaño y posición inicial
 
-    MonitorEnumProc = ctypes.WINFUNCTYPE(
-        ctypes.c_int, ctypes.c_int, ctypes.c_int, 
-        ctypes.POINTER(wintypes.RECT), ctypes.c_int
-    )
-    ctypes.windll.user32.EnumDisplayMonitors(
-        None, None, MonitorEnumProc(callback), 0
-    )
-    return monitors
+    # Variables de estado
+    resizing = None  # 'left' o 'right'
+    start_x = start_y = win_start_width = win_start_height = win_start_x = 0
 
-# Almacenar la configuración inicial de los monitores
-previous_monitors = get_monitors_info()
+    def start_resize(event, direction):
+        """Inicia el redimensionamiento."""
+        nonlocal resizing, start_x, start_y, win_start_width, win_start_height, win_start_x
+        resizing = direction
+        start_x, start_y = event.x_root, event.y_root
+        win_start_width = root.winfo_width()
+        win_start_height = root.winfo_height()
+        win_start_x = root.winfo_x()
 
-def detect_changes():
-    """Detecta cambios en la configuración de los monitores."""
-    global previous_monitors
-    new_monitors = get_monitors_info()
+    def do_resize(event):
+        """Realiza el redimensionamiento."""
+        dx = event.x_root - start_x
+        dy = event.y_root - start_y
 
-    if new_monitors != previous_monitors:
-        print("¡Cambio detectado en la configuración de monitores!")
-        print("Configuración anterior:", previous_monitors)
-        print("Configuración nueva:", new_monitors)
-        previous_monitors = new_monitors  # Actualizar la referencia
+        if resizing == 'right':
+            new_width = max(100, win_start_width + dx)
+            new_height = max(100, win_start_height + dy)
+            root.geometry(f"{new_width}x{new_height}")
+        elif resizing == 'left':
+            new_width = max(100, win_start_width - dx)
+            new_height = max(100, win_start_height + dy)
+            new_x = win_start_x + dx
+            root.geometry(f"{new_width}x{new_height}+{new_x}+{root.winfo_y()}")
 
-def win_proc(hwnd, msg, wparam, lparam):
-    """Función que maneja los mensajes del sistema."""
-    if msg == WM_DISPLAYCHANGE:
-        detect_changes()  # Detectar cambios al recibir el evento
-    elif msg == WM_DESTROY:
-        ctypes.windll.user32.PostQuitMessage(0)
-    return ctypes.windll.user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+    def release(event):
+        """Termina el redimensionamiento."""
+        nonlocal resizing
+        resizing = None
 
-class WNDCLASS(ctypes.Structure):
-    """Clase para definir la ventana oculta."""
-    _fields_ = [
-        ("style", wintypes.UINT),
-        ("lpfnWndProc", wintypes.WNDPROC),
-        ("cbClsExtra", wintypes.INT),
-        ("cbWndExtra", wintypes.INT),
-        ("hInstance", wintypes.HINSTANCE),
-        ("hIcon", wintypes.HICON),
-        ("hCursor", wintypes.HCURSOR),
-        ("hbrBackground", wintypes.HBRUSH),
-        ("lpszMenuName", wintypes.LPCWSTR),
-        ("lpszClassName", wintypes.LPCWSTR),
-    ]
+    def enter_resize(event):
+        """Detecta la esquina para redimensionar."""
+        width, height = root.winfo_width(), root.winfo_height()
+        if event.x >= width - 10 and event.y >= height - 10:
+            root.config(cursor="bottom_right_corner")
+            root.bind("<Button-1>", lambda e: start_resize(e, 'right'))
+        elif event.x <= 10 and event.y >= height - 10:
+            root.config(cursor="bottom_left_corner")
+            root.bind("<Button-1>", lambda e: start_resize(e, 'left'))
+        else:
+            root.config(cursor="arrow")
+            root.bind("<Button-1>", lambda e: None)
 
-def create_hidden_window():
-    """Crea una ventana oculta para recibir eventos."""
-    wc = WNDCLASS()
-    WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_long, wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM)
-    wc.lpfnWndProc = WNDPROC(win_proc)
-    wc.lpszClassName = "HiddenWindowClass"
-    wc.hInstance = ctypes.windll.kernel32.GetModuleHandleW(None)
+    # Conexiones de eventos
+    root.bind("<B1-Motion>", do_resize)
+    root.bind("<ButtonRelease-1>", release)
+    root.bind("<Motion>", enter_resize)
 
-    class_atom = ctypes.windll.user32.RegisterClassW(ctypes.byref(wc))
-    if not class_atom:
-        raise ctypes.WinError()
+    # Botón de cierre
+    tk.Button(root, text="Cerrar", command=root.destroy).pack(pady=10)
+    root.mainloop()
 
-    hwnd = ctypes.windll.user32.CreateWindowExW(
-        0, wc.lpszClassName, "Hidden Window", 0,
-        0, 0, 0, 0, 0, 0, wc.hInstance, None
-    )
-    if not hwnd:
-        raise ctypes.WinError()
-    return hwnd
+# Bucle principal de Pygame
+while True:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
+        if event.type == pg.KEYDOWN and event.key == pg.K_DOWN:
+            create_tkinter_window()
 
-def message_loop():
-    """Bucle de mensajes para mantener la ventana activa."""
-    msg = wintypes.MSG()
-    while ctypes.windll.user32.GetMessageW(ctypes.byref(msg), None, 0, 0) != 0:
-        ctypes.windll.user32.TranslateMessage(ctypes.byref(msg))
-        ctypes.windll.user32.DispatchMessageW(ctypes.byref(msg))
-
-if __name__ == "__main__":
-    print("Escuchando cambios en la configuración de monitores...")
-    hwnd = create_hidden_window()
-    message_loop()
+    window.fill(background_color)
+    pg.display.update()
+    clock.tick(60)
