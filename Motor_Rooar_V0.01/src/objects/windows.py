@@ -4,10 +4,10 @@ import sys
 import ctypes
 from ctypes import wintypes
 from src.scripts.surface_reposition import SurfaceReposition
+from src.scripts.fonts import Font
 
 from typing import Literal
 
-from screeninfo import get_monitors
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1006,11 +1006,16 @@ class EngineWindow():
 
         # scale_modifier
         # ----------------------------------------------------------------------------
-        self.icon = pg.image.load(r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\images\dino-32.png")
-        self.icon = pg.transform.scale(self.icon, (20, 20))
         self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
         self.scale_modifier_bar = 30
         self.scale_modifier_margin = 5
+        # ----------------------------------------------------------------------------
+
+        # Icono y texto
+        # ----------------------------------------------------------------------------
+        self.icon = pg.image.load(r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\images\dino-32.png")
+        self.icon = pg.transform.scale(self.icon, (20, 20))
+        self.text = Font.surf_font_OpenSans_Medium("Roar !! - V0.01") # devuelve la superficie del texto
         # ----------------------------------------------------------------------------
 
         # buttons
@@ -1022,8 +1027,7 @@ class EngineWindow():
         self.minimize_button_color = (80, 80, 80)
         self.is_maximize = False
         self.save_x_y_minimized_window_screen = (0,0)
-        self.monitor_selected = 0#None
-        #self.monitors_list = self.get_monitors_info()
+        self.monitor_selected = 0
         # ----------------------------------------------------------------------------
 
         # variables de engine_window 
@@ -1038,6 +1042,10 @@ class EngineWindow():
         self.window_top = 0
         self.window_width = 0
         self.window_height = 0
+
+        # guarda las dimenciones de la ventana minimizada 
+        self.save_window_width = 0
+        self.save_window_height = 0
 
         self.save_global_mouse_x = 0
         self.save_global_mouse_y = 0
@@ -1654,10 +1662,7 @@ class EngineWindow():
 
         self.presurface.blit(self.icon,(5,5)) # icono
 
-        # text - ESTO TEIENE QUE CAMBIAR DE FUENTE!!
-        font = pg.font.SysFont('Arial', 14)
-        text_surface = font.render("Roaar !!", True, (200, 200, 200))
-        self.presurface.blit(text_surface, (30,6))
+        self.presurface.blit(self.text, (30,6)) # texto - nombre del motor
 
         # cruz de cierre
         # ----------------------------------------------------------------------------
@@ -1746,9 +1751,20 @@ class EngineWindow():
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                 self.is_maximize = True # la ventana esta maximizada
+
+                # guardamos las dimenciones de la ventana antes de maximizar
+                self.save_window_width = event_dict["Screen"]["Width"]
+                self.save_window_Height = event_dict["Screen"]["Height"]
+
+                event_dict["Screen"]["Width"] = w
+                event_dict["Screen"]["Height"] = h
             else:
-                w = event_dict["Screen"]["Width"]
-                h = event_dict["Screen"]["Height"]
+                w = self.save_window_width 
+                h = self.save_window_Height
+
+                event_dict["Screen"]["Width"] = w
+                event_dict["Screen"]["Height"] = h
+
                 pg.display.set_mode((w, h), pg.NOFRAME)
                 self.window_id = pg.display.get_wm_info()["window"]
                 self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)

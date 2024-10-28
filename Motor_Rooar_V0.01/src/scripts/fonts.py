@@ -24,8 +24,10 @@ class Font:
 
     @staticmethod
     def surf_font_default(text, color =(180, 180, 180)):
+        """ Devuelve la superficie del texto en la fuente default"""
         return Font.font_default.render(text, True, color)
 
     @staticmethod
     def surf_font_OpenSans_Medium(text, color =(180, 180, 180)):
+        """ Devuelve la superficie del texto en la fuente OpenSans_Medium"""
         return Font.font_OpenSans_Medium.render(text, True, color)

@@ -8,6 +8,7 @@ ERRORES A AREGLAR:
 * los colores del proyecto no dependen en todos los objetos de "event_dict" y deberian !
 * debo precionar "F5" para adaptar la ventana a los cambios en el area de trabajo del monitor, no es automatico y deberia !
 * modificar el tamaño de la ventana de pygame desde sus esquinas inferiores permite achicar la ventana mas de lo debido !
+* ventana escroleable (class Window): al minimizar la ventana al minimo y intentar mover la barra inferior de posicion si esta en un borde el mouse no desplaza bien la imagen o su contenido hasta despues de un momento, solo ocurre del lado derecho de la barra inferior
 # ----------------------------------------------------------------------------
 
 

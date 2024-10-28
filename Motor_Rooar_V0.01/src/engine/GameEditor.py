@@ -62,7 +62,8 @@ def main():
 
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
-        "Screen":{"Width":width, "Height":height},
+
+        "Screen":{"Width":width, "Height":height}, # ESTO ES NECESARIO? creo que si 
 
         "ForceLoop":False,
 
