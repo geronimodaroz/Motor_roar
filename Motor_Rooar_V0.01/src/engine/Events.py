@@ -22,6 +22,10 @@ def event(events,event_dict):
 
     # Reinicio variables
     # ----------------------------------------------------------------------------
+    #event_dict["UpdateDrawRect"] = None #reinicia la parte dela pantalla que tiene que actualizarse
+    event_dict["UpdateDrawRect"]["clickable"] = None
+    event_dict["UpdateDrawRect"]["selected"] = None
+
     event_dict["Mouse"]["Motion"] = None
     event_dict["Mouse"]["ClickLeftDown"] = False
     event_dict["Mouse"]["ClickLeftUp"] = False
@@ -109,7 +113,6 @@ def event(events,event_dict):
                         break
             # ----------------------------------------------------------------------------
 
-
         # Detectar eventos de clic del ratón
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:  # Botón izquierdo del ratón
@@ -124,6 +127,8 @@ def event(events,event_dict):
         # scroll del mouse
         if event.type == pg.MOUSEWHEEL:
             event_dict["Mouse"]["Scroll"] = 1 if event.y > 0 else -1
+
+        
 # ----------------------------------------------------------------------------
 
 

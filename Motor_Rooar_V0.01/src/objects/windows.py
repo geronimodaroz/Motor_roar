@@ -997,8 +997,8 @@ class EngineWindow():
         # Rect
         # ----------------------------------------------------------------------------
         self.rect = pg.rect.Rect(0,0,0,0)
-        x = 0 #20
-        y = 0 #20
+        #x = 0 
+        #y = 0 
         w = presurface.get_width() 
         h = presurface.get_height() 
         self.color = (120,120,120)
@@ -1027,6 +1027,9 @@ class EngineWindow():
         self.minimize_button_color = (80, 80, 80)
         self.is_maximize = False
         self.save_x_y_minimized_window_screen = (0,0)
+        # guarda las dimenciones de la ventana minimizada 
+        self.save_window_width = 0
+        self.save_window_height = 0
         self.monitor_selected = 0
         # ----------------------------------------------------------------------------
 
@@ -1035,20 +1038,15 @@ class EngineWindow():
         # Obtener el identificador de la ventana de Pygame (solo en Windows)
         self.window_id = pg.display.get_wm_info()["window"]
 
-        #self.initial_mouse_x = 0
-        #self.initial_mouse_y = 0
-
         self.window_left = 0
         self.window_top = 0
         self.window_width = 0
         self.window_height = 0
 
-        # guarda las dimenciones de la ventana minimizada 
-        self.save_window_width = 0
-        self.save_window_height = 0
-
         self.save_global_mouse_x = 0
         self.save_global_mouse_y = 0
+
+        self.update_draw = True
         # ----------------------------------------------------------------------------
 
         self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
@@ -1360,6 +1358,9 @@ class EngineWindow():
                             ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
                             return rect.left, rect.top
                         self.save_x_y_minimized_window_screen = get_window_position(window_handle)
+
+                        self.update_draw = True # actualiza dibujo de la ventana principal 
+
                     else:
                         ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # reposiciona la ventana en x,y
                     
@@ -1379,6 +1380,8 @@ class EngineWindow():
                 h = max(100, self.window_height)
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
+                self.update_draw = True # actualiza dibujo de la ventana principal 
+
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                     self.window_id = pg.display.get_wm_info()["window"]
@@ -1395,6 +1398,8 @@ class EngineWindow():
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
+                self.update_draw = True # actualiza dibujo de la ventana principal 
+
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
                     self.window_id = pg.display.get_wm_info()["window"]
@@ -1410,6 +1415,8 @@ class EngineWindow():
                 w = max(100, self.window_width)
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
+
+                self.update_draw = True # actualiza dibujo de la ventana principal
                 
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
@@ -1417,7 +1424,8 @@ class EngineWindow():
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
-            
+
+
             if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:] 
                 
@@ -1658,57 +1666,61 @@ class EngineWindow():
     def draw(self,event_dict):
 
 
-        pg.draw.rect(self.presurface,(50,50,50),self.rect)
+        if self.update_draw or True:
 
-        self.presurface.blit(self.icon,(5,5)) # icono
+            pg.draw.rect(self.presurface,(50,50,50),self.rect)
+            self.presurface.blit(self.icon,(5,5)) # icono
+            self.presurface.blit(self.text, (30,6)) # texto - nombre del motor
 
-        self.presurface.blit(self.text, (30,6)) # texto - nombre del motor
+            # cruz de cierre
+            # ----------------------------------------------------------------------------
+            pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
+            color = (120,120,120)
+            num = 6
+            x1 = self.close_button_rect.x + num
+            y1 = self.close_button_rect.y + num
+            x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            y2 = self.close_button_rect.y + self.close_button_rect.height - num
+            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            x1 = self.close_button_rect.x + num
+            y1 = self.close_button_rect.y + self.close_button_rect.height - num
+            x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            y2 = self.close_button_rect.y + num
+            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # ----------------------------------------------------------------------------
 
-        # cruz de cierre
-        # ----------------------------------------------------------------------------
-        pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
-        color = (120,120,120)
-        num = 6
-        x1 = self.close_button_rect.x + num
-        y1 = self.close_button_rect.y + num
-        x2 = self.close_button_rect.x + self.close_button_rect.width - num
-        y2 = self.close_button_rect.y + self.close_button_rect.height - num
-        pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # maximizar 
+            # ----------------------------------------------------------------------------
+            pg.draw.rect(self.presurface,self.maximize_button_color,self.maximize_button_rect,0,6) # maximize
+            color = (120,120,120)
+            num = 5
+            x = self.maximize_button_rect.x + num
+            y = self.maximize_button_rect.y + num 
+            w = self.maximize_button_rect.width - num*2
+            h = self.maximize_button_rect.height - num*2 
+            pg.draw.rect(self.presurface,color,(x,y,w,h),2)
+            # ----------------------------------------------------------------------------
 
-        x1 = self.close_button_rect.x + num
-        y1 = self.close_button_rect.y + self.close_button_rect.height - num
-        x2 = self.close_button_rect.x + self.close_button_rect.width - num
-        y2 = self.close_button_rect.y + num
-        pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # minimizar
+            # ----------------------------------------------------------------------------
+            pg.draw.rect(self.presurface,self.minimize_button_color,self.minimize_button_rect,0,6) # minimize
+            color = (120,120,120)
+            num = 4
+            x1 = self.minimize_button_rect.x + num
+            y1 = self.minimize_button_rect.y + self.minimize_button_rect.width/2
+            x2 = self.minimize_button_rect.x + self.minimize_button_rect.width - num
+            y2 = y1#self.minimize_button_rect.y + self.minimize_button_rect.height - self.minimize_button_rect.width/2 - num*2 
+            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),2)
+            # ----------------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------------
+            # Interior de la ventana 
+            pg.draw.rect(self.presurface,self.color,self.view_rect)
 
-        # maximizar 
-        # ----------------------------------------------------------------------------
-        pg.draw.rect(self.presurface,self.maximize_button_color,self.maximize_button_rect,0,6) # maximize
-        color = (120,120,120)
-        num = 5
-        x = self.maximize_button_rect.x + num
-        y = self.maximize_button_rect.y + num 
-        w = self.maximize_button_rect.width - num*2
-        h = self.maximize_button_rect.height - num*2 
-        pg.draw.rect(self.presurface,color,(x,y,w,h),2)
-        # ----------------------------------------------------------------------------
+            self.update_draw = False
 
-        # minimizar
-        # ----------------------------------------------------------------------------
-        pg.draw.rect(self.presurface,self.minimize_button_color,self.minimize_button_rect,0,6) # minimize
-        color = (120,120,120)
-        num = 4
-        x1 = self.minimize_button_rect.x + num
-        y1 = self.minimize_button_rect.y + self.minimize_button_rect.width/2
-        x2 = self.minimize_button_rect.x + self.minimize_button_rect.width - num
-        y2 = y1#self.minimize_button_rect.y + self.minimize_button_rect.height - self.minimize_button_rect.width/2 - num*2 
-        pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),2)
-        # ----------------------------------------------------------------------------
+            event_dict["UpdateDrawRect"]["selected"] = self.rect
+            #pg.display.update(self.rect) # actualiza el rect del objeto
         
-        # Interior de la ventana 
-        pg.draw.rect(self.presurface,self.color,self.view_rect)
         
 
         # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
@@ -1716,10 +1728,32 @@ class EngineWindow():
         #     for obj in self.objects_list:
         #         obj.draw(event_dict)
 
-    def close(self,event_dict,code = None):
+    def pre_close(self,event_dict, code = None):
+
+        if code == "clickable":
+
+            self.close_button_color = (180,0,0)
+            #event_dict["UpdateDrawRect"]["clickable"] = self.close_button_rect
 
         if code == "selected":
-            #if event_dict["Mouse"]["ClickLeftDown"]:
+            pass
+
+    def pos_close(self,event_dict, code = None):
+
+        if code == "clickable":
+
+            self.close_button_color = (80, 80, 80)
+            #event_dict["UpdateDrawRect"]["clickable"] = self.close_button_rect
+
+        if code == "selected":
+            pass
+
+    def close(self,event_dict,code = None):
+
+        #if code == "clickable":
+        #    pass
+
+        if code == "selected":
             pg.quit()
             sys.exit()
 
@@ -1755,15 +1789,10 @@ class EngineWindow():
                 # guardamos las dimenciones de la ventana antes de maximizar
                 self.save_window_width = event_dict["Screen"]["Width"]
                 self.save_window_Height = event_dict["Screen"]["Height"]
-
-                event_dict["Screen"]["Width"] = w
-                event_dict["Screen"]["Height"] = h
+                
             else:
                 w = self.save_window_width 
                 h = self.save_window_Height
-
-                event_dict["Screen"]["Width"] = w
-                event_dict["Screen"]["Height"] = h
 
                 pg.display.set_mode((w, h), pg.NOFRAME)
                 self.window_id = pg.display.get_wm_info()["window"]
@@ -1771,6 +1800,12 @@ class EngineWindow():
                 x,y = self.save_x_y_minimized_window_screen
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001) # reposicion de la ventana  
                 self.is_maximize = False # la ventana esta maximizada
+            
+            # actualizar la informacion del tamaño de la ventana
+            event_dict["Screen"]["Width"] = w
+            event_dict["Screen"]["Height"] = h
+
+            self.update_draw = True # actualiza dibujo de la ventana principal 
 
             del event_dict["EditableObjects"]["selected"][self.depth_number:] 
 

@@ -7,6 +7,13 @@ from ctypes import wintypes
 import pygame as pg
 
 
+"""
+#----------------------------------------------------------------------------- 
+                      ¡¡¡ UN PROBLEMA A LA VEZ !!! 
+#-----------------------------------------------------------------------------
+"""
+
+
 def main():
 
     # Inicializar Pygame    
@@ -22,7 +29,7 @@ def main():
 
     # Configuración de la pantalla
     width, height = 800, 600
-    default_screen_surface = pg.display.set_mode((width, height), pg.NOFRAME)
+    default_screen_surface = pg.display.set_mode((width, height), pg.DOUBLEBUF | pg.NOFRAME)
     window_id = pg.display.get_wm_info()["window"]
     # Carga el ícono (debe ser una imagen pequeña, preferiblemente 32x32)
     icono = pg.image.load('C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01/assets/images/dino-32.png')
@@ -53,7 +60,6 @@ def main():
     fps_text = Font().surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
     #-----------------------------------------------------------------------------
 
-
     # Diccionario de eventos
     #-----------------------------------------------------------------------------
     event_dict = {
@@ -63,9 +69,11 @@ def main():
         "MotorGameFolderpPath": motor_game_folder_path,
         "GameFolderpPath": game_folder_path,
 
-        "Screen":{"Width":width, "Height":height}, # ESTO ES NECESARIO? creo que si 
+        "Screen":{"Width":width, "Height":height}, # ESTO ES NECESARIO? creo que si, cambiar nombre !!
 
         "ForceLoop":False,
+
+        
 
         "FPS": {
             "Fixed": 60,
@@ -97,6 +105,14 @@ def main():
             "selected": [],
             "clickable": []
         },
+
+        #"UpdateDrawRect": None, # area de la ventana que se tiene que actualizar 
+
+        "UpdateDrawRect": {
+            "selected": None,
+            "clickable": None
+        },
+
         "depth_number": -1,
         "Delate_List": [],
     }
@@ -315,6 +331,7 @@ def main():
                     event_dict["EditableObjects"]["selected"][depth_number+1](event_dict, code = "selected") 
                 # ----------------------------------------------------------------------------
 
+                #print(event_dict["EditableObjects"]["clickable"])
                 #print(event_dict["EditableObjects"]["selected"])
 
                 #Draw
@@ -327,22 +344,29 @@ def main():
                 # ----------------------------------------------------------------------------
                 
 
-                default_screen_surface.fill((0,0,255)) # limpia escena 
+                #default_screen_surface.fill((0,0,255)) # pinta escena
 
 
+                # redibujamos si es que es necesario !!! 
                 engine_window.draw(event_dict) # engine_screen
 
                 # # FPS
                 # ----------------------------------------------------------------------------
-                fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
-                width  = event_dict["Screen"]["Width"]
-                height = event_dict["Screen"]["Height"]
-                default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
+                #fps_text = Font.surf_font_default(str(int(clock.get_fps())), (250, 250, 250))
+                #width  = event_dict["Screen"]["Width"]
+                #height = event_dict["Screen"]["Height"]
+                #default_screen_surface.blit(fps_text, (width - fps_text.get_width() - 20,height - fps_text.get_height() -15)) # fps
                 # ----------------------------------------------------------------------------
 
                 
                 # Actualiza la pantalla
                 pg.display.flip()
+
+
+                # deberiamos traer aqui el rect del area que se va a actualizar, si es que hay uno !
+
+                #pg.display.update(event_dict["UpdateDrawRect"]["clickable"])
+                #pg.display.update(event_dict["UpdateDrawRect"]["selected"]) # actualiza una parte de la pantalla 
                 # ----------------------------------------------------------------------------
 
             # Limitar a 60 FPS
