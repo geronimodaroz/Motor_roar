@@ -1,5 +1,5 @@
 from src.objects.windows import EngineWindow
-
+import pygame as pg
 
 
 class EngineWindowInstance(EngineWindow):
@@ -42,6 +42,8 @@ class EngineWindowInstance(EngineWindow):
 
     def draw(self, event_dict):
         super().draw(event_dict)
+
+        #pg.draw.rect(self.presurface,self.color,self.view_rect) # dibujo el fondo gris
 
         if self.objects_list:
             for obj in self.objects_list:

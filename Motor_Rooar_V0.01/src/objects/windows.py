@@ -1668,9 +1668,16 @@ class EngineWindow():
 
         if self.update_draw or True:
 
+            # rectangulo gris osucoro de la ventana principal 
+            # ----------------------------------------------------------------------------
             pg.draw.rect(self.presurface,(50,50,50),self.rect)
+            # ----------------------------------------------------------------------------
+
+            # Icono y texto 
+            # ----------------------------------------------------------------------------
             self.presurface.blit(self.icon,(5,5)) # icono
             self.presurface.blit(self.text, (30,6)) # texto - nombre del motor
+            # ----------------------------------------------------------------------------
 
             # cruz de cierre
             # ----------------------------------------------------------------------------
@@ -1714,13 +1721,14 @@ class EngineWindow():
             # ----------------------------------------------------------------------------
 
             # Interior de la ventana 
-            pg.draw.rect(self.presurface,self.color,self.view_rect)
+            # ----------------------------------------------------------------------------
+            pg.draw.rect(self.presurface,self.color,self.view_rect) # dibujo el fondo gris
+            # ----------------------------------------------------------------------------     
 
             self.update_draw = False
 
-            event_dict["UpdateDrawRect"]["selected"] = self.rect
+            event_dict["UpdateDrawRect"] = self.rect
             #pg.display.update(self.rect) # actualiza el rect del objeto
-        
         
 
         # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
@@ -1733,7 +1741,6 @@ class EngineWindow():
         if code == "clickable":
 
             self.close_button_color = (180,0,0)
-            #event_dict["UpdateDrawRect"]["clickable"] = self.close_button_rect
 
         if code == "selected":
             pass
@@ -1743,7 +1750,6 @@ class EngineWindow():
         if code == "clickable":
 
             self.close_button_color = (80, 80, 80)
-            #event_dict["UpdateDrawRect"]["clickable"] = self.close_button_rect
 
         if code == "selected":
             pass

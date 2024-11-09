@@ -1,88 +1,118 @@
 import pygame as pg
-import tkinter as tk
 import sys
 
-# Inicializa Pygame
+# Inicializar Pygame
 pg.init()
 
-# Configuración de la ventana principal de Pygame
-window = pg.display.set_mode((800, 600))
-pg.display.set_caption("Ventana Principal - Pygame")
+# Definir dimensiones de la ventana y superficie
+WIDTH, HEIGHT = 800, 600
+SURFACE_WIDTH, SURFACE_HEIGHT = 400, 300
 
-background_color = (30, 30, 30)
+# Crear ventana y superficie
+window = pg.display.set_mode((WIDTH, HEIGHT))
+pg.display.set_caption("Ventana con redibujado optimizado")
+
+# Colores
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+# Crear la superficie y rellenarla con color azul
+surface = pg.Surface((SURFACE_WIDTH, SURFACE_HEIGHT))
+surface.fill(BLUE)
+
+# Posición de la superficie en la ventana
+surface_x = (WIDTH - SURFACE_WIDTH) // 2
+surface_y = (HEIGHT - SURFACE_HEIGHT) // 2
+
+# Dimensiones y posición inicial del rectángulo
+rect_width, rect_height = 50, 50
+rect_x, rect_y = (SURFACE_WIDTH - rect_width) // 2, (SURFACE_HEIGHT - rect_height) // 2
+
+# Variables para el estado de arrastre y posición anterior
+dragging = False
+prev_rect = pg.Rect(rect_x, rect_y, rect_width, rect_height)
+
+# Crear un objeto para controlar los FPS
 clock = pg.time.Clock()
 
-def create_tkinter_window():
-    """Crea una ventana de Tkinter redimensionable desde las esquinas."""
-    root = tk.Tk()
-    root.overrideredirect(True)  # Sin barra de título
-    root.attributes('-alpha', 0.4)  # Transparencia
-    root.geometry("400x300+100+100")  # Tamaño y posición inicial
+# Dibujar el contenido inicial de la ventana
+window.fill(WHITE)
+surface.fill(BLUE)
+pg.draw.rect(surface, RED, prev_rect)
+window.blit(surface, (surface_x, surface_y))
+pg.display.flip()
 
-    # Variables de estado
-    resizing = None  # 'left' o 'right'
-    start_x = start_y = win_start_width = win_start_height = win_start_x = 0
-
-    def start_resize(event, direction):
-        """Inicia el redimensionamiento."""
-        nonlocal resizing, start_x, start_y, win_start_width, win_start_height, win_start_x
-        resizing = direction
-        start_x, start_y = event.x_root, event.y_root
-        win_start_width = root.winfo_width()
-        win_start_height = root.winfo_height()
-        win_start_x = root.winfo_x()
-
-    def do_resize(event):
-        """Realiza el redimensionamiento."""
-        dx = event.x_root - start_x
-        dy = event.y_root - start_y
-
-        if resizing == 'right':
-            new_width = max(100, win_start_width + dx)
-            new_height = max(100, win_start_height + dy)
-            root.geometry(f"{new_width}x{new_height}")
-        elif resizing == 'left':
-            new_width = max(100, win_start_width - dx)
-            new_height = max(100, win_start_height + dy)
-            new_x = win_start_x + dx
-            root.geometry(f"{new_width}x{new_height}+{new_x}+{root.winfo_y()}")
-
-    def release(event):
-        """Termina el redimensionamiento."""
-        nonlocal resizing
-        resizing = None
-
-    def enter_resize(event):
-        """Detecta la esquina para redimensionar."""
-        width, height = root.winfo_width(), root.winfo_height()
-        if event.x >= width - 10 and event.y >= height - 10:
-            root.config(cursor="bottom_right_corner")
-            root.bind("<Button-1>", lambda e: start_resize(e, 'right'))
-        elif event.x <= 10 and event.y >= height - 10:
-            root.config(cursor="bottom_left_corner")
-            root.bind("<Button-1>", lambda e: start_resize(e, 'left'))
-        else:
-            root.config(cursor="arrow")
-            root.bind("<Button-1>", lambda e: None)
-
-    # Conexiones de eventos
-    root.bind("<B1-Motion>", do_resize)
-    root.bind("<ButtonRelease-1>", release)
-    root.bind("<Motion>", enter_resize)
-
-    # Botón de cierre
-    tk.Button(root, text="Cerrar", command=root.destroy).pack(pady=10)
-    root.mainloop()
-
-# Bucle principal de Pygame
-while True:
+# Bucle principal
+running = True
+while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
-            pg.quit()
-            sys.exit()
-        if event.type == pg.KEYDOWN and event.key == pg.K_DOWN:
-            create_tkinter_window()
+            running = False
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            # Obtener la posición del clic del mouse
+            mouse_x, mouse_y = event.pos
 
-    window.fill(background_color)
-    pg.display.update()
+            # Convertir la posición del mouse a coordenadas dentro de la superficie
+            local_x, local_y = mouse_x - surface_x, mouse_y - surface_y
+
+            # Comprobar si el clic está dentro del rectángulo
+            if prev_rect.collidepoint(local_x, local_y):
+                dragging = True  # Activar arrastre
+                offset_x = local_x - rect_x
+                offset_y = local_y - rect_y
+
+        elif event.type == pg.MOUSEBUTTONUP:
+            dragging = False  # Desactivar arrastre al soltar el botón
+
+        elif event.type == pg.MOUSEMOTION:
+            
+            if dragging:
+                # Mover el rectángulo en función de la posición del mouse
+                mouse_x, mouse_y = event.pos
+                local_x, local_y = mouse_x - surface_x, mouse_y - surface_y
+
+                # Ajustar posición del rectángulo basado en el desplazamiento del clic inicial
+                new_rect_x = local_x - offset_x
+                new_rect_y = local_y - offset_y
+
+                # Limitar el rectángulo dentro de los bordes de la superficie
+                new_rect_x = max(0, min(new_rect_x, SURFACE_WIDTH - rect_width))
+                new_rect_y = max(0, min(new_rect_y, SURFACE_HEIGHT - rect_height))
+
+                # Verificar si el rectángulo se movió
+                if new_rect_x != rect_x or new_rect_y != rect_y:
+                    # Guardar la posición anterior del rectángulo
+                    prev_rect = pg.Rect(rect_x, rect_y, rect_width, rect_height)
+
+                    # Actualizar la nueva posición del rectángulo
+                    rect_x, rect_y = new_rect_x, new_rect_y
+                    current_rect = pg.Rect(rect_x, rect_y, rect_width, rect_height)
+
+                    # Limpiar solo la parte anterior del rectángulo
+                    surface.fill(BLUE, prev_rect)
+
+                    # Dibujar el rectángulo en su nueva posición
+                    pg.draw.rect(surface, RED, current_rect)
+
+                    # Actualizar solo el área de la ventana que corresponde a la superficie
+                    window.blit(surface, (surface_x, surface_y))
+
+                    # Actualizar solo la parte del rectángulo que cambió
+                    pg.display.update(pg.Rect(surface_x + prev_rect.x, surface_y + prev_rect.y, rect_width, rect_height))
+                    pg.display.update(pg.Rect(surface_x + rect_x, surface_y + rect_y, rect_width, rect_height))
+
+                    # Dibujar un cuadrado verde en las áreas que se actualizan
+                    pg.draw.rect(window, GREEN, pg.Rect(surface_x + prev_rect.x, surface_y + prev_rect.y, rect_width, rect_height))
+                    pg.draw.rect(window, GREEN, pg.Rect(surface_x + rect_x, surface_y + rect_y, rect_width, rect_height))
+
+    # Limitar los FPS a 60
     clock.tick(60)
+
+    # Actualizar la pantalla
+    #pg.display.flip()
+
+# Salir de Pygame
+pg.quit()
+sys.exit()

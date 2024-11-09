@@ -107,11 +107,11 @@ def main():
         },
 
         #"UpdateDrawRect": None, # area de la ventana que se tiene que actualizar 
-
-        "UpdateDrawRect": {
-            "selected": None,
-            "clickable": None
-        },
+        "UpdateDrawRect": [],
+        # "UpdateDrawRect": {
+        #     "selected": None,
+        #     "clickable": None
+        # },
 
         "depth_number": -1,
         "Delate_List": [],

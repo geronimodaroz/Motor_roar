@@ -22,9 +22,7 @@ def event(events,event_dict):
 
     # Reinicio variables
     # ----------------------------------------------------------------------------
-    #event_dict["UpdateDrawRect"] = None #reinicia la parte dela pantalla que tiene que actualizarse
-    event_dict["UpdateDrawRect"]["clickable"] = None
-    event_dict["UpdateDrawRect"]["selected"] = None
+    event_dict["UpdateDrawRect"] = [] # reinicia las las áreas de la pantalla que tienen que actualizarse en este frame
 
     event_dict["Mouse"]["Motion"] = None
     event_dict["Mouse"]["ClickLeftDown"] = False
