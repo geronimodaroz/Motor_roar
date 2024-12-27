@@ -26,8 +26,12 @@ class BoxText:
 
         # Inicializa el rectángulo y sus atributos relacionados
         #self.rect = pg.rect.Rect(0,0,0,0)
+
+        #   DEBERIAMOS GUARDAR LAS DIMENCIONES DEL OBJETO POR SI SE MODIFICA ??
+
         self.rect = pg.rect.Rect(x,y,w,h)
         self.surface_rect = self.rect
+        
         self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)
         #self.rects_updates(x, y, w, h)
 
@@ -102,7 +106,7 @@ class BoxText:
         self.rect.height += h
 
         # ----------------------------------------------------------------------------
-        self.scale_modifier_rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
+        #self.scale_modifier_rect = pg.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         #self.rect = pg.rect.Rect(x,y,w,h)
         self.surface_rect = self.rect
         self.surface = SurfaceReposition.surface_reposition(self.presurface, self.rect, self.surface_rect)

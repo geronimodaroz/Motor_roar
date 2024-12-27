@@ -22,6 +22,7 @@ def main():
     # Añadir la ruta al módulo de scripts
     sys.path.append('c:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01')
 
+
     from system_info.sys_info import SysInfo # informacion del sistema
 
     from src.scripts.fonts import Font
@@ -40,7 +41,7 @@ def main():
 
     # Configuración de rutas
     #-----------------------------------------------------------------------------
-    motor_game_folder_path = "C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar"
+    motor_game_folder_path = "C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01"
     # Ruta al escritorio y creación de carpeta
     #-----------------------------------------------------------------------------
     desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')

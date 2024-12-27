@@ -68,6 +68,10 @@ class Window:
         self.image = pg.image.load('C:/Users/Usuario/Desktop/Motor_Rooar/Motor_Rooar_V0.01/assets/images/pygame.jpg')
 
 
+        #update draw
+        self.update_draw_Window = True
+        self.update_draw_Window_inside = True
+
         # prufundidad del objeto -1
         # ----------------------------------------------------------------------------
         event_dict["depth_number"]-=1
@@ -300,6 +304,7 @@ class Window:
         if code == "clickable":
 
             if event_dict["Mouse"]["Scroll"]:
+
                 if event_dict["Mouse"]["Scroll"] == 1:
                     mouse_scroll_motion_x = 10 
                     mouse_scroll_motion_y = 10
@@ -325,10 +330,15 @@ class Window:
                         self.view_rect.width,
                         is_click=False
                     )
+            
+                self.update_draw_Window_inside = True # update draw inside windows 
+                
+
         # selected
         if code == "selected":
 
             if event_dict["Mouse"]["ClickLeftDown"]:
+
                 mouse_x, mouse_y = event_dict["Mouse"]["Position"]
                 if self.scroll_bar_side_hit:
                     update_vertical(
@@ -348,8 +358,11 @@ class Window:
                         self.view_rect.width,
                         is_click=True
                     )
+                
+                self.update_draw_Window_inside = True # update draw inside windows 
 
             if event_dict["Mouse"]["Motion"]:
+
                 mouse_motion_x, mouse_motion_y = event_dict["Mouse"]["Motion"]
                 if self.scroll_bar_side_inside_hit:
                     update_vertical(
@@ -369,6 +382,8 @@ class Window:
                         self.view_rect.width,
                         is_click=False
                     )
+                
+                self.update_draw_Window_inside = True # update draw inside windows 
 
             # si click up elimino de lista selected a scale modifier
             if event_dict["Mouse"]["ClickLeftUp"]:
@@ -404,7 +419,9 @@ class Window:
                 elif self.scale_modifier_hit_right:  # RIGHT
                     Mouse_motion_x = limit_motion(Mouse_motion_x, self.view_rect.width, limit_min, limit_max_w)
                     self.rects_updates(self.presurface, w=Mouse_motion_x)
-
+                
+                self.update_draw_Window = True # update_draw
+                
             # Reset hit flags on mouse button release
             if event_dict["Mouse"]["ClickLeftUp"]:
                 #self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_left = self.scale_modifier_hit_right = False
@@ -442,6 +459,8 @@ class Window:
                         self.curtain_rect, 
                         self.view_rect.height,
                         )
+                
+                self.update_draw_Window_inside = True # update draw inside windows 
         # selected
         if code == "selected":
             if event_dict["Mouse"]["ClickLeftUp"]:
@@ -450,36 +469,46 @@ class Window:
     def draw(self,event_dict):
 
 
-        pg.draw.rect(self.presurface,self.rect_color,self.rect,0,10) # rect
+        if self.update_draw_Window or True:
 
-        pg.draw.rect(self.presurface,(0,0,0),self.quit_rect,0,10) # quit
+            pg.draw.rect(self.presurface,self.rect_color,self.rect,0,10) # rect
 
-        pg.draw.rect(self.presurface, self.view_color,self.view_rect,0,10) # view
+            pg.draw.rect(self.presurface,(0,0,0),self.quit_rect,0,10) # quit
 
-        pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
+            pg.draw.rect(self.presurface, self.view_color,self.view_rect,0,10) # view
+
+            pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
+
+            self.update_draw_Window_inside = True
+            self.update_draw_Window = False
 
 
+        
+        if self.update_draw_Window_inside:
 
-        # Dibuja la imagen en la pantalla
-        x = self.curtain_rect.x 
-        y = self.curtain_rect.y 
-        self.view_surface.blit(self.image,(x,y))
+            # Dibuja la imagen en la pantalla
+            x = self.curtain_rect.x 
+            y = self.curtain_rect.y 
+            self.view_surface.blit(self.image,(x,y))
 
-        x = self.view_rect.x - 4
-        y = self.view_rect.y - 4
-        w = self.view_rect.w + 8
-        h = self.view_rect.h + 8
-        pg.draw.rect(self.presurface,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
+            x = self.view_rect.x - 4
+            y = self.view_rect.y - 4
+            w = self.view_rect.w + 8
+            h = self.view_rect.h + 8
+            pg.draw.rect(self.presurface,event_dict["Colors"]["LightGrey"],(x,y,w,h),4,10,-1,-1,-1,-1) # view
 
-        if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
-            # scroll_bar_side_inside
-            if self.curtain_rect.height > self.view_rect.height:
-                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
-                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
-            # scroll_bar_down_inside
-            if self.curtain_rect.width > self.view_rect.width:
-                pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
-                pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
+            if self.scroll_bar != 0: # si es 0: scroll_bar no existe 
+                # scroll_bar_side_inside
+                if self.curtain_rect.height > self.view_rect.height:
+                    pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_side_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_side_inside_rect
+                    pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_side_rect,1,10,-1,-1,-1,-1) # scroll_bar_side_rect
+                # scroll_bar_down_inside
+                if self.curtain_rect.width > self.view_rect.width:
+                    pg.draw.rect(self.presurface,self.scroll_bar_insid_color,self.scroll_bar_down_inside_rect,0,10,-1,-1,-1,-1) # scroll_bar_down_inside_rect
+                    pg.draw.rect(self.presurface,self.scroll_bar_color,self.scroll_bar_down_rect,1,10,-1,-1,-1,-1) # scroll_bar_down_rect
+            
+        self.update_draw_Window_inside = False
+
         
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -577,11 +606,18 @@ class WindowBase():
         # ----------------------------------------------------------------------------
         margin = self.scale_modifier_margin
         self.view_rect = pg.rect.Rect(self.rect.x + margin, self.rect.y + margin, self.rect.width - 2 * margin, self.rect.height - 2 * margin)
-        self.view_surface_rect = self.view_rect.copy()
+        self.view_surface_rect = self.view_rect.copy() # PARA QUE NECESITO ESTO ?? - aca no es necesario por que la ventana no sale de la superficie original, pero si la ventna saliera esto seria necesario
         self.view_surface = SurfaceReposition.surface_reposition(self.presurface, self.view_rect, self.view_surface_rect)
 
-        self.view_decrement_x = self.view_rect.x if self.view_rect.x < 0 else 0
-        self.view_decrement_y = self.view_rect.y if self.view_rect.y < 0 else 0
+        # self.view_surface_rect y self.view_decrement en este caso no se usan por que la ventana nunca va a salir de la superficie original
+
+
+
+        #  SIRVE REALMENTE self.view_decrement ?? - si, sirve si la ventana sale de la superficie original, que en este caso eso no se da 
+        #self.view_decrement_x = self.view_rect.x if self.view_rect.x < 0 else 0
+        #self.view_decrement_y = self.view_rect.y if self.view_rect.y < 0 else 0
+
+
         # ----------------------------------------------------------------------------
 
         # objects list
@@ -602,8 +638,8 @@ class WindowBase():
             
             return save_pos + view_decrement, save_pos
 
-        x, self.save_curtain_rect_x = _adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width, self.view_decrement_x)
-        y, self.save_curtain_rect_y = _adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height, self.view_decrement_y)
+        x, self.save_curtain_rect_x = _adjust_curtain_position(self.save_curtain_rect_x, self.curtain_w, self.view_rect.width,0)# self.view_decrement_x)
+        y, self.save_curtain_rect_y = _adjust_curtain_position(self.save_curtain_rect_y, self.curtain_h, self.view_rect.height,0)# self.view_decrement_y)
         w = self.curtain_w
         h = self.curtain_h
 
@@ -769,7 +805,7 @@ class WindowBase():
                 bar.y = bar_limit.y + bar_limit.height - bar.height
                 curtain.y = view_height - curtain.height
             self.save_curtain_rect_y = curtain.y # save
-            curtain.y += self.view_decrement_y
+            #curtain.y += self.view_decrement_y
 
         def _update_horizontal(bar, bar_limit, motion, curtain, view_width, is_click):
             if is_click:
@@ -784,7 +820,7 @@ class WindowBase():
                 bar.x = bar_limit.x + bar_limit.width - bar.width
                 curtain.x = view_width - curtain.width
             self.save_curtain_rect_x = curtain.x # save
-            curtain.x += self.view_decrement_x
+            #curtain.x += self.view_decrement_x
 
         # clickeable
         if code == "clickable":
@@ -919,14 +955,21 @@ class WindowBase():
                     bar.y += motion
                     proportion = view_height / bar.height
                     curtain.y = -(bar.y - bar_limit.y) * proportion 
+
+                    # revisar estas linas de codigo !!
+
                     if bar.y < bar_limit.y or curtain.y > 0:
                         bar.y = bar_limit.y
                         curtain.y = 0
                     elif bar.y + bar.height > bar_limit.y + bar_limit.height or curtain.y + curtain.height < view_height:
                         bar.y = bar_limit.y + bar_limit.height - bar.height
                         curtain.y = view_height - curtain.height
+
+                    # hay que actualizar self.view_decrement_y??
+
+
                     self.save_curtain_rect_y = curtain.y # save
-                    curtain.y += self.view_decrement_y
+                    #curtain.y += self.view_decrement_y # aqui self.view_decrement_y es "0" siempre, donde se actualiza esto?
 
                 if self.curtain_rect.height > self.view_rect.height:
                     update_vertical(
@@ -936,6 +979,14 @@ class WindowBase():
                         self.curtain_rect, 
                         self.view_rect.height,
                         )
+                    
+                # AGREGAR AQUI LA EDICION DE POSICION X,Y DE DE LOS OBJETOS DE LA LISTA OBJECT_LIST SI ES QUE HAY OBJETOS??
+                #for obj in self.objects_list:
+                #    obj.rect.y += mouse_scroll_motion_y
+                #    obj.rects_updates(self.view_surface,force= True)
+                    
+            
+                
         
         # selected
         # if code == "selected":
@@ -949,7 +1000,8 @@ class WindowBase():
 
         pg.draw.rect(self.presurface, self.view_color,self.view_rect,0,10) # view
 
-        #pg.draw.rect(self.view_surface, self.curtain_color,self.curtain_rect) # curtain
+        rect = (self.curtain_rect.x + 10,self.curtain_rect.y + 10 ,self.curtain_rect.width - 20,self.curtain_rect.height- 20)
+        pg.draw.rect(self.view_surface, self.curtain_color,rect) # curtain
 
 
         # Dibuja la imagen en la pantalla
@@ -985,91 +1037,76 @@ class WindowBase():
 
 class EngineWindow():
     """Crea el objeto ventana del proyecto sin ningun objeto en su interior"""
-    def __init__(self,event_dict,presurface):
+    def __init__(self, event_dict, presurface):
 
-
-        # prufundidad del objeto +1
+        # Profundidad del objeto +1
         # ----------------------------------------------------------------------------
-        event_dict["depth_number"]+=1
+        event_dict["depth_number"] += 1
         self.depth_number = event_dict["depth_number"]
         # ----------------------------------------------------------------------------
 
-        # Rect
+        # Rectángulo de fondo
         # ----------------------------------------------------------------------------
-        self.rect = pg.rect.Rect(0,0,0,0)
-        #x = 0 
-        #y = 0 
-        w = presurface.get_width() 
-        h = presurface.get_height() 
-        self.color = (120,120,120)
+        self.rect = pg.rect.Rect(0, 0, 0, 0)
+        self.color = (120, 120, 120)
+        self.update_draw_background = True
+        self.rect_width = presurface.get_width()
+        self.rect_height = presurface.get_height()
         # ----------------------------------------------------------------------------
 
-        # scale_modifier
+        # Modificadores de escala
         # ----------------------------------------------------------------------------
-        self.scale_modifier_hit_top = self.scale_modifier_hit_down = self.scale_modifier_hit_right = self.scale_modifier_hit_left = False
         self.scale_modifier_bar = 30
         self.scale_modifier_margin = 5
+        self.scale_modifier_hit_top = False
+        self.scale_modifier_hit_down = False
+        self.scale_modifier_hit_right = False
+        self.scale_modifier_hit_left = False
         # ----------------------------------------------------------------------------
 
         # Icono y texto
         # ----------------------------------------------------------------------------
-        self.icon = pg.image.load(r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\images\dino-32.png")
-        self.icon = pg.transform.scale(self.icon, (20, 20))
-        self.text = Font.surf_font_OpenSans_Medium("Roar !! - V0.01") # devuelve la superficie del texto
+        self.icon = pg.transform.scale(pg.image.load(r"C:\Users\Usuario\Desktop\Motor_Rooar\Motor_Rooar_V0.01\assets\images\dino-32.png"), (20, 20))
+        self.text = Font.surf_font_OpenSans_Medium("Roar !! - V0.01")
         # ----------------------------------------------------------------------------
 
-        # buttons
+        # Botones (Cerrar, Maximizar, Minimizar)
         # ----------------------------------------------------------------------------
         self.close_button_color = (80, 80, 80)
-
+        self.update_draw_close_button = True
         self.maximize_button_color = (80, 80, 80)
-
         self.minimize_button_color = (80, 80, 80)
         self.is_maximize = False
-        self.save_x_y_minimized_window_screen = (0,0)
-        # guarda las dimenciones de la ventana minimizada 
+        self.save_x_y_minimized_window_screen = (0, 0)
         self.save_window_width = 0
         self.save_window_height = 0
         self.monitor_selected = 0
         # ----------------------------------------------------------------------------
 
-        # variables de engine_window 
+        # Variables de la ventana (Engine Window)
         # ----------------------------------------------------------------------------
-        # Obtener el identificador de la ventana de Pygame (solo en Windows)
         self.window_id = pg.display.get_wm_info()["window"]
-
         self.window_left = 0
         self.window_top = 0
         self.window_width = 0
         self.window_height = 0
-
         self.save_global_mouse_x = 0
         self.save_global_mouse_y = 0
-
-        self.update_draw = True
         # ----------------------------------------------------------------------------
 
-        self.objects_list = []  # Lista de objetos en GameEditor (los objetos deben contener un "rect")
-
-
-        # Llamar a rects_updates para inicializar rectángulos
+        # Lista de objetos en GameEditor
         # ----------------------------------------------------------------------------
-        self.rects_updates(presurface,w,h)
+        self.objects_list = []  # Lista de objetos que deben contener un "rect"
         # ----------------------------------------------------------------------------
 
-        # # # Crear ventanas y objetos
-        # from objects.windows import Window
-        # window = Window(event_dict, self.view_surface, 350, 80, 300, 450, 1024, 683, 1)
-        # self.objects_list.append(window)  # Agregar el objeto window a la lista
-
-        # from instances.Window_objects_creator import WindowObjectsCreator
-        # objects_creator_window = WindowObjectsCreator(event_dict, self.view_surface, 20, 80, 300, 450, 500, 500, 1)
-        # self.objects_list.append(objects_creator_window)  # Agregar el objeto creator window a la lista
-
-
-        # prufundidad del objeto -1
+        # Inicializar rectángulos
         # ----------------------------------------------------------------------------
-        event_dict["depth_number"]-=1
+        self.rects_updates(presurface, self.rect_width, self.rect_height)
+        # ----------------------------------------------------------------------------
+
+        # Profundidad del objeto -1
+        # ----------------------------------------------------------------------------
+        event_dict["depth_number"] -= 1
         # ----------------------------------------------------------------------------
 
     def rects_updates(self, presurface, w=0, h=0, resize=False, force=False):
@@ -1328,7 +1365,6 @@ class EngineWindow():
                         if x_monit < x < x_monit + w_monit and y_monit < y < y_monit + h_monit:
                             self.monitor_selected = m["Number"] # moniotor seleccionado 
 
-                    #print(self.monitor_selected)
 
                     # si esta maximizada y la muevo se redimenciona y salgo de maximizado
                     if self.is_maximize:
@@ -1359,10 +1395,13 @@ class EngineWindow():
                             return rect.left, rect.top
                         self.save_x_y_minimized_window_screen = get_window_position(window_handle)
 
-                        self.update_draw = True # actualiza dibujo de la ventana principal 
+                        # update_draw
+                        self.update_draw_background = True
 
                     else:
                         ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, 0, 0, 0x0001)  # reposiciona la ventana en x,y
+                    
+                    
                     
                     if event_dict["Mouse"]["ClickLeftUp"]:
                         pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
@@ -1380,7 +1419,6 @@ class EngineWindow():
                 h = max(100, self.window_height)
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
-                self.update_draw = True # actualiza dibujo de la ventana principal 
 
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
@@ -1388,6 +1426,9 @@ class EngineWindow():
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
+
+                    # update_draw
+                    self.update_draw_background = True
 
             if self.scale_modifier_hit_right:
 
@@ -1398,7 +1439,6 @@ class EngineWindow():
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
-                self.update_draw = True # actualiza dibujo de la ventana principal 
 
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
@@ -1406,6 +1446,9 @@ class EngineWindow():
                     self.rects_updates(pg.display.get_surface(), w=w,h=h, resize=True)
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
+
+                    # update_draw
+                    self.update_draw_background = True
 
             elif self.scale_modifier_hit_left:
 
@@ -1416,7 +1459,6 @@ class EngineWindow():
                 h = self.window_height
                 ctypes.windll.user32.SetWindowPos(self.window_id, None, x, y, w, h, 0)
 
-                self.update_draw = True # actualiza dibujo de la ventana principal
                 
                 if event_dict["Mouse"]["ClickLeftUp"]:
                     pg.display.set_mode((w,h), pg.DOUBLEBUF | pg.NOFRAME)
@@ -1425,11 +1467,13 @@ class EngineWindow():
                     event_dict["Screen"]["Width"] = w
                     event_dict["Screen"]["Height"] = h
 
+                    # update_draw
+                    self.update_draw_background = True
 
             if event_dict["Mouse"]["ClickLeftUp"]:
                 del event_dict["EditableObjects"]["selected"][self.depth_number:] 
-                
 
+                
             """if self.scale_modifier_hit_top:
 
                 self.window_left += displacement_x
@@ -1665,8 +1709,7 @@ class EngineWindow():
 
     def draw(self,event_dict):
 
-
-        if self.update_draw or True:
+        if self.update_draw_background: # ESTO ESTA MAL! CLAU BACKGRAUND SI ES LA VENTANA DEL PROYECTO
 
             # rectangulo gris osucoro de la ventana principal 
             # ----------------------------------------------------------------------------
@@ -1680,20 +1723,22 @@ class EngineWindow():
             # ----------------------------------------------------------------------------
 
             # cruz de cierre
+
+            self.update_draw_close_button = True
             # ----------------------------------------------------------------------------
-            pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
-            color = (120,120,120)
-            num = 6
-            x1 = self.close_button_rect.x + num
-            y1 = self.close_button_rect.y + num
-            x2 = self.close_button_rect.x + self.close_button_rect.width - num
-            y2 = self.close_button_rect.y + self.close_button_rect.height - num
-            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
-            x1 = self.close_button_rect.x + num
-            y1 = self.close_button_rect.y + self.close_button_rect.height - num
-            x2 = self.close_button_rect.x + self.close_button_rect.width - num
-            y2 = self.close_button_rect.y + num
-            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
+            # color = (120,120,120)
+            # num = 6
+            # x1 = self.close_button_rect.x + num
+            # y1 = self.close_button_rect.y + num
+            # x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            # y2 = self.close_button_rect.y + self.close_button_rect.height - num
+            # pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # x1 = self.close_button_rect.x + num
+            # y1 = self.close_button_rect.y + self.close_button_rect.height - num
+            # x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            # y2 = self.close_button_rect.y + num
+            # pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
             # ----------------------------------------------------------------------------
 
             # maximizar 
@@ -1720,27 +1765,44 @@ class EngineWindow():
             pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),2)
             # ----------------------------------------------------------------------------
 
-            # Interior de la ventana 
+            self.update_draw_background = False
+
+
+
+        if self.update_draw_close_button :
+            
+            # cruz de cierre
             # ----------------------------------------------------------------------------
-            pg.draw.rect(self.presurface,self.color,self.view_rect) # dibujo el fondo gris
-            # ----------------------------------------------------------------------------     
-
-            self.update_draw = False
-
-            event_dict["UpdateDrawRect"] = self.rect
-            #pg.display.update(self.rect) # actualiza el rect del objeto
+            pg.draw.rect(self.presurface,self.close_button_color,self.close_button_rect,0,6) # close
+            color = (120,120,120)
+            num = 6
+            x1 = self.close_button_rect.x + num
+            y1 = self.close_button_rect.y + num
+            x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            y2 = self.close_button_rect.y + self.close_button_rect.height - num
+            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            x1 = self.close_button_rect.x + num
+            y1 = self.close_button_rect.y + self.close_button_rect.height - num
+            x2 = self.close_button_rect.x + self.close_button_rect.width - num
+            y2 = self.close_button_rect.y + num
+            pg.draw.line(self.presurface,color,(x1,y1),(x2,y2),3)
+            # ----------------------------------------------------------------------------
+            self.update_draw_close_button = False
         
 
-        # #TRATAR DE DIBUJAR SOLO UNA VEZ Y ACTUALIZAR!!
-        # if self.objects_list:
-        #     for obj in self.objects_list:
-        #         obj.draw(event_dict)
-
+        # Interior de la ventana 
+        # ----------------------------------------------------------------------------
+        #pg.draw.rect(self.presurface,self.color,self.view_rect) # dibujo el fondo gris
+        # ----------------------------------------------------------------------------  
+           
+        event_dict["UpdateDrawRect"] = self.rect
+        
     def pre_close(self,event_dict, code = None):
 
         if code == "clickable":
 
             self.close_button_color = (180,0,0)
+            self.update_draw_close_button = True # actualizar boton de ciere
 
         if code == "selected":
             pass
@@ -1750,6 +1812,7 @@ class EngineWindow():
         if code == "clickable":
 
             self.close_button_color = (80, 80, 80)
+            self.update_draw_close_button = True # actualizar boton de ciere
 
         if code == "selected":
             pass
@@ -1811,7 +1874,8 @@ class EngineWindow():
             event_dict["Screen"]["Width"] = w
             event_dict["Screen"]["Height"] = h
 
-            self.update_draw = True # actualiza dibujo de la ventana principal 
+            # update_draw
+            self.update_draw_background = True
 
             del event_dict["EditableObjects"]["selected"][self.depth_number:] 
 
